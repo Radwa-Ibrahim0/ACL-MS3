@@ -1,0 +1,70 @@
+MATCH (p:Player)-[:PLAYS_AS]->(pos:Position)
+WITH p, collect(DISTINCT pos.name) AS positions
+WHERE size(positions) = 2 AND 'DEF' IN positions
+
+MATCH (p)-[r:PLAYED_IN]->(f:Fixture)
+MATCH (f)<-[:HAS_FIXTURE]-(gw:Gameweek)<-[:HAS_GW]-(s:Season)
+WITH p, r, f, s,
+     r.minutes          AS minutes,
+     r.assists          AS assists,
+     r.goals_scored     AS goals_scored,
+     r.clean_sheets     AS clean_sheets,
+     r.goals_conceded   AS goals_conceded,
+     r.penalties_missed AS penalties_missed,
+     r.own_goals        AS own_goals,
+     r.yellow_cards     AS yellow_cards,
+     r.red_cards        AS red_cards,
+     r.bonus            AS bonus,
+     r.total_points     AS total_points
+
+WITH p, f, s, total_points,
+     minutes, assists, goals_scored, clean_sheets,
+     goals_conceded, penalties_missed, own_goals,
+     yellow_cards, red_cards, bonus,
+     CASE
+       WHEN minutes >= 60 THEN 2
+       WHEN minutes > 0 THEN 1
+       ELSE 0
+     END
+     + assists * 3
+     + bonus
+     + (-2 * penalties_missed)
+     + (-2 * own_goals)
+     + (-1 * yellow_cards)
+     + (-3 * red_cards)
+     + goals_scored * 6
+     + CASE
+         WHEN minutes > 60 AND clean_sheets > 0 THEN 4
+         ELSE 0
+       END
+     + (-1 * floor(goals_conceded / 2.0))
+     AS def_score
+
+WITH p, f, s, total_points, def_score,
+     (def_score = total_points) AS matches_def
+
+WITH p,
+     collect(
+       CASE WHEN matches_def = false THEN {
+         def_score: def_score,
+         season: s.season_name,
+         fixture_number: f.fixture_number,
+         matches_def: false,
+         total_points: total_points
+       } ELSE null END
+     ) AS raw_details,
+     sum(CASE WHEN matches_def = false THEN 1 ELSE 0 END) AS not_def_fixtures
+
+WITH p,
+     not_def_fixtures,
+     [d IN raw_details WHERE d IS NOT null] AS fixture_details
+
+MATCH (p)-[allr:PLAYED_IN]->(:Fixture)
+WITH p, not_def_fixtures, fixture_details, count(allr) AS total_fixtures
+
+RETURN
+  p.player_name AS player,
+  not_def_fixtures,
+  total_fixtures,
+  fixture_details
+ORDER BY not_def_fixtures DESC, player;

@@ -1,0 +1,38 @@
+Query 1:
+MATCH (gw:Gameweek)
+RETURN count(gw) AS total_gameweeks;
+
+Query 2:
+MATCH (p:Player)
+RETURN count(p) AS total_player_nodes;
+
+Query 3:
+MATCH (s1:Season {season_name: "2021-22"})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f1:Fixture),
+      (f1)-[:HAS_HOME_TEAM|HAS_AWAY_TEAM]->(t:Team)
+WITH DISTINCT t.name AS team_2122
+
+MATCH (s2:Season {season_name: "2022-23"})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f2:Fixture),
+      (f2)-[:HAS_HOME_TEAM|HAS_AWAY_TEAM]->(t2:Team)
+WITH COLLECT(DISTINCT t2.name) AS teams_2223, team_2122
+
+WHERE NOT team_2122 IN teams_2223
+RETURN team_2122 AS missing_in_2223;
+
+Query 4:
+MATCH (s:Season {season_name: "2022-23"})-[:HAS_GW]->(gw:Gameweek)
+      -[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, f, gw, r.total_points AS pts
+ORDER BY pts DESC
+LIMIT 1
+RETURN p.player_name      AS player,
+       gw.GW_number       AS gameweek,
+       f.fixture_number   AS fixture_number,
+       pts                AS total_points;
+
+Query 5:
+MATCH (p:Player)
+WHERE toLower(p.player_name) CONTAINS "elneny"
+MATCH (p)-[r:PLAYED_IN]->(f:Fixture)
+WHERE r.minutes > 0
+RETURN count (f) AS total_matches_played;

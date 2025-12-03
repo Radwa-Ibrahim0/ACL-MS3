@@ -1,0 +1,16 @@
+Notes
+1) current gw w current season n7tohom bel hob
+2) team names nmshy bel fel db bas wala lazem llm yzbthom?
+3) ynfa3 entities nst5dm llm, y3ny man city fel db bas mesh Manchester city
+
+
+later 
+1) Input:  Compare Saliba and Gabriel clean sheets in 2023-2024.
+Intent: player performance
+Entities: {'Player': ['Saliba', 'Gabriel'], 'Team': [], 'Position': [], 'Statistic': ['clean_sheets'], 'Season': ['2023-24', '2024-25'], 'Gameweek': []}
+
+2) Input:  Give me the fixture difficulty for Manchester City next GW.
+Intent: fixture query
+Entities: {'Player': [], 'Team': [], 'Position': [], 'Statistic': [], 'Season': [], 'Gameweek': [11]}
+
+3) nsheel triva mn intent?
