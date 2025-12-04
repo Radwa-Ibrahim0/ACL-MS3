@@ -588,20 +588,118 @@ def normalize_intent(raw_text: str) -> str:
     return "player performance"
 
 
-def get_intent(query: str, config: Dict[str, str]) -> str:
+def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
+    """
+    Rule-based fallback intent classifier using query keywords and extracted entities.
+    Used when LLM is unavailable or fails.
+    """
+    query_lower = query.lower()
+    
+    has_player = bool(entities.get("Player"))
+    has_team = bool(entities.get("Team"))
+    has_position = bool(entities.get("Position"))
+    has_stat = bool(entities.get("Statistic"))
+    has_season = bool(entities.get("Season"))
+    has_gw = bool(entities.get("Gameweek"))
+    
+    # Fixture-related keywords
+    fixture_keywords = [
+        "fixture", "fixtures", "match", "matches", "game", "games",
+        "playing", "plays", "vs", "versus", "against", "opponent",
+        "upcoming", "next match", "schedule"
+    ]
+    
+    # Team analysis keywords
+    team_keywords = [
+        "happened", "what happened", "how did", "performance",
+        "results", "result", "scored", "conceded", "won", "lost", "drew",
+        "show me", "list"
+    ]
+    
+    # Recommendation keywords
+    recommend_keywords = [
+        "recommend", "suggest", "pick", "should i", "consider",
+        "buy", "transfer", "best", "top", "good", "form",
+        "who should", "which", "differential"
+    ]
+    
+    # Statistics keywords  
+    stat_keywords = [
+        "most", "highest", "top", "leading", "best", "worst",
+        "total", "average", "compare", "comparison", "leader", "leaders"
+    ]
+    
+    # Check for fixture queries
+    if any(kw in query_lower for kw in fixture_keywords):
+        if has_team:
+            return "fixture query"
+    
+    # Check for team analysis - team mentioned with analysis-type questions
+    if has_team and not has_player:
+        # Team + gameweek usually means "what happened in that GW"
+        if has_gw and any(kw in query_lower for kw in team_keywords):
+            return "team analysis"
+        # Team + season with "show", "list", "matches" = fixture/team analysis
+        if has_season and any(kw in query_lower for kw in ["show", "list", "matches", "fixtures", "games"]):
+            return "fixture query"
+        # Generic team questions
+        if any(kw in query_lower for kw in team_keywords):
+            return "team analysis"
+    
+    # Check for recommendations
+    if any(kw in query_lower for kw in recommend_keywords):
+        # "which defenders should I pick" = recommendation
+        if has_position and not has_player:
+            return "recommendation"
+        # "best players" type queries
+        if "best" in query_lower or "top" in query_lower:
+            if has_position:
+                return "recommendation"
+    
+    # Check for statistics/comparison queries
+    if has_player and len(entities.get("Player", [])) >= 2:
+        # Comparing multiple players
+        return "player performance"
+    
+    if any(kw in query_lower for kw in stat_keywords):
+        if has_stat or has_position:
+            return "statistics"
+    
+    # Player-specific queries
+    if has_player:
+        return "player performance"
+    
+    # Default based on what entities we have
+    if has_team:
+        return "team analysis"
+    if has_position:
+        return "statistics"
+    
+    return "player performance"
+
+
+def get_intent(query: str, config: Dict[str, str], entities: Optional[Dict[str, List[Any]]] = None) -> str:
+    """
+    Get intent using LLM with rule-based fallback.
+    If entities are provided, uses them for better fallback classification.
+    """
     model = init_gemini_model(config)
+    
+    # If no model available, use rule-based fallback
     if model is None:
+        if entities:
+            return rule_based_intent(query, entities)
         return "player performance"
 
     prompt = (
         "You are an intent classifier for a Fantasy Premier League assistant.\n"
         "Given the user query, choose exactly ONE of these intents:\n"
-        "  - player performance\n"
-        "  - team analysis\n"
-        "  - fixture query\n"
-        "  - recommendation\n"
-        "  - statistics\n"
-        "  - trivia\n\n"
+        "  - player performance: Questions about specific player stats, scores, or comparisons\n"
+        "  - team analysis: Questions about a team's overall performance, results, or what happened in a match\n"
+        "  - fixture query: Questions about upcoming matches, schedules, or fixture lists\n"
+        "  - recommendation: Questions asking for suggestions on which players to pick or transfer\n"
+        "  - statistics: General league-wide statistics or leaderboards\n"
+        "  - trivia: Fun facts or historical trivia questions\n\n"
         "Respond with ONLY the intent string, nothing else.\n\n"
         f"User query: {query}"
     )
@@ -612,6 +710,11 @@ def get_intent(query: str, config: Dict[str, str]) -> str:
         return normalize_intent(raw)
     except Exception as e:
         print(f"⚠ Intent classification error: {e}")
+        # Use rule-based fallback when LLM fails
+        if entities:
+            fallback_intent = rule_based_intent(query, entities)
+            print(f"⚠ Using rule-based fallback intent: {fallback_intent}")
+            return fallback_intent
         return "player performance"
 
 
@@ -625,7 +728,7 @@ def process_user_query(query: str) -> Dict[str, Any]:
       - ensures KG vocab is loaded
       - builds NLP pipeline
       - extracts entities
-      - classifies intent
+      - classifies intent (with entity-aware fallback)
 
     Returns:
       {
@@ -649,8 +752,11 @@ def process_user_query(query: str) -> Dict[str, Any]:
     players, teams = load_knowledge_graph_data(CONFIG)
     nlp = build_nlp(players, teams)
 
+    # Extract entities FIRST so we can use them for intent classification fallback
     entities = extract_entities(query, nlp)
-    intent = get_intent(query, CONFIG)
+    
+    # Pass entities to get_intent for better fallback classification
+    intent = get_intent(query, CONFIG, entities)
 
     return {
         "query": query,
@@ -669,16 +775,16 @@ if __name__ == "__main__":
     test_cases = [
         "Who is the best striker for goals scored this season?",
         "Compare Saliba and Gabriel clean sheets in 2023-24.",
-        "Compare Saliba and Mohamed Salah clean sheets in 2023.",
-        "Give me the fixture difficulty for Manchester City next GW.",
-        "Suggest midfielders in good form for my team.",
-        "How many assists did Saka get last season?",
-        "How many goals did Harry score in gameweek 10?",
-        "Show me stats for Arsenal center backs in the last gameweek.",
-        "Which cheap midfielders in good form should I buy next GW?",
-        "Give me some FPL trivia about Liverpool defenders.",
-        "Give me all players playing as defenders in Liverpool and in Arsenal.",
-        "Give me all players playing as defenders and mids.",
+        # "Compare Saliba and Mohamed Salah clean sheets in 2023.",
+        # "Give me the fixture difficulty for Manchester City next GW.",
+        # "Suggest midfielders in good form for my team.",
+        # "How many assists did Saka get last season?",
+        # "How many goals did Harry score in gameweek 10?",
+        # "Show me stats for Arsenal center backs in the last gameweek.",
+        # "Which cheap midfielders in good form should I buy next GW?",
+        # "Give me some FPL trivia about Liverpool defenders.",
+        # "Give me all players playing as defenders in Liverpool and in Arsenal.",
+        # "Give me all players playing as defenders and mids.",
     ]
 
     for q in test_cases:

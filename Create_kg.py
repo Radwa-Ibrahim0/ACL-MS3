@@ -198,7 +198,7 @@ if __name__ == "__main__":
     )
 
     kg.create_constraints()
-    kg.load_csv("D:\\ACL MS2\\fpl_two_seasons.csv")
+    kg.load_csv("")
 
     kg.close()
     print("✔ Knowledge graph created successfully.")
