@@ -5,6 +5,7 @@ import google.generativeai as genai
 import sys
 import re
 import time
+import json
 from typing import Dict, List, Any, Tuple, Optional
 
 # ============================================================
@@ -135,8 +136,8 @@ STAT_CANON: Dict[str, str] = {
     "strike": "goals_scored",
     "strikes": "goals_scored",
     "striking": "goals_scored",
-    "hat-trick": "goals_scored", 
-    "brace": "goals_scored",  
+    "hat-trick": "goals_scored",
+    "brace": "goals_scored",
 
     "assist": "assists",
     "assists": "assists",
@@ -154,7 +155,7 @@ STAT_CANON: Dict[str, str] = {
     "total points": "total_points",
     "fpl points": "total_points",
     "fantasy points": "total_points",
-    "returns": "total_points", 
+    "returns": "total_points",
 
     # Bonus & BPS
     "bonus": "bonus",
@@ -165,6 +166,8 @@ STAT_CANON: Dict[str, str] = {
     # Defensive
     "clean sheet": "clean_sheets",
     "clean sheets": "clean_sheets",
+    "clean-sheets": "clean_sheets",
+    "clean-sheet": "clean_sheets",
     "cs": "clean_sheets",
     "cleanies": "clean_sheets",
 
@@ -385,6 +388,7 @@ def previous_season_from_str(season_str: str) -> str:
 
     return f"{prefix}{prev_start}-{prev_end2}"
 
+
 def parse_season_strings(text: str) -> List[str]:
     """
     Extract season identifiers from user text.
@@ -440,10 +444,11 @@ def parse_season_strings(text: str) -> List[str]:
 
     return unique(seasons)
 
+
 def parse_gameweeks(text: str) -> List[int]:
     """
     Extract explicit GW numbers and handle relative phrases:
-        
+
     'GW 12', 'gameweek 5'
     'this/current/ongoing/present gw/gameweek'
     'last/previous/prior/past gw/gameweek'
@@ -473,6 +478,7 @@ def parse_gameweeks(text: str) -> List[int]:
         gws.append(CURRENT_GW + 1)
 
     return unique(gws)
+
 
 def extract_entities(query: str, nlp) -> Dict[str, List[Any]]:
     """
@@ -537,6 +543,152 @@ def extract_entities(query: str, nlp) -> Dict[str, List[Any]]:
 
 
 # ============================================================
+# 6.b LLM-BASED ENTITY REFINEMENT (NEW)
+# ============================================================
+
+def refine_entities_with_llm(
+    query: str,
+    raw_entities: Dict[str, List[Any]],
+    teams: List[str],
+    current_season: str,
+    current_gw: int,
+    model: Optional[Any],
+) -> Dict[str, List[Any]]:
+    """
+    Use the LLM to refine / complete entities:
+      - interpret phrases like 'two seasons ago'
+      - normalize seasons & gameweeks based on current_season/current_gw
+      - map fuzzy team names ('Man United') to canonical KG names (from teams list)
+      - ensure output matches KG-aligned schema
+    """
+    if model is None:
+        # No LLM available → just return spaCy output
+        return raw_entities
+
+    allowed_positions = ["GK", "DEF", "MID", "FWD"]
+    # Use KG property names (STAT_CANON values)
+    allowed_stats = sorted(set(STAT_CANON.values()))
+
+    instruction = f"""
+You are an FPL (Fantasy Premier League) entity extraction assistant.
+
+You receive:
+1. The user's original query (natural language).
+2. 'raw_entities' extracted by a rule-based + spaCy system (might be incomplete or slightly noisy).
+3. A list of VALID team names from the knowledge graph.
+4. The current FPL season and current gameweek.
+
+Your job:
+- Correct and COMPLETE the entities.
+- Use ONLY team names from the provided 'teams' list.
+- Use ONLY positions from: {allowed_positions}.
+- Use ONLY statistic names from: {allowed_stats}.
+-----------------------
+### PLAYER RESOLUTION RULES
+-----------------------
+
+1. If the user mentions a player *not detected by spaCy*, you must add that player.
+
+2. Users may use nicknames, abbreviations, initials, or short forms (e.g., "KDB", "CR7", "Mo", "Saka", "Gabby", "Licha").
+   - You must resolve these to the **correct full player name** from the KG.
+   - Then you must add **only the last name** to the final Player list.
+     - Example: "KDB" → "Kevin De Bruyne" → add **"De Bruyne"**  
+     - Example: "Mo" → "Mohamed Salah" → add **"Salah"**
+
+3. If the user already mentions a last name (e.g., “Salah”), do NOT change it.
+   - Keep the extracted player exactly as it appears.
+
+4. Never include the short form, nickname, or initials in the final extraction.
+   - Only the canonical last name derived from the KG.
+
+Season rules:
+- Seasons use the format 'YYYY-YY' (e.g., '2022-23', '2020-21').
+- CURRENT_SEASON = '{current_season}'.
+- Compute relative references like:
+    - 'this season', 'current season'  -> CURRENT_SEASON
+    - 'last season', 'previous season' -> the season immediately before CURRENT_SEASON
+    - 'two seasons ago'                -> two seasons before CURRENT_SEASON
+  Example: If CURRENT_SEASON = '2022-23':
+    - this season        -> '2022-23'
+    - last season        -> '2021-22'
+    - two seasons ago    -> '2020-21'
+
+Gameweek rules:
+- Gameweeks are positive integers.
+- CURRENT_GW = {current_gw}.
+- 'this gameweek', 'this gw', 'current gw'      -> CURRENT_GW
+- 'last gw', 'previous gw', 'last gameweek'     -> CURRENT_GW - 1
+- 'next gw', 'upcoming gw', 'next gameweek'     -> CURRENT_GW + 1
+
+Team rules:
+- Map fuzzy user mentions to the CLOSEST valid team name from 'teams'.
+  Example: 'Man United' -> 'Man Utd' (if that is in the teams list).
+- Do NOT invent new teams. If no team is clearly implied, leave 'Team' empty.
+
+Player rules:
+- You may keep or add players based on the query text, but do NOT invent random names.
+
+Statistic rules:
+- Map natural language stats to the canonical names above (e.g. 'goals' -> 'goals_scored', 'points' -> 'total_points').
+
+Your output MUST be a SINGLE JSON object with exactly these keys:
+  - "Player":   list of strings
+  - "Team":     list of strings
+  - "Position": list of strings (subset of {allowed_positions})
+  - "Statistic":list of strings (subset of {allowed_stats})
+  - "Season":   list of strings (each 'YYYY-YY')
+  - "Gameweek": list of integers
+
+Do NOT include any extra keys.
+Do NOT include explanations or comments.
+Only output valid JSON.
+"""
+
+    payload = {
+        "query": query,
+        "raw_entities": raw_entities,
+        "teams": teams,
+    }
+
+    prompt = instruction + "\n\nINPUT:\n" + json.dumps(payload)
+
+    try:
+        resp = model.generate_content(prompt)
+        text = resp.text if hasattr(resp, "text") else str(resp)
+        text = text.strip()
+
+        # Strip Markdown code fences if present
+        if text.startswith("```"):
+            text = re.sub(r"^```(json)?", "", text).strip()
+            if text.endswith("```"):
+                text = text[:-3].strip()
+
+        data = json.loads(text)
+    except Exception as e:
+        print(f"⚠ LLM entity refinement error ({e}). Falling back to raw entities.")
+        return raw_entities
+
+    # Normalize structure & merge with raw_entities (LLM overrides when non-empty)
+    final_entities: Dict[str, List[Any]] = {}
+    for key in ["Player", "Team", "Position", "Statistic", "Season", "Gameweek"]:
+        llm_val = data.get(key, [])
+        if not isinstance(llm_val, list):
+            llm_val = [llm_val]
+        # If LLM gave something non-empty, use it; otherwise keep raw
+        if llm_val:
+            final_entities[key] = llm_val
+        else:
+            final_entities[key] = raw_entities.get(key, [])
+
+        final_entities[key] = unique(final_entities[key])
+
+    print(f"🔍 Raw entities:   {raw_entities}")
+    print(f"🤖 LLM-refined:   {final_entities}")
+
+    return final_entities
+
+
+# ============================================================
 # 7. INTENT CLASSIFICATION (LLM → normalized label)
 # ============================================================
 
@@ -594,46 +746,46 @@ def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
     Used when LLM is unavailable or fails.
     """
     query_lower = query.lower()
-    
+
     has_player = bool(entities.get("Player"))
     has_team = bool(entities.get("Team"))
     has_position = bool(entities.get("Position"))
     has_stat = bool(entities.get("Statistic"))
     has_season = bool(entities.get("Season"))
     has_gw = bool(entities.get("Gameweek"))
-    
+
     # Fixture-related keywords
     fixture_keywords = [
         "fixture", "fixtures", "match", "matches", "game", "games",
         "playing", "plays", "vs", "versus", "against", "opponent",
         "upcoming", "next match", "schedule"
     ]
-    
+
     # Team analysis keywords
     team_keywords = [
         "happened", "what happened", "how did", "performance",
         "results", "result", "scored", "conceded", "won", "lost", "drew",
         "show me", "list"
     ]
-    
+
     # Recommendation keywords
     recommend_keywords = [
         "recommend", "suggest", "pick", "should i", "consider",
         "buy", "transfer", "best", "top", "good", "form",
         "who should", "which", "differential"
     ]
-    
-    # Statistics keywords  
+
+    # Statistics keywords
     stat_keywords = [
         "most", "highest", "top", "leading", "best", "worst",
         "total", "average", "compare", "comparison", "leader", "leaders"
     ]
-    
+
     # Check for fixture queries
     if any(kw in query_lower for kw in fixture_keywords):
         if has_team:
             return "fixture query"
-    
+
     # Check for team analysis - team mentioned with analysis-type questions
     if has_team and not has_player:
         # Team + gameweek usually means "what happened in that GW"
@@ -645,7 +797,7 @@ def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
         # Generic team questions
         if any(kw in query_lower for kw in team_keywords):
             return "team analysis"
-    
+
     # Check for recommendations
     if any(kw in query_lower for kw in recommend_keywords):
         # "which defenders should I pick" = recommendation
@@ -655,26 +807,26 @@ def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
         if "best" in query_lower or "top" in query_lower:
             if has_position:
                 return "recommendation"
-    
+
     # Check for statistics/comparison queries
     if has_player and len(entities.get("Player", [])) >= 2:
         # Comparing multiple players
         return "player performance"
-    
+
     if any(kw in query_lower for kw in stat_keywords):
         if has_stat or has_position:
             return "statistics"
-    
+
     # Player-specific queries
     if has_player:
         return "player performance"
-    
+
     # Default based on what entities we have
     if has_team:
         return "team analysis"
     if has_position:
         return "statistics"
-    
+
     return "player performance"
 
 
@@ -684,7 +836,7 @@ def get_intent(query: str, config: Dict[str, str], entities: Optional[Dict[str, 
     If entities are provided, uses them for better fallback classification.
     """
     model = init_gemini_model(config)
-    
+
     # If no model available, use rule-based fallback
     if model is None:
         if entities:
@@ -727,7 +879,8 @@ def process_user_query(query: str) -> Dict[str, Any]:
     End-to-end preprocessing:
       - ensures KG vocab is loaded
       - builds NLP pipeline
-      - extracts entities
+      - extracts entities (spaCy + rules)
+      - refines entities with LLM (to fill gaps / normalize)
       - classifies intent (with entity-aware fallback)
 
     Returns:
@@ -752,10 +905,27 @@ def process_user_query(query: str) -> Dict[str, Any]:
     players, teams = load_knowledge_graph_data(CONFIG)
     nlp = build_nlp(players, teams)
 
-    # Extract entities FIRST so we can use them for intent classification fallback
-    entities = extract_entities(query, nlp)
-    
-    # Pass entities to get_intent for better fallback classification
+    # 1) spaCy + rule-based extraction
+    raw_entities = extract_entities(query, nlp)
+
+    # 2) LLM refinement (only if GEMINI is configured)
+    model = init_gemini_model(CONFIG)
+    current_season = CONFIG.get("CURRENT_SEASON", CURRENT_SEASON)
+    try:
+        current_gw = int(CONFIG.get("CURRENT_GW", str(CURRENT_GW)))
+    except ValueError:
+        current_gw = CURRENT_GW
+
+    entities = refine_entities_with_llm(
+        query=query,
+        raw_entities=raw_entities,
+        teams=teams,
+        current_season=current_season,
+        current_gw=current_gw,
+        model=model,
+    )
+
+    # 3) Intent classification (LLM + rule-based fallback)
     intent = get_intent(query, CONFIG, entities)
 
     return {
@@ -773,24 +943,24 @@ if __name__ == "__main__":
     print("Running local tests for preprocessing...\n")
 
     test_cases = [
-        "Who is the best striker for goals scored this season?",
-        "Compare Saliba and Gabriel clean sheets in 2023-24.",
-        # "Compare Saliba and Mohamed Salah clean sheets in 2023.",
-        # "Give me the fixture difficulty for Manchester City next GW.",
-        # "Suggest midfielders in good form for my team.",
-        # "How many assists did Saka get last season?",
-        # "How many goals did Harry score in gameweek 10?",
-        # "Show me stats for Arsenal center backs in the last gameweek.",
-        # "Which cheap midfielders in good form should I buy next GW?",
-        # "Give me some FPL trivia about Liverpool defenders.",
-        # "Give me all players playing as defenders in Liverpool and in Arsenal.",
-        # "Give me all players playing as defenders and mids.",
+        # "Who is the best striker for goals scored this season?",
+        # "Compare Saliba and Gabriel clean sheets in 2023-24.",
+        # "How many goals did Saka score two seasons ago?",
+        # "What happened in Man United's previous gameweek?",
+        # "Suggest midfielders in good form this season.",
+        # "Show me Spurs fixtures next gw.",
+        # "Which defenders should I consider picking up for the upcoming gameweek?",
+        # "Top midfielders by total points this season.",
+        "How many clean sheets did United keep two seasons ago?",
+        "Who scored more points last season, Salah or KDB?",
+        "Show me Brightin's fixtures in 2 gameweeks from now.",
+        "Which Tottenham defenders have been in good form this season?",
     ]
 
     for q in test_cases:
         res = process_user_query(q)
-        print(f"Input:  {res['query']}")
-        print(f"Intent: {res['intent']}")
-        print(f"Entities: {res['entities']}")
+        print(f"Input:   {res['query']}")
+        print(f"Intent:  {res['intent']}")
+        print(f"Entities:{res['entities']}")
         print("-" * 60)
         time.sleep(1)  # be nice to the API
