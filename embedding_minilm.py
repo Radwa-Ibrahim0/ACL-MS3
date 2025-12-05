@@ -156,32 +156,78 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
     name = player_data.get("name", "Unknown")
     position = player_data.get("position", "Unknown")
     
-    # Aggregate stats
-    total_points = player_data.get("total_points", 0)
-    goals = player_data.get("goals_scored", 0)
-    assists = player_data.get("assists", 0)
-    clean_sheets = player_data.get("clean_sheets", 0)
-    minutes = player_data.get("minutes", 0)
-    form = player_data.get("form", 0)
+    # Aggregate stats (handle None values)
+    total_points = player_data.get("total_points", 0) or 0
+    goals = player_data.get("goals_scored", 0) or 0
+    assists = player_data.get("assists", 0) or 0
+    clean_sheets = player_data.get("clean_sheets", 0) or 0
+    minutes = player_data.get("minutes", 0) or 0
+    form = player_data.get("form", 0) or 0
+    bonus = player_data.get("bonus", 0) or 0
+    saves = player_data.get("saves", 0) or 0
     
-    # Create position-specific description
+    # Performance tier based on points
+    if total_points > 150:
+        tier = "elite premium top-tier"
+    elif total_points > 100:
+        tier = "high-performing excellent"
+    elif total_points > 50:
+        tier = "solid mid-tier reliable"
+    else:
+        tier = "budget low-cost"
+    
+    # Scoring ability description
+    if goals > 15:
+        scoring = "prolific goal scorer, high scoring"
+    elif goals > 8:
+        scoring = "regular goal scorer, good at scoring"
+    elif goals > 3:
+        scoring = "occasional goal scorer"
+    else:
+        scoring = "rarely scores goals"
+    
+    # Assist ability description
+    if assists > 10:
+        creativity = "highly creative playmaker with many assists"
+    elif assists > 5:
+        creativity = "creative player with good assist numbers"
+    elif assists > 2:
+        creativity = "occasional assist provider"
+    else:
+        creativity = "limited creativity"
+    
+    # Form description
+    if form > 6:
+        form_desc = "in excellent current form, hot streak"
+    elif form > 4:
+        form_desc = "in good form"
+    elif form > 2:
+        form_desc = "average form"
+    else:
+        form_desc = "poor form, struggling"
+    
+    # Position-specific descriptions
     if position == "GK":
-        role_desc = f"goalkeeper with {clean_sheets} clean sheets"
+        if saves > 50:
+            role_desc = f"goalkeeper shot stopper with {saves} saves and {clean_sheets} clean sheets"
+        else:
+            role_desc = f"goalkeeper with {clean_sheets} clean sheets"
     elif position == "DEF":
-        role_desc = f"defender with {clean_sheets} clean sheets and {goals} goals"
+        role_desc = f"defender with {clean_sheets} clean sheets, {goals} goals and {assists} assists"
     elif position == "MID":
         role_desc = f"midfielder with {goals} goals and {assists} assists"
     elif position == "FWD":
-        role_desc = f"forward striker with {goals} goals and {assists} assists"
+        role_desc = f"forward striker attacker with {goals} goals and {assists} assists"
     else:
         role_desc = f"player with {goals} goals and {assists} assists"
     
     # Build comprehensive description
     description = (
-        f"{name} is a {position} {role_desc}. "
-        f"Total FPL points: {total_points}. "
+        f"{name} is a {tier} {position} {role_desc}. "
+        f"{scoring}. {creativity}. "
+        f"Total FPL points: {total_points} with {bonus} bonus points. "
         f"Minutes played: {minutes}. "
-        f"Current form: {form}."
+        f"{form_desc}."
     )
     
     return description
@@ -311,14 +357,18 @@ class EmbeddingStore:
              SUM(r.assists) AS assists,
              SUM(r.clean_sheets) AS clean_sheets,
              SUM(r.minutes) AS minutes,
+             SUM(r.bonus) AS bonus,
+             SUM(r.saves) AS saves,
              AVG(r.form) AS avg_form
-        RETURN p.player_name AS name,
+        RETURN DISTINCT p.player_name AS name,
                pos.name AS position,
                total_points,
                goals_scored,
                assists,
                clean_sheets,
                minutes,
+               bonus,
+               saves,
                avg_form AS form
         ORDER BY total_points DESC
         """
@@ -373,7 +423,14 @@ class EmbeddingStore:
             with self.driver.session() as session:
                 result = session.run(query, **params)
                 results = [dict(r) for r in result]
-                return results[:top_k]
+                # Deduplicate by player name (keep first/highest score)
+                seen = set()
+                unique_results = []
+                for r in results:
+                    if r['player'] not in seen:
+                        seen.add(r['player'])
+                        unique_results.append(r)
+                return unique_results[:top_k]
                 
         except Exception as e:
             logger.warning(f"Vector index not available, using brute-force: {e}")
@@ -392,7 +449,7 @@ class EmbeddingStore:
             query = """
             MATCH (p:Player)-[:PLAYS_AS]->(pos:Position)
             WHERE p.embedding_minilm IS NOT NULL AND pos.name = $position
-            RETURN p.player_name AS player,
+            RETURN DISTINCT p.player_name AS player,
                    pos.name AS position,
                    p.embedding_minilm AS embedding
             """
@@ -401,7 +458,7 @@ class EmbeddingStore:
             query = """
             MATCH (p:Player)-[:PLAYS_AS]->(pos:Position)
             WHERE p.embedding_minilm IS NOT NULL
-            RETURN p.player_name AS player,
+            RETURN DISTINCT p.player_name AS player,
                    pos.name AS position,
                    p.embedding_minilm AS embedding
             """
@@ -545,10 +602,11 @@ if __name__ == "__main__":
     # Check if embeddings need to be generated
     print("\nOptions:")
     print("1. Generate embeddings for all players")
-    print("2. Run semantic search queries")
-    print("3. Both (generate then search)")
+    print("2. Run semantic search demo")
+    print("3. Both (generate then run demo)")
+    print("4. Run custom semantic search")
     
-    choice = input("\nEnter choice (1/2/3): ").strip()
+    choice = input("\nEnter choice (1/2/3/4): ").strip()
     
     if choice in ["1", "3"]:
         print("\n--- Generating Embeddings ---")
@@ -557,21 +615,48 @@ if __name__ == "__main__":
     
     if choice in ["2", "3"]:
         print("\n--- Semantic Search Demo ---")
-        
-        test_queries = [
-            "high scoring forward with lots of goals",
-            "reliable defender with clean sheets",
-            "creative midfielder with assists",
-            "goalkeeper with many saves",
-            "player in excellent form"
+        sample_queries: List[Tuple[str, Optional[str]]] = [
+            ("high scoring forward with lots of goals", "FWD"),
+            ("reliable defender with clean sheets", "DEF"),
+            ("creative midfielder with assists", "MID"),
+            ("goalkeeper with many saves", "GK"),
+            ("player in excellent form", None)
         ]
         
-        for query in test_queries:
-            print(f"\n🔍 Query: '{query}'")
-            results = search_system.search(query, top_k=5)
+        for query_text, pos_filter in sample_queries:
+            suffix = f" [Position: {pos_filter}]" if pos_filter else ""
+            print(f"\n🔍 Query: '{query_text}'{suffix}")
+            results = search_system.search(query_text, top_k=5, position=pos_filter)
             
-            for i, r in enumerate(results, 1):
-                print(f"   {i}. {r['player']} ({r['position']}) - Score: {r['score']:.4f}")
+            if not results:
+                print("   No results found")
+                continue
+            
+            for idx, result in enumerate(results, 1):
+                print(
+                    f"   {idx}. {result['player']} ({result['position']}) - "
+                    f"Score: {result['score']:.4f}"
+                )
+    
+    if choice == "4":
+        print("\n--- Custom Semantic Search ---")
+        while True:
+            query_text = input("Enter your query (blank to exit): ").strip()
+            if not query_text:
+                break
+            pos_input = input(
+                "Optional position filter (GK/DEF/MID/FWD or blank): "
+            ).strip().upper()
+            position_filter = pos_input if pos_input in {"GK", "DEF", "MID", "FWD"} else None
+            results = search_system.search(query_text, top_k=5, position=position_filter)
+            if not results:
+                print("   No results found")
+                continue
+            for idx, result in enumerate(results, 1):
+                print(
+                    f"   {idx}. {result['player']} ({result['position']}) - "
+                    f"Score: {result['score']:.4f}"
+                )
     
     search_system.close()
     print("\n✅ Done!")
