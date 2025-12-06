@@ -902,7 +902,7 @@ if __name__ == "__main__":
         # "Does Ake or Stones have better clean-sheet numbers this season?",
         # "Who's delivering the most assists for Arsenal lately?",
         # "Show me the upcoming fixtures for Newcastle.",
-         "How many clean sheets did United keep two seasons ago?",
+        "How many clean sheets did United keep two seasons ago?",
         "Who scored more points last season, Salah or KDB?",
         "Show me Brightin's fixtures in 2 gameweeks from now.",
         "Which Tottenham defenders have been in good form this season?",

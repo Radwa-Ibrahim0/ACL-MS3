@@ -1,0 +1,423 @@
+{
+  "timestamp": "2025-12-06T23:07:14.853955",
+  "total_queries": 15,
+  "models_compared": 3,
+  "model_statistics": {
+    "Gemini 2.5 Flash": {
+      "model": "Gemini 2.5 Flash",
+      "queries": 5,
+      "total_time": 0.8230404853820801,
+      "total_tokens": 0,
+      "total_cost": 0.0,
+      "errors": 5,
+      "responses": [
+        {
+          "query": "Show me the forwards with the most goals scored across all seasons.",
+          "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 50.646623909s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 50\n}\n]",
+          "time": 0.3327445983886719,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "List the defenders with the highest number of clean sheets across all seasons.",
+          "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 49.4546453s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 49\n}\n]",
+          "time": 0.11665797233581543,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which midfielders have the most assists overall?",
+          "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 48.110474126s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 48\n}\n]",
+          "time": 0.1519932746887207,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which goalkeepers have made the most saves across the seasons?",
+          "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 47.082139859s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 47\n}\n]",
+          "time": 0.103973388671875,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Who are the players currently showing the best form?",
+          "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 45.820309229s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 45\n}\n]",
+          "time": 0.11767125129699707,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        }
+      ],
+      "avg_time": 0.16460809707641602,
+      "avg_tokens": 0.0,
+      "avg_cost": 0.0
+    },
+    "Llama 3 8B": {
+      "model": "Llama 3 8B",
+      "queries": 5,
+      "total_time": 1.087799310684204,
+      "total_tokens": 0,
+      "total_cost": 0.0,
+      "errors": 5,
+      "responses": [
+        {
+          "query": "Show me the forwards with the most goals scored across all seasons.",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afd-1e2fad6b3a4716243950351c;864f9c2d-1e4f-47a9-acd7-d45443f786e3)",
+          "time": 0.28321361541748047,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "List the defenders with the highest number of clean sheets across all seasons.",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afe-0c2d205e149c967a5edd6755;62a33ae2-1d9b-4f24-9333-1cce56d0bd81)",
+          "time": 0.2027895450592041,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which midfielders have the most assists overall?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b00-4affb7db6d7814055e14878f;fce776ff-6189-4196-82bb-9f0f781c696e)",
+          "time": 0.1921248435974121,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which goalkeepers have made the most saves across the seasons?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b01-4133005f66954bb26abcbedd;66682d31-94c5-4cf3-af34-19b732cbf352)",
+          "time": 0.21551918983459473,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Who are the players currently showing the best form?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b02-65adf31845d50da357d415b8;77b376fe-c164-43b0-80d2-dced8a75d066)",
+          "time": 0.1941521167755127,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        }
+      ],
+      "avg_time": 0.2175598621368408,
+      "avg_tokens": 0.0,
+      "avg_cost": 0.0
+    },
+    "Mistral 7B Instruct": {
+      "model": "Mistral 7B Instruct",
+      "queries": 5,
+      "total_time": 1.084474802017212,
+      "total_tokens": 0,
+      "total_cost": 0.0,
+      "errors": 5,
+      "responses": [
+        {
+          "query": "Show me the forwards with the most goals scored across all seasons.",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afd-5ada4c314a457c476bd84520;9d918c95-7b43-49d5-8eb3-189a7999b9e1)",
+          "time": 0.22824478149414062,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "List the defenders with the highest number of clean sheets across all seasons.",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afe-728bf2e732c754b564b53e98;de8b722b-5e5a-4ed6-9bfd-024c452f39a7)",
+          "time": 0.20431017875671387,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which midfielders have the most assists overall?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b00-6dd8fd73331c4d2927cf6421;8524821b-01ab-48d9-b8db-b23c8ebbc498)",
+          "time": 0.21092581748962402,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Which goalkeepers have made the most saves across the seasons?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b01-30e0a29612bff2eb5d935a96;04e5e1be-1735-49f4-b8d8-5a8657d7ee6a)",
+          "time": 0.21167516708374023,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        },
+        {
+          "query": "Who are the players currently showing the best form?",
+          "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b02-73e732272ffec41c11513d70;191686f5-5b16-4c72-ac84-98701cd717fc)",
+          "time": 0.22931885719299316,
+          "tokens": {
+            "prompt": 0,
+            "completion": 0,
+            "total": 0
+          },
+          "primary_source": "embedding"
+        }
+      ],
+      "avg_time": 0.2168949604034424,
+      "avg_tokens": 0.0,
+      "avg_cost": 0.0
+    }
+  },
+  "all_results": [
+    {
+      "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 50.646623909s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 50\n}\n]",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.3327445983886719,
+      "cost": 0.0,
+      "model": "Gemini 2.5 Flash",
+      "error": "429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 50.646623909s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 50\n}\n]",
+      "query": "Show me the forwards with the most goals scored across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afd-1e2fad6b3a4716243950351c;864f9c2d-1e4f-47a9-acd7-d45443f786e3)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.28321361541748047,
+      "cost": 0.0,
+      "model": "Llama 3 8B",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afd-1e2fad6b3a4716243950351c;864f9c2d-1e4f-47a9-acd7-d45443f786e3)",
+      "query": "Show me the forwards with the most goals scored across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afd-5ada4c314a457c476bd84520;9d918c95-7b43-49d5-8eb3-189a7999b9e1)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.22824478149414062,
+      "cost": 0.0,
+      "model": "Mistral 7B Instruct",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afd-5ada4c314a457c476bd84520;9d918c95-7b43-49d5-8eb3-189a7999b9e1)",
+      "query": "Show me the forwards with the most goals scored across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 49.4546453s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 49\n}\n]",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.11665797233581543,
+      "cost": 0.0,
+      "model": "Gemini 2.5 Flash",
+      "error": "429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 49.4546453s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 49\n}\n]",
+      "query": "List the defenders with the highest number of clean sheets across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afe-0c2d205e149c967a5edd6755;62a33ae2-1d9b-4f24-9333-1cce56d0bd81)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.2027895450592041,
+      "cost": 0.0,
+      "model": "Llama 3 8B",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349afe-0c2d205e149c967a5edd6755;62a33ae2-1d9b-4f24-9333-1cce56d0bd81)",
+      "query": "List the defenders with the highest number of clean sheets across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afe-728bf2e732c754b564b53e98;de8b722b-5e5a-4ed6-9bfd-024c452f39a7)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.20431017875671387,
+      "cost": 0.0,
+      "model": "Mistral 7B Instruct",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349afe-728bf2e732c754b564b53e98;de8b722b-5e5a-4ed6-9bfd-024c452f39a7)",
+      "query": "List the defenders with the highest number of clean sheets across all seasons.",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 48.110474126s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 48\n}\n]",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.1519932746887207,
+      "cost": 0.0,
+      "model": "Gemini 2.5 Flash",
+      "error": "429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 48.110474126s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 48\n}\n]",
+      "query": "Which midfielders have the most assists overall?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b00-4affb7db6d7814055e14878f;fce776ff-6189-4196-82bb-9f0f781c696e)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.1921248435974121,
+      "cost": 0.0,
+      "model": "Llama 3 8B",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b00-4affb7db6d7814055e14878f;fce776ff-6189-4196-82bb-9f0f781c696e)",
+      "query": "Which midfielders have the most assists overall?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b00-6dd8fd73331c4d2927cf6421;8524821b-01ab-48d9-b8db-b23c8ebbc498)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.21092581748962402,
+      "cost": 0.0,
+      "model": "Mistral 7B Instruct",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b00-6dd8fd73331c4d2927cf6421;8524821b-01ab-48d9-b8db-b23c8ebbc498)",
+      "query": "Which midfielders have the most assists overall?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 47.082139859s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 47\n}\n]",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.103973388671875,
+      "cost": 0.0,
+      "model": "Gemini 2.5 Flash",
+      "error": "429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 47.082139859s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 47\n}\n]",
+      "query": "Which goalkeepers have made the most saves across the seasons?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b01-4133005f66954bb26abcbedd;66682d31-94c5-4cf3-af34-19b732cbf352)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.21551918983459473,
+      "cost": 0.0,
+      "model": "Llama 3 8B",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b01-4133005f66954bb26abcbedd;66682d31-94c5-4cf3-af34-19b732cbf352)",
+      "query": "Which goalkeepers have made the most saves across the seasons?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b01-30e0a29612bff2eb5d935a96;04e5e1be-1735-49f4-b8d8-5a8657d7ee6a)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.21167516708374023,
+      "cost": 0.0,
+      "model": "Mistral 7B Instruct",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b01-30e0a29612bff2eb5d935a96;04e5e1be-1735-49f4-b8d8-5a8657d7ee6a)",
+      "query": "Which goalkeepers have made the most saves across the seasons?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 45.820309229s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 45\n}\n]",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.11767125129699707,
+      "cost": 0.0,
+      "model": "Gemini 2.5 Flash",
+      "error": "429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/usage?tab=rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash-exp\nPlease retry in 45.820309229s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n}\nviolations {\n}\nviolations {\n}\n, retry_delay {\n  seconds: 45\n}\n]",
+      "query": "Who are the players currently showing the best form?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b02-65adf31845d50da357d415b8;77b376fe-c164-43b0-80d2-dced8a75d066)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.1941521167755127,
+      "cost": 0.0,
+      "model": "Llama 3 8B",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct/v1/chat/completions (Request ID: Root=1-69349b02-65adf31845d50da357d415b8;77b376fe-c164-43b0-80d2-dced8a75d066)",
+      "query": "Who are the players currently showing the best form?",
+      "primary_source": "embedding"
+    },
+    {
+      "response": "Error: 404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b02-73e732272ffec41c11513d70;191686f5-5b16-4c72-ac84-98701cd717fc)",
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "total": 0
+      },
+      "time": 0.22931885719299316,
+      "cost": 0.0,
+      "model": "Mistral 7B Instruct",
+      "error": "404 Client Error: Not Found for url: https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3/v1/chat/completions (Request ID: Root=1-69349b02-73e732272ffec41c11513d70;191686f5-5b16-4c72-ac84-98701cd717fc)",
+      "query": "Who are the players currently showing the best form?",
+      "primary_source": "embedding"
+    }
+  ]
+}

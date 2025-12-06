@@ -1,20 +1,21 @@
 """
-embedding_mpnet.py
+embedding_bge-m3.py
 
-Feature Vector Embeddings using Sentence-Transformers all-mpnet-base-v2
+Feature Vector Embeddings using Sentence-Transformers BGE-M3
 
 This module implements:
   - 1c: Feature Vector Embeddings for FPL Knowledge Graph nodes
   - 2b: Vector Similarity Search for semantic query matching
 
-Model: all-mpnet-base-v2
-  - Embedding dimension: 768
-  - Higher quality than MiniLM, but slower
+Model: BAAI/bge-m3
+  - Embedding dimension: 1024
+  - Higher quality than MiniLM and MPNet
   - FREE (runs locally)
   
-Comparison with MiniLM:
+Comparison with other models:
   - MiniLM (384 dims): Fast, lightweight, good quality
-  - MPNet (768 dims): Slower, better semantic understanding, still free
+  - MPNet (768 dims): Good semantic understanding
+  - BGE-M3 (1024 dims): Superior multilingual and semantic understanding
 """
 
 import sys
@@ -62,23 +63,24 @@ def load_config() -> Dict[str, str]:
 
 
 # ============================================================
-# 2. EMBEDDING MODEL CLASS - MPNet
+# 2. EMBEDDING MODEL CLASS - BGE-M3
 # ============================================================
 
-class MPNetEmbedder:
+class BGEM3Embedder:
     """
-    Feature Vector Embedding using Sentence-Transformers all-mpnet-base-v2
+    Feature Vector Embedding using Sentence-Transformers BAAI/bge-m3
     
-    This is a FREE model that creates 768-dimensional embeddings.
-    Higher quality than MiniLM but slower.
+    This is a FREE model that creates 1024-dimensional embeddings.
+    Higher quality than MiniLM and MPNet.
     
     Comparison:
       - MiniLM (384 dims): Fast, lightweight, good quality
-      - MPNet (768 dims): Slower, better quality, still free
+      - MPNet (768 dims): Good semantic understanding
+      - BGE-M3 (1024 dims): Superior multilingual and semantic understanding
     """
     
-    MODEL_NAME = "all-mpnet-base-v2"
-    EMBEDDING_DIM = 768
+    MODEL_NAME = "BAAI/bge-m3"
+    EMBEDDING_DIM = 1024
     
     def __init__(self):
         """Initialize the embedding model"""
@@ -103,26 +105,26 @@ class MPNetEmbedder:
 
 
 # ============================================================
-# 3. UNIFIED EMBEDDER (Uses MPNet)
+# 3. UNIFIED EMBEDDER (Uses BGE-M3)
 # ============================================================
 
 class UnifiedEmbedder:
     """
-    Unified embedding interface using MPNet.
+    Unified embedding interface using BGE-M3.
     
-    Uses all-mpnet-base-v2 for high quality free embeddings.
+    Uses BAAI/bge-m3 for high quality free embeddings.
     """
     
     def __init__(self, config: Dict[str, str]):
         """
-        Initialize the MPNet embedder.
+        Initialize the BGE-M3 embedder.
         
         Args:
             config: Configuration dictionary
         """
-        self.embedder = MPNetEmbedder()
-        self.model_name = "mpnet"
-        self.embedding_dim = MPNetEmbedder.EMBEDDING_DIM
+        self.embedder = BGEM3Embedder()
+        self.model_name = "bge-m3"
+        self.embedding_dim = BGEM3Embedder.EMBEDDING_DIM
     
     def embed_text(self, text: str) -> List[float]:
         """Generate embedding for a single text."""
@@ -332,15 +334,15 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
 # 6. NEO4J INTEGRATION - STORE & RETRIEVE EMBEDDINGS
 # ============================================================
 
-class EmbeddingStoreMPNet:
+class EmbeddingStoreBGEM3:
     """
-    Manages storage and retrieval of MPNet embeddings in Neo4j.
+    Manages storage and retrieval of BGE-M3 embeddings in Neo4j.
     
-    Uses a different property name (embedding_mpnet) than MiniLM to allow
-    both embedding types to coexist for comparison.
+    Uses a different property name (embedding_bge_m3) than MiniLM or MPNet to allow
+    multiple embedding types to coexist for comparison.
     """
     
-    def __init__(self, uri: str, username: str, password: str, embedding_dim: int = 768):
+    def __init__(self, uri: str, username: str, password: str, embedding_dim: int = 1024):
         """Initialize connection to Neo4j"""
         self.driver = GraphDatabase.driver(uri, auth=(username, password))
         self.embedding_dim = embedding_dim
@@ -351,12 +353,12 @@ class EmbeddingStoreMPNet:
         self.driver.close()
         logger.info("Neo4j connection closed")
     
-    def create_vector_index(self, index_name: str = "player_embedding_mpnet"):
+    def create_vector_index(self, index_name: str = "player_embedding_bge_m3"):
         """Create a vector index for similarity search (Neo4j 5.11+)."""
         query = f"""
         CREATE VECTOR INDEX {index_name} IF NOT EXISTS
         FOR (p:Player)
-        ON p.embedding_mpnet
+        ON p.embedding_bge_m3
         OPTIONS {{
             indexConfig: {{
                 `vector.dimensions`: {self.embedding_dim},
@@ -376,7 +378,7 @@ class EmbeddingStoreMPNet:
         query = """
         UNWIND $batch AS item
         MATCH (p:Player {player_name: item.name})
-        SET p.embedding_mpnet = item.embedding
+        SET p.embedding_bge_m3 = item.embedding
         """
         with self.driver.session() as session:
             session.run(query, batch=embeddings_data)
@@ -422,7 +424,7 @@ class EmbeddingStoreMPNet:
         try:
             if position_filter:
                 query = """
-                CALL db.index.vector.queryNodes('player_embedding_mpnet', $k, $embedding)
+                CALL db.index.vector.queryNodes('player_embedding_bge_m3', $k, $embedding)
                 YIELD node, score
                 MATCH (node)-[:PLAYS_AS]->(pos:Position)
                 WHERE pos.name = $position
@@ -434,7 +436,7 @@ class EmbeddingStoreMPNet:
                 params = {"k": top_k * 2, "embedding": query_embedding, "position": position_filter}
             else:
                 query = """
-                CALL db.index.vector.queryNodes('player_embedding_mpnet', $k, $embedding)
+                CALL db.index.vector.queryNodes('player_embedding_bge_m3', $k, $embedding)
                 YIELD node, score
                 MATCH (node)-[:PLAYS_AS]->(pos:Position)
                 RETURN node.player_name AS player,
@@ -469,19 +471,19 @@ class EmbeddingStoreMPNet:
         if position_filter:
             query = """
             MATCH (p:Player)-[:PLAYS_AS]->(pos:Position)
-            WHERE p.embedding_mpnet IS NOT NULL AND pos.name = $position
+            WHERE p.embedding_bge_m3 IS NOT NULL AND pos.name = $position
             RETURN DISTINCT p.player_name AS player,
                    pos.name AS position,
-                   p.embedding_mpnet AS embedding
+                   p.embedding_bge_m3 AS embedding
             """
             params = {"position": position_filter}
         else:
             query = """
             MATCH (p:Player)-[:PLAYS_AS]->(pos:Position)
-            WHERE p.embedding_mpnet IS NOT NULL
+            WHERE p.embedding_bge_m3 IS NOT NULL
             RETURN DISTINCT p.player_name AS player,
                    pos.name AS position,
-                   p.embedding_mpnet AS embedding
+                   p.embedding_bge_m3 AS embedding
             """
             params = {}
         
@@ -510,17 +512,17 @@ class EmbeddingStoreMPNet:
 # 7. SEMANTIC QUERY SEARCH
 # ============================================================
 
-class SemanticSearchMPNet:
+class SemanticSearchBGEM3:
     """
-    Semantic search for FPL queries using MPNet embeddings.
+    Semantic search for FPL queries using BGE-M3 embeddings.
     
-    This is the second embedding model for comparison with MiniLM.
+    This is a high-quality embedding model for comparison with MiniLM and MPNet.
     """
     
     def __init__(self, config: Dict[str, str]):
         """Initialize the semantic search system"""
         self.embedder = UnifiedEmbedder(config)
-        self.store = EmbeddingStoreMPNet(
+        self.store = EmbeddingStoreBGEM3(
             uri=config["URI"],
             username=config["USERNAME"],
             password=config["PASSWORD"],
@@ -589,7 +591,7 @@ def compare_models(
     top_k: int = 5
 ):
     """
-    Compare search results between MiniLM and MPNet models.
+    Compare search results between MiniLM, MPNet, and BGE-M3 models.
     
     Args:
         config: Configuration dictionary
@@ -617,15 +619,15 @@ def compare_models(
     except Exception as e:
         print(f"MiniLM search not available: {e}")
     
-    # MPNet/OpenAI search
-    print(f"\n--- MPNet (768 dimensions) ---")
-    mpnet_search = SemanticSearchMPNet(config)
-    mpnet_results = mpnet_search.search(query, top_k=top_k, position=position)
+    # BGE-M3 search
+    print(f"\n--- BGE-M3 (1024 dimensions) ---")
+    bge_m3_search = SemanticSearchBGEM3(config)
+    bge_m3_results = bge_m3_search.search(query, top_k=top_k, position=position)
     
-    for i, r in enumerate(mpnet_results, 1):
+    for i, r in enumerate(bge_m3_results, 1):
         print(f"  {i}. {r['player']} ({r['position']}) - Score: {r['score']:.4f}")
     
-    mpnet_search.close()
+    bge_m3_search.close()
     
     print("\n" + "="*70)
 
@@ -638,12 +640,12 @@ if __name__ == "__main__":
     config = load_config()
     
     print("=" * 70)
-    print("MPNet Embedding System for FPL Knowledge Graph")
-    print("Model: all-mpnet-base-v2 (768 dimensions)")
+    print("BGE-M3 Embedding System for FPL Knowledge Graph")
+    print("Model: BAAI/bge-m3 (1024 dimensions)")
     print("=" * 70)
     
     # Initialize system
-    search_system = SemanticSearchMPNet(config)
+    search_system = SemanticSearchBGEM3(config)
     
     print(f"\nActive model: {search_system.embedder.model_name}")
     print(f"Embedding dimensions: {search_system.embedder.embedding_dim}")
@@ -653,7 +655,7 @@ if __name__ == "__main__":
     print("2. Run semantic search demo")
     print("3. Both (generate then run demo)")
     print("4. Run custom semantic search")
-    print("5. Compare with MiniLM model")
+    print("5. Compare with MiniLM and MPNet models")
     
     choice = input("\nEnter choice (1/2/3/4/5): ").strip()
     
