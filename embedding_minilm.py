@@ -142,6 +142,195 @@ class MiniLMEmbedder:
 
 def create_player_description(player_data: Dict[str, Any]) -> str:
     """
+    Create a rich, discriminative text description of a player for embedding.
+
+    The goal is to:
+      - Separate elite, good, average, and weak options
+      - Capture role-specific strengths (goals, assists, clean sheets, saves)
+      - Encode form, minutes (nailed vs rotation risk), and style hints
+    """
+    name = player_data.get("name", "Unknown")
+    position = player_data.get("position", "Unknown")
+
+    # Aggregate stats (handle None values)
+    total_points = player_data.get("total_points", 0) or 0
+    goals = player_data.get("goals_scored", 0) or 0
+    assists = player_data.get("assists", 0) or 0
+    clean_sheets = player_data.get("clean_sheets", 0) or 0
+    minutes = player_data.get("minutes", 0) or 0
+    form = player_data.get("form", 0) or 0
+    bonus = player_data.get("bonus", 0) or 0
+    saves = player_data.get("saves", 0) or 0
+
+    # --- Derived metrics ---
+    games_90 = minutes / 90.0 if minutes > 0 else 0.0
+    goals_per90 = (goals / games_90) if games_90 > 0 else 0.0
+    assists_per90 = (assists / games_90) if games_90 > 0 else 0.0
+    points_per90 = (total_points / games_90) if games_90 > 0 else 0.0
+
+    # --- Performance tier based on total points ---
+    if total_points >= 220:
+        tier = "elite premium top tier, season-defining asset"
+    elif total_points >= 170:
+        tier = "high-performing premium option, very strong pick"
+    elif total_points >= 120:
+        tier = "reliable starter, strong mid-tier option"
+    elif total_points >= 60:
+        tier = "decent budget or rotation option"
+    else:
+        tier = "low-impact budget option, fringe or bench player"
+
+    # --- Minutes / nailedness description ---
+    if minutes >= 2800:
+        minutes_desc = "nailed-on regular starter who plays almost every match"
+    elif minutes >= 2000:
+        minutes_desc = "mostly regular starter with good minutes"
+    elif minutes >= 1200:
+        minutes_desc = "rotation risk but with a fair amount of minutes"
+    elif minutes >= 500:
+        minutes_desc = "rotation / bench player with limited minutes"
+    else:
+        minutes_desc = "rarely plays, very low minutes"
+
+    # --- Scoring ability ---
+    if goals_per90 >= 0.7:
+        scoring = "explosive goal threat with extremely high goals per 90 minutes"
+    elif goals_per90 >= 0.4:
+        scoring = "strong and consistent goal threat"
+    elif goals_per90 >= 0.2:
+        scoring = "moderate goal threat, scores occasionally"
+    elif goals > 0:
+        scoring = "light goal threat, scores rarely"
+    else:
+        scoring = "almost no goal threat"
+
+    # --- Assist / creativity ability ---
+    if assists_per90 >= 0.4:
+        creativity = "elite creative playmaker with many assists per 90 minutes"
+    elif assists_per90 >= 0.25:
+        creativity = "very good creative player with regular assists"
+    elif assists_per90 >= 0.1:
+        creativity = "some creative output with occasional assists"
+    elif assists > 0:
+        creativity = "limited creativity, few assists"
+    else:
+        creativity = "offers almost no assist potential"
+
+    # --- Form description (you can adjust thresholds to your data) ---
+    if form >= 7.0:
+        form_desc = "currently in outstanding form and on a hot streak"
+    elif form >= 5.0:
+        form_desc = "currently in good and reliable form"
+    elif form >= 3.0:
+        form_desc = "currently in average, mixed form"
+    elif form > 0:
+        form_desc = "currently in poor form and underperforming"
+    else:
+        form_desc = "no recent form data or not playing recently"
+
+    # --- Position-specific description ---
+    if position == "GK":
+        if clean_sheets >= 14:
+            cs_desc = "elite clean sheet potential"
+        elif clean_sheets >= 9:
+            cs_desc = "good clean sheet potential"
+        elif clean_sheets >= 4:
+            cs_desc = "some clean sheet potential"
+        else:
+            cs_desc = "very low clean sheet potential"
+
+        if saves >= 120:
+            save_desc = "high-volume shot stopper with many saves"
+        elif saves >= 80:
+            save_desc = "good shot stopper with a solid number of saves"
+        elif saves >= 40:
+            save_desc = "average number of saves"
+        else:
+            save_desc = "low save volume"
+
+        pos_desc = (
+            f"goalkeeper combining {cs_desc} and {save_desc}. "
+            f"Kept {clean_sheets} clean sheets and made {saves} saves."
+        )
+
+    elif position == "DEF":
+        if clean_sheets >= 16:
+            cs_desc = "elite defensive asset with many clean sheets"
+        elif clean_sheets >= 10:
+            cs_desc = "strong defensive asset with good clean sheet numbers"
+        elif clean_sheets >= 5:
+            cs_desc = "decent clean sheet potential"
+        else:
+            cs_desc = "low clean sheet potential"
+
+        attacking_desc = ""
+        if goals >= 5 and assists >= 5:
+            attacking_desc = "offers very strong attacking threat from defence"
+        elif goals + assists >= 5:
+            attacking_desc = "offers useful attacking contribution from defence"
+        elif goals + assists > 0:
+            attacking_desc = "offers a small bit of attacking threat"
+        else:
+            attacking_desc = "mainly offers defensive returns only"
+
+        pos_desc = (
+            f"defender with {cs_desc}, {attacking_desc}. "
+            f"Recorded {clean_sheets} clean sheets, {goals} goals and {assists} assists."
+        )
+
+    elif position == "MID":
+        role = []
+        if goals >= 10:
+            role.append("goal-scoring midfielder")
+        if assists >= 10:
+            role.append("elite creative playmaker")
+        if not role:
+            role.append("box-to-box or supporting midfielder")
+
+        role_str = " and ".join(role)
+
+        pos_desc = (
+            f"{role_str} contributing {goals} goals and {assists} assists. "
+            f"Often involved in attacking phases and chance creation."
+        )
+
+    elif position == "FWD":
+        if goals >= 20:
+            fwd_desc = "elite prolific striker and primary goal scorer"
+        elif goals >= 12:
+            fwd_desc = "very strong striker with regular goals"
+        elif goals >= 6:
+            fwd_desc = "decent forward with some goals"
+        elif goals > 0:
+            fwd_desc = "low-scoring forward"
+        else:
+            fwd_desc = "forward with almost no goals"
+
+        pos_desc = (
+            f"{fwd_desc}, scoring {goals} goals and providing {assists} assists. "
+            f"Mainly focused on finishing chances and attacking in the box."
+        )
+
+    else:
+        pos_desc = (
+            f"football player with {goals} goals and {assists} assists, "
+            f"role not clearly specified."
+        )
+
+    # --- Final description string ---
+    description = (
+        f"{name} is a {tier} {position} in Fantasy Premier League. "
+        f"{minutes_desc}. "
+        f"{pos_desc} "
+        f"{scoring}. {creativity}. "
+        f"Has accumulated {total_points} total FPL points with {bonus} bonus points, "
+        f"averaging approximately {points_per90:.2f} points per 90 minutes. "
+        f"{form_desc}."
+    )
+
+    return description
+
+    """
     Create a rich text description of a player for embedding.
     
     This combines multiple features into a semantic description that
