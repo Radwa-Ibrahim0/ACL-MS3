@@ -192,6 +192,31 @@ END
 """
 
 
+def _stat_alias(stat: str) -> str:
+    """Map raw stat field to a more readable aggregate column name."""
+    mapping = {
+        "goals_scored": "total_goals",
+        "assists": "total_assists",
+        "total_points": "total_points_value",
+        "bonus": "total_bonus",
+        "clean_sheets": "total_clean_sheets",
+        "goals_conceded": "total_goals_conceded",
+        "own_goals": "total_own_goals",
+        "penalties_saved": "total_penalties_saved",
+        "penalties_missed": "total_penalties_missed",
+        "yellow_cards": "total_yellow_cards",
+        "red_cards": "total_red_cards",
+        "saves": "total_saves",
+        "bps": "total_bps",
+        "influence": "total_influence",
+        "creativity": "total_creativity",
+        "threat": "total_threat",
+        "ict_index": "total_ict_index",
+        "form": "form_score",
+    }
+    return mapping.get(stat, "stat_value")
+
+
 def _build_player_name_condition(players: List[str], player_var: str = "p") -> str:
     """
     Build a Cypher condition for matching player names.
@@ -238,6 +263,7 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
     season = _first(seasons)
     gw     = _first(gws)
     stat   = _first(stats, "total_points")  # default to total_points if no stat requested
+    stat_alias = _stat_alias(stat)
 
     # If we have a gameweek but no season, use the current season from config
     if gw is not None and season is None:
@@ -265,10 +291,10 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                   -[:HAS_FIXTURE]->(f:Fixture)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             WHERE {player_condition}
-            WITH p, {STAT_VALUE_CASE} AS stat_value
-            RETURN p.player_name AS player,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                 WITH p, {STAT_VALUE_CASE} AS stat_value
+                 RETURN p.player_name AS player,
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             """
             params = {
                 "season": season,
@@ -289,10 +315,10 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                   -[:HAS_FIXTURE]->(f:Fixture)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             WHERE {player_condition}
-            WITH p, {STAT_VALUE_CASE} AS stat_value
-            RETURN p.player_name AS player,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                 WITH p, {STAT_VALUE_CASE} AS stat_value
+                 RETURN p.player_name AS player,
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             """
             params = {
                 "season": season,
@@ -313,11 +339,11 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             WHERE {player_condition}
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, gw, r, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, gw, r, {STAT_VALUE_CASE} AS stat_value
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
                    gw.GW_number AS gw,
-                   stat_value AS value,
+                     stat_value AS {stat_alias},
                    r.total_points AS total_points,
                    r.minutes AS minutes
             """
@@ -341,12 +367,12 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             WHERE {player_condition}
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, {STAT_VALUE_CASE} AS stat_value,
+                 WITH p, pos, {STAT_VALUE_CASE} AS stat_value,
                  SUM(r.total_points) AS total_points,
                  SUM(r.minutes) AS total_minutes
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
-                   SUM(stat_value) AS value,
+                     SUM(stat_value) AS {stat_alias},
                    total_points,
                    total_minutes
             """
@@ -367,13 +393,13 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                   -[:HAS_FIXTURE]->(f:Fixture)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, gw, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, gw, {STAT_VALUE_CASE} AS stat_value
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
                    gw.GW_number AS gw,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -400,13 +426,13 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             WHERE (f)-[:HAS_HOME_TEAM]->(t) OR (f)-[:HAS_AWAY_TEAM]->(t)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, t, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, t, {STAT_VALUE_CASE} AS stat_value
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
                    t.name AS team,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -430,13 +456,13 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             WHERE (f)-[:HAS_HOME_TEAM]->(t) OR (f)-[:HAS_AWAY_TEAM]->(t)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, t, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, t, {STAT_VALUE_CASE} AS stat_value
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
                    t.name AS team,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -448,6 +474,27 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             logger.info(f"Selected query: {desc}")
             return cypher, params, desc
 
+        # Case 8a: top players by stat across ALL seasons (no season, position-filtered, no specific team or players)
+        if not season and not teams and not players:
+            cypher = f"""
+            MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
+            OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+                 WITH p, pos, {STAT_VALUE_CASE} AS stat_value
+            WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
+            RETURN p.player_name AS player,
+                   COALESCE(pos.name, 'N/A') AS position,
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
+            LIMIT 20
+            """
+            params = {
+                "positions": positions,
+                "stat": stat,
+            }
+            desc = "League-wide player performance by chosen statistic across all seasons, optionally filtered by position."
+            logger.info(f"Selected query: {desc}")
+            return cypher, params, desc
+
         # Case 8: top players by stat across a season (filtered by position, no specific team)
         if season:
             cypher = f"""
@@ -456,12 +503,12 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                   -[:HAS_FIXTURE]->(f:Fixture)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, {STAT_VALUE_CASE} AS stat_value
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -485,12 +532,12 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                   -[:HAS_FIXTURE]->(f:Fixture)
             MATCH (p:Player)-[r:PLAYED_IN]->(f)
             OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-            WITH p, pos, {STAT_VALUE_CASE} AS stat_value
+                 WITH p, pos, {STAT_VALUE_CASE} AS stat_value
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                     SUM(stat_value) AS {stat_alias}
+                 ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -515,8 +562,8 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
             RETURN p.player_name AS player,
                    COALESCE(pos.name, 'N/A') AS position,
-                   SUM(stat_value) AS value
-            ORDER BY value DESC
+                   SUM(stat_value) AS {stat_alias}
+            ORDER BY {stat_alias} DESC
             LIMIT 20
             """
             params = {
@@ -525,6 +572,27 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
                 "stat": stat,
             }
             desc = "Top players by a chosen statistic in a season, optionally filtered by position."
+            logger.info(f"Selected query: {desc}")
+            return cypher, params, desc
+
+        # Case 3: Top players by stat across ALL seasons (position-filtered, no season specified)
+        if not season:
+            cypher = f"""
+            MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
+            OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+            WITH p, pos, {STAT_VALUE_CASE} AS stat_value
+            WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
+            RETURN p.player_name AS player,
+                   COALESCE(pos.name, 'N/A') AS position,
+                   SUM(stat_value) AS {stat_alias}
+            ORDER BY {stat_alias} DESC
+            LIMIT 20
+            """
+            params = {
+                "positions": positions,
+                "stat": stat,
+            }
+            desc = "Top players by a chosen statistic across all seasons, optionally filtered by position."
             logger.info(f"Selected query: {desc}")
             return cypher, params, desc
 
@@ -590,23 +658,24 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
             logger.info(f"Selected query: {desc}")
             return cypher, params, desc
 
-        # Case 3: Fallback - recommend globally if no season detected
+           # Case 3: Recommend players by form across ALL seasons (no season detected)
         cypher = """
-        MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
-        OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-        WITH p, pos,
-             AVG(r.form) AS avg_form,
-             SUM(r.total_points) AS total_points
-        WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
-        RETURN p.player_name AS player,
-               COALESCE(pos.name, 'N/A') AS position,
-               avg_form,
-               total_points
-        ORDER BY avg_form DESC, total_points DESC
-        LIMIT 20
-        """
+           MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
+           OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+           WITH p, pos,
+               AVG(r.form) AS avg_form,
+               SUM(r.total_points) AS total_points
+           WHERE ($positions IS NULL OR size($positions) = 0 OR pos.name IN $positions)
+           RETURN p.player_name AS player,
+                COALESCE(pos.name, 'N/A') AS position,
+                avg_form,
+                total_points
+           ORDER BY avg_form DESC, total_points DESC
+           LIMIT 20
+           """
+        
         params = {"positions": positions}
-        desc = "Fallback recommendation: best players by form and total points across all data."
+        desc = "Recommend players by average form and total points across all seasons, optionally filtered by position."
         logger.info(f"Selected query: {desc}")
         return cypher, params, desc
 
@@ -797,20 +866,87 @@ def build_baseline_query(intent: str, entities: Dict[str, List[Any]], query: str
     # --------------------------------------------------------
     # Default fallback if nothing matched
     # --------------------------------------------------------
-    logger.warning(f"No specific query matched for intent='{intent}', using fallback")
-    # Simple global top players by total_points
-    cypher = f"""
+    logger.warning(f"No specific query matched for intent='{intent}', using enriched fallback")
+
+    # We build a richer, more generic player statistics view so the LLM
+    # has plenty of structured signal later, while still trying to stay
+    # close to the user's entities (season / team / position / statistic).
+
+    # Choose a concrete stat column for convenience but also return
+    # multiple commonly-used stats in the SELECT.
+    stat_for_order = stat or "total_points"
+
+    base_match = """
     MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
     OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
-    WITH p, pos, {STAT_VALUE_CASE} AS stat_value
-    RETURN p.player_name AS player,
-           COALESCE(pos.name, 'N/A') AS position,
-           SUM(stat_value) AS value
-    ORDER BY value DESC
-    LIMIT 20
+    OPTIONAL MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+    OPTIONAL MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+    OPTIONAL MATCH (f)<-[:HAS_FIXTURE]-(gw:Gameweek)
+    OPTIONAL MATCH (gw)<-[:HAS_GW]-(s:Season)
     """
-    params = {"stat": "total_points"}
-    desc = "Fallback: global top players by total_points."
+
+    where_clauses: List[str] = []
+    params: Dict[str, Any] = {"stat": stat_for_order}
+
+    # If the user mentioned a season, restrict to that season
+    if season is not None:
+        where_clauses.append("s.season_name = $season")
+        params["season"] = season
+
+    # If the user mentioned gameweeks, restrict to that subset
+    if gws:
+        where_clauses.append("gw.GW_number IN $gws")
+        params["gws"] = gws
+
+    # If the user mentioned a team, restrict to fixtures involving that team
+    if teams:
+        where_clauses.append("(home.name = $team OR away.name = $team)")
+        params["team"] = teams[0]
+
+    # If the user mentioned positions, restrict to those
+    if positions:
+        where_clauses.append("pos.name IN $positions")
+        params["positions"] = positions
+
+    where_block = ""
+    if where_clauses:
+        where_block = "WHERE " + " AND ".join(where_clauses)
+
+    cypher = f"""
+    {base_match}
+    {where_block}
+    WITH p, pos, home, away, gw, s,
+         SUM(r.total_points)      AS total_points,
+         SUM(r.goals_scored)      AS goals_scored,
+         SUM(r.assists)           AS assists,
+         SUM(r.clean_sheets)      AS clean_sheets,
+         SUM(r.saves)             AS saves,
+         SUM(r.minutes)           AS minutes,
+         AVG(r.form)              AS avg_form,
+         SUM({STAT_VALUE_CASE})   AS stat_value
+    RETURN p.player_name                AS player,
+           COALESCE(pos.name, 'N/A')    AS position,
+           s.season_name                AS season,
+           gw.GW_number                 AS gw,
+           home.name                    AS home_team,
+           away.name                    AS away_team,
+           total_points,
+           goals_scored,
+           assists,
+           clean_sheets,
+           saves,
+           minutes,
+           avg_form,
+           stat_value
+    ORDER BY stat_value DESC, total_points DESC
+    LIMIT 40
+    """
+
+    desc = (
+        "Fallback: enriched player statistics view filtered by any "
+        "season, gameweek, team and position entities extracted from the "
+        "query."
+    )
     logger.info(f"Selected query: {desc}")
     return cypher, params, desc
 
@@ -879,8 +1015,6 @@ class BaselineRetriever:
 
 
 if __name__ == "__main__":
-    import sys
-    
     # Simple manual test (requires a running Neo4j with the FPL KG loaded)
     br = BaselineRetriever()
 
@@ -902,24 +1036,52 @@ if __name__ == "__main__":
         # "Does Ake or Stones have better clean-sheet numbers this season?",
         # "Who's delivering the most assists for Arsenal lately?",
         # "Show me the upcoming fixtures for Newcastle.",
-        "How many clean sheets did United keep two seasons ago?",
-        "Who scored more points last season, Salah or KDB?",
-        "Show me Brightin's fixtures in 2 gameweeks from now.",
-        "Which Tottenham defenders have been in good form this season?",
-
+        # "How many clean sheets did United keep two seasons ago?",
+        # "Who scored more points last season, Salah or KDB?",
+        # "Show me Brightin's fixtures in 2 gameweeks from now.",
+        # "Which Tottenham defenders have been in good form this season?",
+        # "Show me the forwards with the most goals and assists scored across all seasons.",
+        # "List the defenders with the highest number of clean sheets across all seasons.",
+        # "Which midfielders have the most assists overall?",
+        # "Which goalkeepers have made the most saves across the seasons?",
+        # "Who are the players currently showing the best form?",
+        "Show me the forwards with the most goals and assists across all seasons.",
+        "Which defenders have the most clean sheets and total points?",
+        "Top forwards by goals scored.",
+        "Who are the best attacking players in terms of goals and assists combined?",
     ]
 
+    max_rows = 10
+
     for q in test_questions:
-        print("=" * 80, flush=True)
+        print("\n" + "=" * 80, flush=True)
         print(f"Question: {q}", flush=True)
         try:
             result = br.run_from_raw_query(q)
             print(f"Intent: {result['intent']}", flush=True)
             print(f"Entities: {result['entities']}", flush=True)
             print(f"Description: {result['description']}", flush=True)
-            print("First 5 results:", flush=True)
-            for row in result["results"][:5]:
+
+            rows = result["results"]
+            print(f"Rows returned: {len(rows)}", flush=True)
+            print(f"First {min(max_rows, len(rows))} unique results:", flush=True)
+
+            seen = set()
+            shown = 0
+            for row in rows:
+                key = (
+                    row.get("player"),
+                    row.get("position"),
+                    row.get("season"),
+                    row.get("gw"),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
                 print(f"   {row}", flush=True)
+                shown += 1
+                if shown >= max_rows:
+                    break
         except Exception as e:
             print(f"Error: {e}", flush=True)
         sys.stdout.flush()

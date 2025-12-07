@@ -1,12 +1,15 @@
 import spacy
 from spacy.pipeline import EntityRuler
 from neo4j import GraphDatabase
-import google.generativeai as genai
+import requests
 import sys
 import re
 import time
 import json
 from typing import Dict, List, Any, Tuple, Optional
+
+# Global debug flag for verbose internal logging
+DEBUG = False
 
 # ============================================================
 # 1. CONFIGURATION
@@ -37,7 +40,7 @@ ENTITY_RULER = None
 CACHED_PLAYERS: List[str] = []
 CACHED_TEAMS: List[str] = []
 DATA_LOADED = False
-GEMINI_MODEL = None
+LLM_CLIENT: Optional[Dict[str, str]] = None
 CONFIG = load_config()
 
 # Canonical position codes must match Position.name in Neo4j
@@ -554,16 +557,12 @@ def refine_entities_with_llm(
     current_gw: int,
     model: Optional[Any],
 ) -> Dict[str, List[Any]]:
+    """Deprecated: kept for signature compatibility, but now unused.
+
+    The new combined LLM call is handled in get_intent_and_entities_llm.
+    This function now simply returns raw_entities.
     """
-    Use the LLM to refine / complete entities:
-      - interpret phrases like 'two seasons ago'
-      - normalize seasons & gameweeks based on current_season/current_gw
-      - map fuzzy team names ('Man United') to canonical KG names (from teams list)
-      - ensure output matches KG-aligned schema
-    """
-    if model is None:
-        # No LLM available → just return spaCy output
-        return raw_entities
+    return raw_entities
 
     allowed_positions = ["GK", "DEF", "MID", "FWD"]
     # Use KG property names (STAT_CANON values)
@@ -653,8 +652,7 @@ Only output valid JSON.
     prompt = instruction + "\n\nINPUT:\n" + json.dumps(payload)
 
     try:
-        resp = model.generate_content(prompt)
-        text = resp.text if hasattr(resp, "text") else str(resp)
+        text = call_openrouter(model, prompt)
         text = text.strip()
 
         # Strip Markdown code fences if present
@@ -682,8 +680,9 @@ Only output valid JSON.
 
         final_entities[key] = unique(final_entities[key])
 
-    print(f"🔍 Raw entities:   {raw_entities}")
-    print(f"🤖 LLM-refined:   {final_entities}")
+    if DEBUG:
+        print(f"🔍 Raw entities:   {raw_entities}")
+        print(f"🤖 LLM-refined:   {final_entities}")
 
     return final_entities
 
@@ -692,20 +691,60 @@ Only output valid JSON.
 # 7. INTENT CLASSIFICATION (LLM → normalized label)
 # ============================================================
 
-def init_gemini_model(config: Dict[str, str]):
-    global GEMINI_MODEL
-    if GEMINI_MODEL is not None:
-        return GEMINI_MODEL
 
-    api_key = config.get("KEY")
+def init_llm_client(config: Dict[str, str]) -> Optional[Dict[str, str]]:
+    """Initialise an OpenRouter client using tngtech/deepseek-r1t2-chimera:free.
+
+    Expects OPENROUTER_API_KEY in config.txt.
+    Returns a small dict describing the client, or None if not configured.
+    """
+    global LLM_CLIENT, CONFIG
+
+    if not CONFIG:
+        CONFIG = load_config()
+
+    if LLM_CLIENT is not None:
+        return LLM_CLIENT
+
+    merged_config: Dict[str, str] = {}
+    merged_config.update(CONFIG)
+    merged_config.update(config or {})
+
+    api_key = merged_config.get("OPENROUTER_API_KEY")
     if not api_key:
-        print("⚠ No GEMINI_API_KEY in config. Intent will default to 'player performance'.")
-        GEMINI_MODEL = None
-        return GEMINI_MODEL
+        print("⚠ No OPENROUTER_API_KEY in config. LLM features will be disabled.")
+        LLM_CLIENT = None
+        return LLM_CLIENT
 
-    genai.configure(api_key=api_key)
-    GEMINI_MODEL = genai.GenerativeModel("gemini-2.5-flash")
-    return GEMINI_MODEL
+    LLM_CLIENT = {
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "api_key": api_key,
+        "model": "tngtech/deepseek-r1t2-chimera:free",
+    }
+    return LLM_CLIENT
+
+
+def call_openrouter(client: Dict[str, str], prompt: str) -> str:
+    """Call OpenRouter chat completions with the given prompt and return text."""
+    headers = {
+        "Authorization": f"Bearer {client['api_key']}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": client["model"],
+        "messages": [
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.0,
+    }
+
+    resp = requests.post(client["base_url"], headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
+    data = resp.json()
+    try:
+        return data["choices"][0]["message"]["content"]
+    except Exception as e:
+        raise RuntimeError(f"Unexpected OpenRouter response format: {data}") from e
 
 
 def normalize_intent(raw_text: str) -> str:
@@ -830,44 +869,141 @@ def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
     return "player performance"
 
 
-def get_intent(query: str, config: Dict[str, str], entities: Optional[Dict[str, List[Any]]] = None) -> str:
-    """
-    Get intent using LLM with rule-based fallback.
-    If entities are provided, uses them for better fallback classification.
-    """
-    model = init_gemini_model(config)
+def get_intent_and_entities_llm(
+    query: str,
+    raw_entities: Dict[str, List[Any]],
+    teams: List[str],
+    current_season: str,
+    current_gw: int,
+    config: Dict[str, str],
+) -> Tuple[str, Dict[str, List[Any]]]:
+    """Single LLM call to infer intent and refine entities.
 
-    # If no model available, use rule-based fallback
-    if model is None:
-        if entities:
-            return rule_based_intent(query, entities)
-        return "player performance"
+    Returns (intent, entities). On any error or missing config, falls back to
+    rule-based intent and raw_entities.
+    """
+    # Optional fast path for local testing without LLM
+    if config.get("DISABLE_LLM", "false").lower() == "true":
+        intent = rule_based_intent(query, raw_entities)
+        return intent, raw_entities
 
-    prompt = (
-        "You are an intent classifier for a Fantasy Premier League assistant.\n"
-        "Given the user query, choose exactly ONE of these intents:\n"
-        "  - player performance: Questions about specific player stats, scores, or comparisons\n"
-        "  - team analysis: Questions about a team's overall performance, results, or what happened in a match\n"
-        "  - fixture query: Questions about upcoming matches, schedules, or fixture lists\n"
-        "  - recommendation: Questions asking for suggestions on which players to pick or transfer\n"
-        "  - statistics: General league-wide statistics or leaderboards\n"
-        "  - trivia: Fun facts or historical trivia questions\n\n"
-        "Respond with ONLY the intent string, nothing else.\n\n"
-        f"User query: {query}"
-    )
+    client = init_llm_client(config)
+    if client is None:
+        # Pure rule-based fallback
+        intent = rule_based_intent(query, raw_entities)
+        return intent, raw_entities
+
+    allowed_positions = ["GK", "DEF", "MID", "FWD"]
+    allowed_stats = sorted(set(STAT_CANON.values()))
+
+    system_instruction = f"""
+You are an FPL (Fantasy Premier League) assistant.
+
+You must do TWO tasks in ONE response:
+
+1) INTENT CLASSIFICATION
+   Choose exactly ONE intent label describing the user's query:
+     - player performance: questions about specific player stats, scores, or comparisons
+     - team analysis: questions about a team's overall performance, results, or what happened in a match
+     - fixture query: questions about upcoming matches, schedules, or fixture lists
+     - recommendation: questions asking for suggestions on which players to pick or transfer
+     - statistics: general league-wide statistics or leaderboards
+     - trivia: fun facts or historical trivia questions
+
+2) ENTITY REFINEMENT
+   Based on the query AND the provided raw_entities and teams list:
+     - Interpret relative season phrases (this season, last season, two seasons ago)
+       using CURRENT_SEASON = '{current_season}'.
+     - Interpret relative gameweek phrases using CURRENT_GW = {current_gw}.
+     - Map fuzzy team names to the closest valid team name from the teams list.
+     - Use ONLY these position codes: {allowed_positions}.
+     - Use ONLY these statistic names: {allowed_stats}.
+-----------------------
+### PLAYER RESOLUTION RULES
+-----------------------
+
+1. If the user mentions a player *not detected by spaCy*, you must add that player.
+
+2. Users may use nicknames, abbreviations, initials, or short forms (e.g., "KDB", "CR7", "Mo", "Saka", "Gabby", "Licha").
+   - You must resolve these to the **correct full player name** from the KG.
+   - Then you must add **only the last name** to the final Player list.
+     - Example: "KDB" → "Kevin De Bruyne" → add **"De Bruyne"**  
+     - Example: "Mo" → "Mohamed Salah" → add **"Salah"**
+
+3. If the user already mentions a last name (e.g., “Salah”), do NOT change it.
+   - Keep the extracted player exactly as it appears.
+
+4. Never include the short form, nickname, or initials in the final extraction.
+   - Only the canonical last name derived from the KG.
+     
+Your output MUST be a single JSON object with exactly these keys:
+  "intent": string (one of the intent labels above)
+  "entities": {{
+      "Player":   list of strings,
+      "Team":     list of strings,
+      "Position": list of strings (subset of {allowed_positions}),
+      "Statistic":list of strings (subset of {allowed_stats}),
+      "Season":   list of strings (each 'YYYY-YY'),
+      "Gameweek": list of integers
+  }}
+
+Do NOT include extra keys.
+Do NOT include explanations or comments.
+Only output valid JSON.
+"""
+
+    payload = {
+        "query": query,
+        "raw_entities": raw_entities,
+        "teams": teams,
+    }
+
+    user_prompt = system_instruction + "\n\nINPUT:\n" + json.dumps(payload)
 
     try:
-        resp = model.generate_content(prompt)
-        raw = resp.text if hasattr(resp, "text") else str(resp)
-        return normalize_intent(raw)
+        raw = call_openrouter(client, user_prompt)
+        raw = raw.strip()
+        if raw.startswith("```"):
+            raw = re.sub(r"^```(json)?", "", raw).strip()
+            if raw.endswith("```"):
+                raw = raw[:-3].strip()
+        data = json.loads(raw)
     except Exception as e:
-        print(f"⚠ Intent classification error: {e}")
-        # Use rule-based fallback when LLM fails
-        if entities:
-            fallback_intent = rule_based_intent(query, entities)
-            print(f"⚠ Using rule-based fallback intent: {fallback_intent}")
-            return fallback_intent
-        return "player performance"
+        print(f"⚠ Combined LLM intent+entity error: {e}. Falling back to rule-based.")
+        intent = rule_based_intent(query, raw_entities)
+        return intent, raw_entities
+
+    # Extract intent
+    llm_intent = data.get("intent", "")
+    intent = normalize_intent(str(llm_intent))
+
+    # Extract entities, fall back to raw_entities per key if missing
+    llm_entities = data.get("entities", {}) or {}
+    final_entities: Dict[str, List[Any]] = {}
+    for key in ["Player", "Team", "Position", "Statistic", "Season", "Gameweek"]:
+        val = llm_entities.get(key)
+        if val is None:
+            val = raw_entities.get(key, [])
+        if not isinstance(val, list):
+            val = [val]
+        final_entities[key] = unique(val)
+
+    if DEBUG:
+        print(f"🔍 Raw entities:   {raw_entities}")
+        print(f"🤖 LLM-combined: intent={intent}, entities={final_entities}")
+
+    return intent, final_entities
+
+
+def get_intent(query: str, config: Dict[str, str], entities: Optional[Dict[str, List[Any]]] = None) -> str:
+    """Backward-compatible wrapper: uses rule-based intent if entities given.
+
+    The primary combined call is implemented in get_intent_and_entities_llm.
+    This helper preserves the old signature for any other callers.
+    """
+    if entities is not None:
+        return rule_based_intent(query, entities)
+    return rule_based_intent(query, {"Player": [], "Team": [], "Position": [], "Statistic": [], "Season": [], "Gameweek": []})
 
 
 # ============================================================
@@ -908,25 +1044,21 @@ def process_user_query(query: str) -> Dict[str, Any]:
     # 1) spaCy + rule-based extraction
     raw_entities = extract_entities(query, nlp)
 
-    # 2) LLM refinement (only if GEMINI is configured)
-    model = init_gemini_model(CONFIG)
+    # 2) Combined LLM call for intent + refined entities (with robust fallback)
     current_season = CONFIG.get("CURRENT_SEASON", CURRENT_SEASON)
     try:
         current_gw = int(CONFIG.get("CURRENT_GW", str(CURRENT_GW)))
     except ValueError:
         current_gw = CURRENT_GW
 
-    entities = refine_entities_with_llm(
+    intent, entities = get_intent_and_entities_llm(
         query=query,
         raw_entities=raw_entities,
         teams=teams,
         current_season=current_season,
         current_gw=current_gw,
-        model=model,
+        config=CONFIG,
     )
-
-    # 3) Intent classification (LLM + rule-based fallback)
-    intent = get_intent(query, CONFIG, entities)
 
     return {
         "query": query,
@@ -963,4 +1095,7 @@ if __name__ == "__main__":
         print(f"Intent:  {res['intent']}")
         print(f"Entities:{res['entities']}")
         print("-" * 60)
-        time.sleep(1)  # be nice to the API
+
+        # For local testing you can comment this out to speed things up
+        # or keep it if you are worried about API rate limits.
+        # time.sleep(1)
