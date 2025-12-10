@@ -1,0 +1,16 @@
+nsheel triva mn intent?
+
+1) lazem nst5dm langchain wala laa?
+2) el intents el 5 wala mmkn nzwd mn 3ndna? (trivia m3ana?) (sorting eg: worst players maslan)
+3) mesh hn3raf n3ml kol casses fel 3alam, el 3ndna dool enoough wala laa?
+4) results el embedding normal enha tb2a wehsha?
+5) mmkn n3mlha query wahda based on entities gylna wala lazem 10 base queries
+6) Quantitative: accuracy (n7sbha ezay)
+7) Qualitative: Human evaluation of answer quality, relevance, naturalness, and correctness, ehna el bnkrar el Qualitative?
+8) cost hena asdo floos?
+9) bnt7asb 3ala shkl ui?
+10) lazem n5tar haga mn choose your tasks?
+FPL
+● Team Formulation Recommender System
+● FantasyTrivia
+11) nwry el graph optional?

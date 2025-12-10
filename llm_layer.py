@@ -214,10 +214,15 @@ def build_structured_prompt(context: RetrievalContext) -> str:
     task_block = (
         "TASK: Using ONLY the information in the context above, "
         "answer the user's FPL question."
+        "- You may offer your own interpretation, personal preference, or "
+        "strategic recommendation, but every claim must trace back to the "
+        "provided context."
         "- Do NOT invent player statistics, fixtures, or teams that are not "
         "present in the context."
         "- If the context is insufficient to answer confidently, say so "
         "explicitly and explain what is missing."
+        "- Highlight trade-offs, uncertainties, or multiple viable options "
+        "when the data suggests them, and state which option you favour and why."
         "- Provide a concise yet helpful explanation, focusing on actionable "
         "advice for an FPL manager."
         "- Do NOT mention technical details about databases, embeddings, "
@@ -271,11 +276,21 @@ class OpenRouterAdapter(BaseLLMAdapter):
     downloading any weights locally.
     """
 
-    def __init__(self, name: str, model: str, api_key: str):
+    def __init__(
+        self,
+        name: str,
+        model: str,
+        api_key: str,
+        *,
+        max_retries: int = 3,
+        retry_delay: float = 2.0,
+    ):
         self.name = name
         self.model = model
         self.api_key = api_key
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
     def generate(self, prompt: str) -> Tuple[str, ModelMetrics]:
         headers = {
@@ -291,32 +306,57 @@ class OpenRouterAdapter(BaseLLMAdapter):
             "max_tokens": 512,
         }
 
-        start = time.time()
-        resp = requests.post(self.base_url, headers=headers, data=json.dumps(body), timeout=60)
-        elapsed = time.time() - start
+        last_error: Optional[Exception] = None
 
-        resp.raise_for_status()
-        data = resp.json()
+        for attempt in range(1, self.max_retries + 1):
+            start = time.time()
+            try:
+                resp = requests.post(
+                    self.base_url,
+                    headers=headers,
+                    data=json.dumps(body),
+                    timeout=60,
+                )
+                elapsed = time.time() - start
+                if resp.status_code in {429, 502, 503, 504}:
+                    raise requests.HTTPError(
+                        f"{resp.status_code} from OpenRouter", response=resp
+                    )
+                resp.raise_for_status()
+                data = resp.json()
+                choices = data.get("choices") or []
+                if not choices:
+                    raise ValueError("OpenRouter response missing choices")
+                text = choices[0]["message"]["content"]
 
-        text = data["choices"][0]["message"]["content"]
+                usage = data.get("usage", {})
+                input_tokens = usage.get("prompt_tokens")
+                output_tokens = usage.get("completion_tokens")
+                cost_usd = usage.get("total_cost")
 
-        usage = data.get("usage", {})
-        input_tokens = usage.get("prompt_tokens")
-        output_tokens = usage.get("completion_tokens")
+                metrics = ModelMetrics(
+                    name=self.name,
+                    response_time_sec=elapsed,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cost_usd=cost_usd,
+                    accuracy_score=None,
+                )
+                return text, metrics
+            except Exception as exc:  # pragma: no cover - network layer
+                last_error = exc
+                logger.warning(
+                    "OpenRouter call failed for %s (attempt %s/%s): %s",
+                    self.name,
+                    attempt,
+                    self.max_retries,
+                    exc,
+                )
+                if attempt < self.max_retries:
+                    time.sleep(self.retry_delay)
 
-        # OpenRouter may return `usage.total_cost` in USD for some providers;
-        # if absent we leave cost_usd as None.
-        cost_usd = usage.get("total_cost")
-
-        metrics = ModelMetrics(
-            name=self.name,
-            response_time_sec=elapsed,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cost_usd=cost_usd,
-            accuracy_score=None,
-        )
-        return text, metrics
+        assert last_error is not None  # mypy guard
+        raise last_error
 
 
 # Convenience constructors for your three comparison models.
@@ -334,8 +374,8 @@ def build_default_model_adapters(config: Dict[str, str]) -> List[BaseLLMAdapter]
     # 1) Amazon Nova (primary model replacing previous Gemini usage)
     adapters.append(
         OpenRouterAdapter(
-            name="Amazon Nova 2 Lite (OpenRouter free)",
-            model="amazon/nova-2-lite-v1:free",
+            name="gpt-oss-20b (OpenRouter free)",
+            model="openai/gpt-oss-20b:free",
             api_key=api_key,
         )
     )
@@ -352,8 +392,8 @@ def build_default_model_adapters(config: Dict[str, str]) -> List[BaseLLMAdapter]
     # 3) LLaMA free model
     adapters.append(
         OpenRouterAdapter(
-            name="LLaMA-3.2-3B-Instruct (OpenRouter free)",
-            model="meta-llama/llama-3.2-3b-instruct:free",
+            name="Gemma-3-27b-it (OpenRouter free)",
+            model="google/gemma-3-27b-it:free",
             api_key=api_key,
         )
     )

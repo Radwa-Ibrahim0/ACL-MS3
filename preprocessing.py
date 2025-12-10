@@ -43,6 +43,9 @@ DATA_LOADED = False
 LLM_CLIENT: Optional[Dict[str, str]] = None
 CONFIG = load_config()
 
+# Terms that should never be treated as player names even if spaCy flags them
+PLAYER_FALSE_POSITIVES = {"far"}
+
 # Canonical position codes must match Position.name in Neo4j
 POS_CANON: Dict[str, str] = {
     # Goalkeepers
@@ -212,13 +215,32 @@ STAT_CANON: Dict[str, str] = {
     "good form": "form",
 }
 
-INTENT_LABELS = {
-    "player performance",
-    "team analysis",
-    "fixture query",
-    "recommendation",
-    "statistics",
-    "trivia"
+
+# Intent category mapping for easier lookup
+# Six canonical intents only. Downstream layers treat everything else as query variants.
+PLAYER_INTENTS = {"PLAYER-RELATED"}
+TEAM_INTENTS = {"TEAM-RELATED"}
+FIXTURE_INTENTS = {"FIXTURE-RELATED"}
+TEAM_WINNING_INTENTS = {"TEAM WINNING"}
+RECOMMENDATION_INTENTS = {"RECOMMENDATION"}
+COMPARISON_INTENTS = {"COMPARISON"}
+
+INTENT_LABELS = (
+    PLAYER_INTENTS
+    | TEAM_INTENTS
+    | FIXTURE_INTENTS
+    | TEAM_WINNING_INTENTS
+    | RECOMMENDATION_INTENTS
+    | COMPARISON_INTENTS
+)
+
+INTENT_CATEGORIES = {
+    "player": PLAYER_INTENTS,
+    "team": TEAM_INTENTS,
+    "fixture": FIXTURE_INTENTS,
+    "winning": TEAM_WINNING_INTENTS,
+    "recommendation": RECOMMENDATION_INTENTS,
+    "comparison": COMPARISON_INTENTS,
 }
 
 CURRENT_SEASON = CONFIG.get("CURRENT_SEASON", "2023-24")
@@ -445,6 +467,11 @@ def parse_season_strings(text: str) -> List[str]:
     if re.search(r"\b(last|previous|prior|past)\s+season\b", lower):
         seasons.append(previous_season_from_str(current_season_str))
 
+    # --- CASE 6: Phrases like "so far", "until now", "up till now" imply current season ---
+    if re.search(r"\b(so\s+far|until\s+now|till\s+now|up\s+to\s+now)\b", lower):
+        if current_season_str not in seasons:
+            seasons.append(current_season_str)
+
     return unique(seasons)
 
 
@@ -456,6 +483,7 @@ def parse_gameweeks(text: str) -> List[int]:
     'this/current/ongoing/present gw/gameweek'
     'last/previous/prior/past gw/gameweek'
     'next/upcoming/following gw/gameweek'
+    'up till this gameweek', 'up to this gameweek', 'so far', 'until now', 'up till now', 'up to now'-> [1, 2, ..., CURRENT_GW]
     """
     gws: List[int] = []
 
@@ -467,6 +495,23 @@ def parse_gameweeks(text: str) -> List[int]:
             pass
 
     lower = text.lower()
+
+    # Check for "up till/until this gameweek", "so far", "until now" patterns FIRST
+    # These return a range from 1 to CURRENT_GW
+    range_patterns = [
+        r"\b(up\s+till?|until|up\s+to)\s+(this|current)?\s*(gw|gameweek)\b",
+        r"\bso\s+far\b",
+        r"\buntil\s+now\b",
+        r"\btill\s+now\b",
+        r"\bup\s+to\s+now\b",
+        r"\bthrough(out)?\s+(this|current)?\s*(gw|gameweek|season)?\b",
+    ]
+    
+    for pattern in range_patterns:
+        if re.search(pattern, lower):
+            # Return all gameweeks from 1 to CURRENT_GW
+            gws = list(range(1, CURRENT_GW + 1))
+            return unique(gws)
 
     # Relative: this/current/ongoing/present gameweek
     if re.search(r"\b(this|current|ongoing|present)\s+(gw|gameweek)\b", lower):
@@ -509,6 +554,8 @@ def extract_entities(query: str, nlp) -> Dict[str, List[Any]]:
         text_norm = text_raw.lower().strip()
 
         if ent.label_ == "PLAYER":
+            if text_norm in PLAYER_FALSE_POSITIVES:
+                continue
             if text_raw not in entities["Player"]:
                 entities["Player"].append(text_raw)
 
@@ -546,146 +593,181 @@ def extract_entities(query: str, nlp) -> Dict[str, List[Any]]:
 
 
 # ============================================================
-# 6.b LLM-BASED ENTITY REFINEMENT (NEW)
+# 6.b RANKING AND THRESHOLD EXTRACTION (NEW)
 # ============================================================
 
-def refine_entities_with_llm(
-    query: str,
-    raw_entities: Dict[str, List[Any]],
-    teams: List[str],
-    current_season: str,
-    current_gw: int,
-    model: Optional[Any],
-) -> Dict[str, List[Any]]:
-    """Deprecated: kept for signature compatibility, but now unused.
-
-    The new combined LLM call is handled in get_intent_and_entities_llm.
-    This function now simply returns raw_entities.
+def extract_ranking(query: str) -> Optional[str]:
     """
-    return raw_entities
+    Extract ranking parameter from query.
+    
+    Returns:
+        "best" - if query uses: best, top, most, highest
+        "worst" - if query uses: worst, least, bottom, lowest
+        None - otherwise
+    """
+    query_lower = query.lower()
+    
+    best_keywords = ["best", "top", "most", "highest", "leading", "greatest", "maximum"]
+    worst_keywords = ["worst", "least", "bottom", "lowest", "fewest", "minimum", "poorest"]
+    
+    # Check for worst first (more specific in some contexts)
+    if any(kw in query_lower for kw in worst_keywords):
+        return "worst"
+    
+    if any(kw in query_lower for kw in best_keywords):
+        return "best"
+    
+    return None
 
-    allowed_positions = ["GK", "DEF", "MID", "FWD"]
-    # Use KG property names (STAT_CANON values)
-    allowed_stats = sorted(set(STAT_CANON.values()))
 
-    instruction = f"""
-You are an FPL (Fantasy Premier League) entity extraction assistant.
+def extract_threshold(query: str) -> Optional[Dict[str, Any]]:
+    """
+    Extract threshold parameter from query.
+    
+    Returns a dict with:
+        - stat: which stat the threshold applies to
+        - operator: one of "LT", "LE", "GT", "GE"
+        - value: numeric value
+    
+    Or None if no threshold detected.
+    """
+    query_lower = query.lower()
+    
+    # Map natural language operators to codes
+    operator_patterns = [
+        # Greater than
+        (r"more than\s+(\d+(?:\.\d+)?)", "GT"),
+        (r"greater than\s+(\d+(?:\.\d+)?)", "GT"),
+        (r"above\s+(\d+(?:\.\d+)?)", "GT"),
+        (r"over\s+(\d+(?:\.\d+)?)", "GT"),
+        (r"exceeds?\s+(\d+(?:\.\d+)?)", "GT"),
+        (r">\s*(\d+(?:\.\d+)?)", "GT"),
+        
+        # Greater than or equal
+        (r"at least\s+(\d+(?:\.\d+)?)", "GE"),
+        (r"minimum of\s+(\d+(?:\.\d+)?)", "GE"),
+        (r"minimum\s+(\d+(?:\.\d+)?)", "GE"),
+        (r"no less than\s+(\d+(?:\.\d+)?)", "GE"),
+        (r">=\s*(\d+(?:\.\d+)?)", "GE"),
+        
+        # Less than
+        (r"less than\s+(\d+(?:\.\d+)?)", "LT"),
+        (r"fewer than\s+(\d+(?:\.\d+)?)", "LT"),
+        (r"below\s+(\d+(?:\.\d+)?)", "LT"),
+        (r"under\s+(\d+(?:\.\d+)?)", "LT"),
+        (r"<\s*(\d+(?:\.\d+)?)", "LT"),
+        
+        # Less than or equal
+        (r"at most\s+(\d+(?:\.\d+)?)", "LE"),
+        (r"maximum of\s+(\d+(?:\.\d+)?)", "LE"),
+        (r"maximum\s+(\d+(?:\.\d+)?)", "LE"),
+        (r"no more than\s+(\d+(?:\.\d+)?)", "LE"),
+        (r"<=\s*(\d+(?:\.\d+)?)", "LE"),
+    ]
+    
+    for pattern, operator in operator_patterns:
+        match = re.search(pattern, query_lower)
+        if match:
+            value = float(match.group(1))
+            # Try to convert to int if it's a whole number
+            if value == int(value):
+                value = int(value)
+            
+            # Try to identify which stat the threshold applies to
+            stat = identify_threshold_stat(query_lower)
+            
+            return {
+                "stat": stat,
+                "operator": operator,
+                "value": value
+            }
+    
+    return None
 
-You receive:
-1. The user's original query (natural language).
-2. 'raw_entities' extracted by a rule-based + spaCy system (might be incomplete or slightly noisy).
-3. A list of VALID team names from the knowledge graph.
-4. The current FPL season and current gameweek.
 
-Your job:
-- Correct and COMPLETE the entities.
-- Use ONLY team names from the provided 'teams' list.
-- Use ONLY positions from: {allowed_positions}.
-- Use ONLY statistic names from: {allowed_stats}.
------------------------
-### PLAYER RESOLUTION RULES
------------------------
+def identify_threshold_stat(query_lower: str) -> str:
+    """
+    Identify which stat a threshold applies to based on query context.
+    Returns the canonical stat name.
+    """
+    # Check for stat keywords near the threshold
+    stat_priority = [
+        ("goal", "goals_scored"),
+        ("assist", "assists"),
+        ("point", "total_points"),
+        ("clean sheet", "clean_sheets"),
+        ("save", "saves"),
+        ("bonus", "bonus"),
+        ("form", "form"),
+        ("threat", "threat"),
+        ("creativity", "creativity"),
+        ("influence", "influence"),
+        ("ict", "ict_index"),
+        ("yellow", "yellow_cards"),
+        ("red", "red_cards"),
+        ("minute", "minutes"),
+        ("concede", "goals_conceded"),
+    ]
+    
+    for keyword, stat in stat_priority:
+        if keyword in query_lower:
+            return stat
+    
+    # Default to total_points
+    return "total_points"
 
-1. If the user mentions a player *not detected by spaCy*, you must add that player.
 
-2. Users may use nicknames, abbreviations, initials, or short forms (e.g., "KDB", "CR7", "Mo", "Saka", "Gabby", "Licha").
-   - You must resolve these to the **correct full player name** from the KG.
-   - Then you must add **only the last name** to the final Player list.
-     - Example: "KDB" → "Kevin De Bruyne" → add **"De Bruyne"**  
-     - Example: "Mo" → "Mohamed Salah" → add **"Salah"**
+def rule_based_intent(query: str, raw_entities: Dict[str, List[Any]]) -> str:
+    """Lightweight fallback intent classifier when the LLM is unavailable."""
+    q = query.lower()
+    players = raw_entities.get("Player", []) or []
+    teams = raw_entities.get("Team", []) or []
+    seasons = raw_entities.get("Season", []) or []
+    gameweeks = raw_entities.get("Gameweek", []) or []
 
-3. If the user already mentions a last name (e.g., “Salah”), do NOT change it.
-   - Keep the extracted player exactly as it appears.
+    def has_any(keywords: List[str]) -> bool:
+        return any(kw in q for kw in keywords)
 
-4. Never include the short form, nickname, or initials in the final extraction.
-   - Only the canonical last name derived from the KG.
+    if has_any(["compare", "comparison", "vs", "versus", " v ", " v.", " than "]):
+        return "COMPARISON"
 
-Season rules:
-- Seasons use the format 'YYYY-YY' (e.g., '2022-23', '2020-21').
-- CURRENT_SEASON = '{current_season}'.
-- Compute relative references like:
-    - 'this season', 'current season'  -> CURRENT_SEASON
-    - 'last season', 'previous season' -> the season immediately before CURRENT_SEASON
-    - 'two seasons ago'                -> two seasons before CURRENT_SEASON
-  Example: If CURRENT_SEASON = '2022-23':
-    - this season        -> '2022-23'
-    - last season        -> '2021-22'
-    - two seasons ago    -> '2020-21'
+    if has_any([
+        "recommend",
+        "suggest",
+        "should i",
+        "who should i",
+        "pick",
+        "choose",
+        "consider",
+        "options",
+        "targets",
+    ]):
+        return "RECOMMENDATION"
 
-Gameweek rules:
-- Gameweeks are positive integers.
-- CURRENT_GW = {current_gw}.
-- 'this gameweek', 'this gw', 'current gw'      -> CURRENT_GW
-- 'last gw', 'previous gw', 'last gameweek'     -> CURRENT_GW - 1
-- 'next gw', 'upcoming gw', 'next gameweek'     -> CURRENT_GW + 1
+    fixture_keywords = [
+        "fixture",
+        "fixtures",
+        "gameweek",
+        "match",
+        "matches",
+        "schedule",
+        "playing against",
+        "play against",
+        "next game",
+        "upcoming game",
+        "next gw",
+        "gw",
+    ]
+    if gameweeks or seasons or has_any(fixture_keywords):
+        return "FIXTURE-RELATED"
 
-Team rules:
-- Map fuzzy user mentions to the CLOSEST valid team name from 'teams'.
-  Example: 'Man United' -> 'Man Utd' (if that is in the teams list).
-- Do NOT invent new teams. If no team is clearly implied, leave 'Team' empty.
+    if teams and has_any(["win", "winning", "beat", "victory", "lose", "loss", "draw"]):
+        return "TEAM WINNING"
 
-Player rules:
-- You may keep or add players based on the query text, but do NOT invent random names.
+    if teams and not players:
+        return "TEAM-RELATED"
 
-Statistic rules:
-- Map natural language stats to the canonical names above (e.g. 'goals' -> 'goals_scored', 'points' -> 'total_points').
-
-Your output MUST be a SINGLE JSON object with exactly these keys:
-  - "Player":   list of strings
-  - "Team":     list of strings
-  - "Position": list of strings (subset of {allowed_positions})
-  - "Statistic":list of strings (subset of {allowed_stats})
-  - "Season":   list of strings (each 'YYYY-YY')
-  - "Gameweek": list of integers
-
-Do NOT include any extra keys.
-Do NOT include explanations or comments.
-Only output valid JSON.
-"""
-
-    payload = {
-        "query": query,
-        "raw_entities": raw_entities,
-        "teams": teams,
-    }
-
-    prompt = instruction + "\n\nINPUT:\n" + json.dumps(payload)
-
-    try:
-        text = call_openrouter(model, prompt)
-        text = text.strip()
-
-        # Strip Markdown code fences if present
-        if text.startswith("```"):
-            text = re.sub(r"^```(json)?", "", text).strip()
-            if text.endswith("```"):
-                text = text[:-3].strip()
-
-        data = json.loads(text)
-    except Exception as e:
-        print(f"⚠ LLM entity refinement error ({e}). Falling back to raw entities.")
-        return raw_entities
-
-    # Normalize structure & merge with raw_entities (LLM overrides when non-empty)
-    final_entities: Dict[str, List[Any]] = {}
-    for key in ["Player", "Team", "Position", "Statistic", "Season", "Gameweek"]:
-        llm_val = data.get(key, [])
-        if not isinstance(llm_val, list):
-            llm_val = [llm_val]
-        # If LLM gave something non-empty, use it; otherwise keep raw
-        if llm_val:
-            final_entities[key] = llm_val
-        else:
-            final_entities[key] = raw_entities.get(key, [])
-
-        final_entities[key] = unique(final_entities[key])
-
-    if DEBUG:
-        print(f"🔍 Raw entities:   {raw_entities}")
-        print(f"🤖 LLM-refined:   {final_entities}")
-
-    return final_entities
-
+    return "PLAYER-RELATED"
 
 # ============================================================
 # 7. INTENT CLASSIFICATION (LLM → normalized label)
@@ -746,129 +828,6 @@ def call_openrouter(client: Dict[str, str], prompt: str) -> str:
     except Exception as e:
         raise RuntimeError(f"Unexpected OpenRouter response format: {data}") from e
 
-
-def normalize_intent(raw_text: str) -> str:
-    """
-    Normalize the raw text from LLM into one of INTENT_LABELS.
-    """
-    if not raw_text:
-        return "player performance"
-
-    text = raw_text.strip().lower()
-    text = text.splitlines()[0]
-    text = re.sub(r"^intent\s*:\s*", "", text)
-    text = text.replace("the intent is", "").strip(": ").strip()
-
-    # Exact or substring match
-    for intent in INTENT_LABELS:
-        if intent in text:
-            return intent
-
-    # Heuristics
-    if "recommend" in text or "suggest" in text or "pick" in text:
-        return "recommendation"
-    if "fixture" in text or "gw" in text or "gameweek" in text:
-        return "fixture query"
-    if "team" in text or "defence" in text or "defense" in text:
-        return "team analysis"
-    if "stat" in text or "stats" in text:
-        return "statistics"
-    if "trivia" in text or "quiz" in text:
-        return "trivia"
-
-    return "player performance"
-
-
-def rule_based_intent(query: str, entities: Dict[str, List[Any]]) -> str:
-    """
-    Rule-based fallback intent classifier using query keywords and extracted entities.
-    Used when LLM is unavailable or fails.
-    """
-    query_lower = query.lower()
-
-    has_player = bool(entities.get("Player"))
-    has_team = bool(entities.get("Team"))
-    has_position = bool(entities.get("Position"))
-    has_stat = bool(entities.get("Statistic"))
-    has_season = bool(entities.get("Season"))
-    has_gw = bool(entities.get("Gameweek"))
-
-    # Fixture-related keywords
-    fixture_keywords = [
-        "fixture", "fixtures", "match", "matches", "game", "games",
-        "playing", "plays", "vs", "versus", "against", "opponent",
-        "upcoming", "next match", "schedule"
-    ]
-
-    # Team analysis keywords
-    team_keywords = [
-        "happened", "what happened", "how did", "performance",
-        "results", "result", "scored", "conceded", "won", "lost", "drew",
-        "show me", "list"
-    ]
-
-    # Recommendation keywords
-    recommend_keywords = [
-        "recommend", "suggest", "pick", "should i", "consider",
-        "buy", "transfer", "best", "top", "good", "form",
-        "who should", "which", "differential"
-    ]
-
-    # Statistics keywords
-    stat_keywords = [
-        "most", "highest", "top", "leading", "best", "worst",
-        "total", "average", "compare", "comparison", "leader", "leaders"
-    ]
-
-    # Check for fixture queries
-    if any(kw in query_lower for kw in fixture_keywords):
-        if has_team:
-            return "fixture query"
-
-    # Check for team analysis - team mentioned with analysis-type questions
-    if has_team and not has_player:
-        # Team + gameweek usually means "what happened in that GW"
-        if has_gw and any(kw in query_lower for kw in team_keywords):
-            return "team analysis"
-        # Team + season with "show", "list", "matches" = fixture/team analysis
-        if has_season and any(kw in query_lower for kw in ["show", "list", "matches", "fixtures", "games"]):
-            return "fixture query"
-        # Generic team questions
-        if any(kw in query_lower for kw in team_keywords):
-            return "team analysis"
-
-    # Check for recommendations
-    if any(kw in query_lower for kw in recommend_keywords):
-        # "which defenders should I pick" = recommendation
-        if has_position and not has_player:
-            return "recommendation"
-        # "best players" type queries
-        if "best" in query_lower or "top" in query_lower:
-            if has_position:
-                return "recommendation"
-
-    # Check for statistics/comparison queries
-    if has_player and len(entities.get("Player", [])) >= 2:
-        # Comparing multiple players
-        return "player performance"
-
-    if any(kw in query_lower for kw in stat_keywords):
-        if has_stat or has_position:
-            return "statistics"
-
-    # Player-specific queries
-    if has_player:
-        return "player performance"
-
-    # Default based on what entities we have
-    if has_team:
-        return "team analysis"
-    if has_position:
-        return "statistics"
-
-    return "player performance"
-
-
 def get_intent_and_entities_llm(
     query: str,
     raw_entities: Dict[str, List[Any]],
@@ -876,66 +835,101 @@ def get_intent_and_entities_llm(
     current_season: str,
     current_gw: int,
     config: Dict[str, str],
-) -> Tuple[str, Dict[str, List[Any]]]:
-    """Single LLM call to infer intent and refine entities.
+) -> Tuple[str, Dict[str, List[Any]], Optional[str], Optional[Dict[str, Any]]]:
+    """Single LLM call to infer intent, refine entities, and extract ranking/threshold.
 
-    Returns (intent, entities). On any error or missing config, falls back to
-    rule-based intent and raw_entities.
+    Returns (intent, entities, ranking, threshold). On any error or missing config, 
+    falls back to rule-based intent and raw_entities with rule-based ranking/threshold.
     """
-    # Optional fast path for local testing without LLM
-    if config.get("DISABLE_LLM", "false").lower() == "true":
-        intent = rule_based_intent(query, raw_entities)
-        return intent, raw_entities
-
-    client = init_llm_client(config)
-    if client is None:
-        # Pure rule-based fallback
-        intent = rule_based_intent(query, raw_entities)
-        return intent, raw_entities
+    # Extract ranking and threshold using rule-based methods first
+    ranking = extract_ranking(query)
+    threshold = extract_threshold(query)
 
     allowed_positions = ["GK", "DEF", "MID", "FWD"]
     allowed_stats = sorted(set(STAT_CANON.values()))
+    fallback_intent = rule_based_intent(query, raw_entities)
+
+    client = init_llm_client(config)
+    if not client:
+        if DEBUG:
+            print("LLM client unavailable; returning rule-based intent and entities.")
+        return fallback_intent, raw_entities, ranking, threshold
 
     system_instruction = f"""
 You are an FPL (Fantasy Premier League) assistant.
 
-You must do TWO tasks in ONE response:
+You must do FOUR tasks in ONE response:
 
 1) INTENT CLASSIFICATION
-   Choose exactly ONE intent label describing the user's query:
-     - player performance: questions about specific player stats, scores, or comparisons
-     - team analysis: questions about a team's overall performance, results, or what happened in a match
-     - fixture query: questions about upcoming matches, schedules, or fixture lists
-     - recommendation: questions asking for suggestions on which players to pick or transfer
-     - statistics: general league-wide statistics or leaderboards
-     - trivia: fun facts or historical trivia questions
+   Choose exactly ONE intent from this list:
+   (PLAYER-RELATED, TEAM-RELATED, FIXTURE-RELATED, TEAM WINNING, RECOMMENDATION, COMPARISON)
 
 2) ENTITY REFINEMENT
    Based on the query AND the provided raw_entities and teams list:
      - Interpret relative season phrases (this season, last season, two seasons ago)
        using CURRENT_SEASON = '{current_season}'.
      - Interpret relative gameweek phrases using CURRENT_GW = {current_gw}.
-     - Map fuzzy team names to the closest valid team name from the teams list.
+     - Map team names to the closest valid team name from the teams list.
      - Use ONLY these position codes: {allowed_positions}.
      - Use ONLY these statistic names: {allowed_stats}.
------------------------
-### PLAYER RESOLUTION RULES
------------------------
 
+3) RANKING PARAMETER
+   Determine if the query asks for best or worst ranking:
+     - best if query uses: best, top, most, highest, leading, greatest or if the query implies so
+     - worst if query uses: worst, least, bottom, lowest, fewest or if the query implies so
+     - null otherwise
+
+4) THRESHOLD PARAMETER
+   If the query specifies a numeric threshold condition:
+     - Extract the stat, operator, and value
+     - Operators: GT (greater than), GE (>=), LT (less than), LE (<=), EQ (=)
+     - Example: players with more than 3 goals -> stat=goals_scored, operator=GT, value=3
+     - Example: players with 50 points -> stat=total_points, operator=EQ, value=50
+     - Return null if no threshold detected
+     
+Your output MUST be a single JSON object with exactly these keys:
+  intent: string (one of the intent labels above)
+  entities: object with Player, Team, Position, Statistic, Season, Gameweek arrays
+  ranking: best or worst or null
+  threshold: object with stat, operator, value or null
+
+Season rules:
+- Seasons use the format 'YYYY-YY' (e.g., '2022-23', '2020-21').
+- Seasons could only be (2021-22) or (2022-23) only nothing else.
+- CURRENT_SEASON = '{current_season}'.
+- Compute relative references like but not limited to:
+    - 'this season', 'current season'  -> CURRENT_SEASON
+    - 'last season', 'previous season' -> the season immediately before CURRENT_SEASON
+    - 'two seasons ago'                -> two seasons before CURRENT_SEASON
+  Example: If CURRENT_SEASON = '2022-23':
+    - this season        -> '2022-23'
+    - last season        -> '2021-22'
+    - two seasons ago    -> (not applicable, leave empty)
+    - all seasons        -> ['2021-22', '2022-23']
+
+Gameweek rules:
+- Gameweeks are positive integers.
+- CURRENT_GW = {current_gw}.
+- 'this gameweek', 'this gw', 'current gw'      -> CURRENT_GW
+- 'last gw', 'previous gw', 'last gameweek'     -> CURRENT_GW - 1
+- 'next gw', 'upcoming gw', 'next gameweek'     -> CURRENT_GW + 1
+- 'up till X gameweek'                          -> all GWs from 1 to X
+- 'so far' or 'up till this gameweek'           -> all GWs from 1 to CURRENT_GW
+- but not limited to the above examples.
+
+PLAYER RESOLUTION RULES:
 1. If the user mentions a player *not detected by spaCy*, you must add that player.
-
 2. Users may use nicknames, abbreviations, initials, or short forms (e.g., "KDB", "CR7", "Mo", "Saka", "Gabby", "Licha").
    - You must resolve these to the **correct full player name** from the KG.
    - Then you must add **only the last name** to the final Player list.
-     - Example: "KDB" → "Kevin De Bruyne" → add **"De Bruyne"**  
-     - Example: "Mo" → "Mohamed Salah" → add **"Salah"**
-
+     - Example: "KDB" -> "Kevin De Bruyne" -> add **"De Bruyne"**  
+     - Example: "Mo" -> "Mohamed Salah" -> add **"Salah"**
 3. If the user already mentions a last name (e.g., “Salah”), do NOT change it.
    - Keep the extracted player exactly as it appears.
-
 4. Never include the short form, nickname, or initials in the final extraction.
    - Only the canonical last name derived from the KG.
-     
+5. Remove duplicates from the final Player list.
+
 Your output MUST be a single JSON object with exactly these keys:
   "intent": string (one of the intent labels above)
   "entities": {{
@@ -945,7 +939,16 @@ Your output MUST be a single JSON object with exactly these keys:
       "Statistic":list of strings (subset of {allowed_stats}),
       "Season":   list of strings (each 'YYYY-YY'),
       "Gameweek": list of integers
-  }}
+  }},
+  "ranking": {{
+    "stat": string (subset of {allowed_stats}),
+    "value": "best" | "worst"
+  }} | null,
+  "threshold": {{
+        "stat": string (subset of {allowed_stats}),
+        "operator": "GT/LT/GE/LE/EQ",
+        "value": number
+  }} | null
 
 Do NOT include extra keys.
 Do NOT include explanations or comments.
@@ -970,40 +973,43 @@ Only output valid JSON.
         data = json.loads(raw)
     except Exception as e:
         print(f"⚠ Combined LLM intent+entity error: {e}. Falling back to rule-based.")
-        intent = rule_based_intent(query, raw_entities)
-        return intent, raw_entities
+        return fallback_intent, raw_entities, ranking, threshold
 
     # Extract intent
-    llm_intent = data.get("intent", "")
-    intent = normalize_intent(str(llm_intent))
+    intent = data.get("intent") or fallback_intent
+    if intent not in INTENT_LABELS:
+        intent = fallback_intent
 
     # Extract entities, fall back to raw_entities per key if missing
     llm_entities = data.get("entities", {}) or {}
     final_entities: Dict[str, List[Any]] = {}
     for key in ["Player", "Team", "Position", "Statistic", "Season", "Gameweek"]:
         val = llm_entities.get(key)
-        if val is None:
+        if val is None or (isinstance(val, list) and not val):
             val = raw_entities.get(key, [])
+        if val is None:
+            val = []
         if not isinstance(val, list):
             val = [val]
-        final_entities[key] = unique(val)
+        cleaned = [item for item in val if item not in (None, "")]
+        final_entities[key] = unique(cleaned)
+
+    # Extract ranking from LLM response (override rule-based if present)
+    llm_ranking = data.get("ranking")
+    if llm_ranking in ["best", "worst"]:
+        ranking = llm_ranking
+    
+    # Extract threshold from LLM response (override rule-based if present)
+    llm_threshold = data.get("threshold")
+    if llm_threshold and isinstance(llm_threshold, dict):
+        if all(k in llm_threshold for k in ["stat", "operator", "value"]):
+            threshold = llm_threshold
 
     if DEBUG:
         print(f"🔍 Raw entities:   {raw_entities}")
-        print(f"🤖 LLM-combined: intent={intent}, entities={final_entities}")
+        print(f"🤖 LLM-combined: intent={intent}, entities={final_entities}, ranking={ranking}, threshold={threshold}")
 
-    return intent, final_entities
-
-
-def get_intent(query: str, config: Dict[str, str], entities: Optional[Dict[str, List[Any]]] = None) -> str:
-    """Backward-compatible wrapper: uses rule-based intent if entities given.
-
-    The primary combined call is implemented in get_intent_and_entities_llm.
-    This helper preserves the old signature for any other callers.
-    """
-    if entities is not None:
-        return rule_based_intent(query, entities)
-    return rule_based_intent(query, {"Player": [], "Team": [], "Position": [], "Statistic": [], "Season": [], "Gameweek": []})
+    return intent, final_entities, ranking, threshold
 
 
 # ============================================================
@@ -1018,6 +1024,7 @@ def process_user_query(query: str) -> Dict[str, Any]:
       - extracts entities (spaCy + rules)
       - refines entities with LLM (to fill gaps / normalize)
       - classifies intent (with entity-aware fallback)
+      - extracts ranking and threshold parameters
 
     Returns:
       {
@@ -1030,7 +1037,9 @@ def process_user_query(query: str) -> Dict[str, Any]:
            "Statistic": [...],  # goals_scored, total_points, ...
            "Season": [...],     # "2023-24"
            "Gameweek": [...],   # integers
-        }
+        },
+        "ranking": "best" | "worst" | None,
+        "threshold": {"stat": str, "operator": str, "value": number} | None
       }
     """
     global NLP, CONFIG
@@ -1044,14 +1053,14 @@ def process_user_query(query: str) -> Dict[str, Any]:
     # 1) spaCy + rule-based extraction
     raw_entities = extract_entities(query, nlp)
 
-    # 2) Combined LLM call for intent + refined entities (with robust fallback)
+    # 2) Combined LLM call for intent + refined entities + ranking + threshold (with robust fallback)
     current_season = CONFIG.get("CURRENT_SEASON", CURRENT_SEASON)
     try:
         current_gw = int(CONFIG.get("CURRENT_GW", str(CURRENT_GW)))
     except ValueError:
         current_gw = CURRENT_GW
 
-    intent, entities = get_intent_and_entities_llm(
+    intent, entities, ranking, threshold = get_intent_and_entities_llm(
         query=query,
         raw_entities=raw_entities,
         teams=teams,
@@ -1064,6 +1073,8 @@ def process_user_query(query: str) -> Dict[str, Any]:
         "query": query,
         "intent": intent,
         "entities": entities,
+        "ranking": ranking,
+        "threshold": threshold,
     }
 
 
@@ -1083,17 +1094,33 @@ if __name__ == "__main__":
         # "Show me Spurs fixtures next gw.",
         # "Which defenders should I consider picking up for the upcoming gameweek?",
         # "Top midfielders by total points this season.",
-        "How many clean sheets did United keep two seasons ago?",
-        "Who scored more points last season, Salah or KDB?",
-        "Show me Brightin's fixtures in 2 gameweeks from now.",
-        "Which Tottenham defenders have been in good form this season?",
+        
+        # "Which players scored more than 5 goals up till this gameweek?",
+        # "which players have the least points so far?",
+        # "Show me Brightin's fixtures in 2 gameweeks from now.",
+        # "Which Tottenham defenders have been in good form this season?",
+        # "Give me players with same number of goals as Haaland.",
+        # "i want players with 0 cleansheets",
+        # "Show me the forwards with the most goals and assists across all seasons.",
+        # "Which defenders have the most clean sheets and total points?",
+        # "Top forwards by goals scored.",
+        # "Who are the best attacking players in terms of goals and threat combined?",
+        # "Which players scored more than 5 goals up till this gameweek?",
+        "which players have the least points so far?",
+        "How many goals did far score?",
+        # "Show me Brightin's fixtures in 2 gameweeks from now.",
+        # "Which Tottenham defenders have been in good form this season?",
+        # "Give me players with same number of goals as Haaland.",
+        # "i want players with 0 cleansheets",
     ]
 
     for q in test_cases:
         res = process_user_query(q)
-        print(f"Input:   {res['query']}")
-        print(f"Intent:  {res['intent']}")
-        print(f"Entities:{res['entities']}")
+        print(f"Input:    {res['query']}")
+        print(f"Intent:   {res['intent']}")
+        print(f"Entities: {res['entities']}")
+        print(f"Ranking:  {res['ranking']}")
+        print(f"Threshold:{res['threshold']}")
         print("-" * 60)
 
         # For local testing you can comment this out to speed things up
