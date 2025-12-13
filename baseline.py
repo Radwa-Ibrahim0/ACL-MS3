@@ -114,7 +114,8 @@ class BaselineQueryBuilder:
         cypher = f"""
         MATCH (s:Season {{season_name: $current_season}})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[r:PLAYED_IN]->(f)
-        WITH p, SUM(r.{stat_name}) AS total_stat
+        OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        WITH p, pos, SUM(r.{stat_name}) AS total_stat
         WHERE total_stat > 0
         """
         
@@ -139,7 +140,7 @@ class BaselineQueryBuilder:
         
         # Add ordering and limit (always DESC for "best")
         cypher += f"""
-        RETURN p.player_name AS player_name, total_stat
+        RETURN p.player_name AS player_name, pos.name AS position, total_stat
         ORDER BY total_stat DESC
         LIMIT {limit}
         """
@@ -154,7 +155,8 @@ class BaselineQueryBuilder:
         # Format output
         print(f"\n✅ Results ({len(results)} players):")
         for i, record in enumerate(results, 1):
-            print(f"{i}. {record['player_name']}: {record['total_stat']} {stat_name}")
+            position = record.get('position') or 'Unknown position'
+            print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
         return results
     
@@ -211,7 +213,8 @@ class BaselineQueryBuilder:
         cypher = f"""
         MATCH (s:Season {{season_name: $current_season}})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[r:PLAYED_IN]->(f)
-        WITH p, SUM(r.{stat_name}) AS total_stat
+        OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        WITH p, pos, SUM(r.{stat_name}) AS total_stat
         WHERE total_stat > 0
         """
         
@@ -236,7 +239,7 @@ class BaselineQueryBuilder:
         
         # Add ordering and limit (ASC for "worst")
         cypher += f"""
-        RETURN p.player_name AS player_name, total_stat
+        RETURN p.player_name AS player_name, pos.name AS position, total_stat
         ORDER BY total_stat ASC
         LIMIT {limit}
         """
@@ -251,7 +254,8 @@ class BaselineQueryBuilder:
         # Format output
         print(f"\n✅ Results ({len(results)} players):")
         for i, record in enumerate(results, 1):
-            print(f"{i}. {record['player_name']}: {record['total_stat']} {stat_name}")
+            position = record.get('position') or 'Unknown position'
+            print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
         return results
     
@@ -304,7 +308,7 @@ class BaselineQueryBuilder:
         MATCH (s:Season {{season_name: $current_season}})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {{name: $position}})
         MATCH (p)-[r:PLAYED_IN]->(f)
-        WITH p, SUM(r.{stat_name}) AS total_stat
+        WITH p, pos, SUM(r.{stat_name}) AS total_stat
         WHERE total_stat > 0
         """
         
@@ -328,7 +332,7 @@ class BaselineQueryBuilder:
                 cypher += "AND total_stat = $threshold_value\n"
         
         cypher += f"""
-        RETURN p.player_name AS player_name, total_stat
+        RETURN p.player_name AS player_name, pos.name AS position, total_stat
         ORDER BY total_stat DESC
         LIMIT {limit}
         """
@@ -341,7 +345,8 @@ class BaselineQueryBuilder:
         
         print(f"\n✅ Results ({len(results)} players):")
         for i, record in enumerate(results, 1):
-            print(f"{i}. {record['player_name']}: {record['total_stat']} {stat_name}")
+            position = record.get('position') or 'Unknown position'
+            print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
         return results
     
@@ -394,7 +399,7 @@ class BaselineQueryBuilder:
         MATCH (s:Season {{season_name: $current_season}})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {{name: $position}})
         MATCH (p)-[r:PLAYED_IN]->(f)
-        WITH p.player_name AS player_name, SUM(r.{stat_name}) AS total_stat
+        WITH p, pos, SUM(r.{stat_name}) AS total_stat
         WHERE total_stat > 0
         """
         
@@ -418,7 +423,7 @@ class BaselineQueryBuilder:
                 cypher += "AND total_stat = $threshold_value\n"
         
         cypher += f"""
-        RETURN player_name, total_stat
+        RETURN p.player_name AS player_name, pos.name AS position, total_stat
         ORDER BY total_stat ASC
         LIMIT {limit}
         """
@@ -431,7 +436,8 @@ class BaselineQueryBuilder:
         
         print(f"\n✅ Results ({len(results)} players):")
         for i, record in enumerate(results, 1):
-            print(f"{i}. {record['player_name']}: {record['total_stat']} {stat_name}")
+            position = record.get('position') or 'Unknown position'
+            print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
         return results
     
@@ -468,9 +474,11 @@ class BaselineQueryBuilder:
         cypher = """
         MATCH (p:Player)
         WHERE p.player_name CONTAINS $player_name
+        OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
         MATCH (p)-[r:PLAYED_IN]->(f:Fixture)
         RETURN 
             p.player_name AS player_name,
+            pos.name AS position,
             SUM(r.goals_scored) AS total_goals,
             SUM(r.assists) AS total_assists,
             SUM(r.total_points) AS total_points,
@@ -493,7 +501,8 @@ class BaselineQueryBuilder:
         
         if results:
             for r in results:
-                print(f"\n✅ Results for {r['player_name']}:")
+                position = r.get('position') or 'Unknown position'
+                print(f"\n✅ Results for {r['player_name']} ({position}):")
                 print(f"  Matches Played: {r['matches_played']}")
                 print(f"  Goals: {r['total_goals']}")
                 print(f"  Assists: {r['total_assists']}")
@@ -623,8 +632,10 @@ class BaselineQueryBuilder:
         MATCH (s:Season {{season_name: $current_season}})-[:HAS_GW]->(gw:Gameweek {{GW_number: $gameweek}})-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[r:PLAYED_IN]->(f)
         WHERE r.{stat_name} > 0
+        OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
         RETURN 
             p.player_name AS player_name,
+            pos.name AS position,
             r.{stat_name} AS stat_value
         ORDER BY stat_value DESC
         LIMIT {limit}
@@ -652,7 +663,8 @@ class BaselineQueryBuilder:
         
         print(f"\n✅ Results ({len(results)} players):")
         for i, record in enumerate(results, 1):
-            print(f"{i}. {record['player_name']}: {record['stat_value']} {stat_name}")
+            position = record.get('position') or 'Unknown position'
+            print(f"{i}. {record['player_name']} ({position}): {record['stat_value']} {stat_name}")
         
         return results
     
@@ -704,21 +716,23 @@ class BaselineQueryBuilder:
         current_season = config.get("CURRENT_SEASON", "2022-23")
         
         cypher = """
-        MATCH (s:Season {season_name: $current_season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
-        MATCH (p:Player)
-        WHERE p.player_name CONTAINS $player1 OR p.player_name CONTAINS $player2
-        MATCH (p)-[r:PLAYED_IN]->(f)
-        RETURN p.player_name AS player_name,
-             SUM(r.goals_scored) AS total_goals,
-             SUM(r.assists) AS total_assists,
-             SUM(r.total_points) AS total_points,
-             SUM(r.minutes) AS total_minutes,
-             SUM(r.clean_sheets) AS total_clean_sheets,
-             SUM(r.goals_conceded) AS total_goals_conceded,
-             SUM(r.saves) AS total_saves,
-             COUNT(f) AS matches_played
-        ORDER BY player_name
-        """
+           MATCH (s:Season {season_name: $current_season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+           MATCH (p:Player)
+           WHERE p.player_name CONTAINS $player1 OR p.player_name CONTAINS $player2
+           MATCH (p)-[r:PLAYED_IN]->(f)
+           OPTIONAL MATCH (p)-[:PLAYS_AS]->(pos:Position)
+           RETURN p.player_name AS player_name,
+               pos.name AS position,
+               SUM(r.goals_scored) AS total_goals,
+               SUM(r.assists) AS total_assists,
+               SUM(r.total_points) AS total_points,
+               SUM(r.minutes) AS total_minutes,
+               SUM(r.clean_sheets) AS total_clean_sheets,
+               SUM(r.goals_conceded) AS total_goals_conceded,
+               SUM(r.saves) AS total_saves,
+               COUNT(f) AS matches_played
+           ORDER BY player_name
+           """
         
         params = {"player1": player1, "player2": player2, "current_season": current_season}
         
@@ -731,7 +745,8 @@ class BaselineQueryBuilder:
         if results:
             print(f"\n✅ Comparison Results:")
             for r in results:
-                print(f"\n{r['player_name']}:")
+                position = r.get('position') or 'Unknown position'
+                print(f"\n{r['player_name']} ({position}):")
                 print(f"  Matches: {r['matches_played']}")
                 print(f"  Goals: {r['total_goals']}")
                 print(f"  Assists: {r['total_assists']}")
@@ -875,6 +890,596 @@ class BaselineQueryBuilder:
         
         return results
 
+    def query_dynamic_fallback(
+        self, 
+        entities: Dict[str, List], 
+        ranking: Optional[str] = None,
+        threshold: Optional[Dict] = None,
+        limit: int = 10
+    ) -> List[Dict]:
+        """
+        Query 11 (Fallback): Dynamic query that handles any combination of entities
+        
+        This is the fallback query when no base query (1-10) matches.
+        It dynamically builds a Cypher query based on whatever entities are present.
+        
+        Supported entities:
+        - Season: Filter by specific season(s)
+        - Gameweek: Filter by specific gameweek(s)
+        - Player: Filter by specific player(s)
+        - Team: Filter by specific team(s) - infers player's team from fixtures
+        - Position: Filter by specific position(s)
+        - Statistic: Aggregate and return statistic(s)
+        
+        Returns: List of players matching all criteria with their statistics
+        """
+        
+        # Extract all entities
+        seasons = entities.get("Season", [])
+        gameweeks = entities.get("Gameweek", [])
+        players = entities.get("Player", [])
+        teams = entities.get("Team", [])
+        positions = entities.get("Position", [])
+        statistics = entities.get("Statistic", [])
+        
+        # Get current season from config (default if no season specified)
+        config = load_config()
+        current_season = config.get("CURRENT_SEASON", "2022-23")
+        
+        # Decide which season to use
+        if seasons:
+            season_to_use = seasons[0]  # Use the first specified season
+        else:
+            season_to_use = current_season
+        
+        # Build parameters dictionary
+        params = {"season": season_to_use}
+        
+        # If team filtering is needed, use a different query structure
+        # that infers the player's team from their fixtures
+        if teams:
+            return self._query_dynamic_with_team_filter(
+                entities, season_to_use, teams, gameweeks, players, positions, 
+                statistics, ranking, threshold, limit
+            )
+        
+        # Start building the Cypher query (no team filter)
+        cypher = """
+        MATCH (s:Season {season_name: $season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        MATCH (p:Player)-[r:PLAYED_IN]->(f)
+        MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        """
+        
+        # Build WHERE clauses dynamically
+        where_clauses = []
+        
+        # Filter by gameweeks
+        if gameweeks:
+            gw_numbers = [int(gw) for gw in gameweeks]
+            params["gameweeks"] = gw_numbers
+            where_clauses.append("gw.GW_number IN $gameweeks")
+        
+        # Filter by specific players (case-insensitive substring match, e.g. "salah" matches
+        # any player whose name contains "Salah")
+        if players:
+            params["players"] = [name.lower() for name in players]
+            where_clauses.append("ANY(name IN $players WHERE toLower(p.player_name) CONTAINS name)")
+        
+        # Filter by positions - map common names to DB format
+        if positions:
+            position_map = {
+                "Forward": "FWD", "FWD": "FWD", "Striker": "FWD",
+                "Midfielder": "MID", "MID": "MID", "Midfield": "MID",
+                "Defender": "DEF", "DEF": "DEF", "Defense": "DEF",
+                "Goalkeeper": "GK", "GK": "GK", "Goalie": "GK"
+            }
+            mapped_positions = [position_map.get(p, p) for p in positions]
+            params["positions"] = mapped_positions
+            where_clauses.append("pos.name IN $positions")
+        
+        # Add WHERE clause if any filters exist
+        if where_clauses:
+            cypher += "WHERE " + " AND ".join(where_clauses) + "\n"
+        
+        # Build aggregation based on statistics or default stats
+        if statistics:
+            # Build the WITH clause with aggregations
+            stats_with = ", ".join([f"SUM(r.{stat}) AS total_{stat}" for stat in statistics])
+            # Build the RETURN clause using the aliases from WITH
+            stats_return = ", ".join([f"total_{stat}" for stat in statistics])
+            
+            cypher += f"""
+        WITH p, pos, {stats_with}
+        """
+            
+            # Apply threshold if provided
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                # Map operators
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat in statistics:
+                    cypher += f"WHERE total_{thresh_stat} {op} $threshold_value\n"
+            
+            # Determine ordering - order by ALL statistics in the order they were specified
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            order_by_clauses = ", ".join([f"total_{stat} {order_dir}" for stat in statistics])
+            
+            # LIMIT 10 if ranking specified, else LIMIT 50
+            limit_val = 10 if ranking else 50
+            
+            cypher += f"""
+        RETURN p.player_name AS player_name, pos.name AS position, {stats_return}
+        ORDER BY {order_by_clauses}
+        LIMIT {limit_val}
+        """
+        else:
+            # Default: return common stats
+            cypher += """
+        WITH p, pos, 
+             SUM(r.total_points) AS total_points,
+             SUM(r.goals_scored) AS goals_scored,
+             SUM(r.assists) AS assists,
+             SUM(r.minutes) AS minutes,
+             COUNT(r) AS matches_played
+        """
+            
+            # Apply threshold if provided
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat == "total_points":
+                    cypher += f"WHERE total_points {op} $threshold_value\n"
+                elif thresh_stat == "goals_scored":
+                    cypher += f"WHERE goals_scored {op} $threshold_value\n"
+                elif thresh_stat == "assists":
+                    cypher += f"WHERE assists {op} $threshold_value\n"
+            
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            
+            # LIMIT 10 if ranking specified, else LIMIT 50
+            limit_val = 10 if ranking else 50
+            
+            cypher += f"""
+        RETURN p.player_name AS player_name, pos.name AS position, 
+               total_points, goals_scored, assists, minutes, matches_played
+        ORDER BY total_points {order_dir}
+        LIMIT {limit_val}
+        """
+        
+        # Build description of what we're querying
+        desc_parts = []
+        if players:
+            desc_parts.append(f"players: {', '.join(players)}")
+        if teams:
+            desc_parts.append(f"teams: {', '.join(teams)}")
+        if positions:
+            desc_parts.append(f"positions: {', '.join(positions)}")
+        if gameweeks:
+            desc_parts.append(f"gameweeks: {', '.join(map(str, gameweeks))}")
+        if statistics:
+            desc_parts.append(f"statistics: {', '.join(statistics)}")
+        if threshold:
+            desc_parts.append(f"threshold: {threshold}")
+        if ranking:
+            desc_parts.append(f"ranking: {ranking}")
+        
+        desc = " | ".join(desc_parts) if desc_parts else "all players"
+        
+        print(f"\n📊 Executing Query 11 (Fallback): Dynamic query")
+        print(f"   Filters: {desc}")
+        print(f"   Season: {season_to_use}")
+        print(f"Cypher Query:\n{cypher}")
+        print(f"Parameters: {params}")
+        
+        results = self.conn.execute_query(cypher, params)
+        
+        # Format output - filter out results with no position
+        filtered_results = [r for r in results if r.get('position')]
+        
+        print(f"\n✅ Results ({len(filtered_results)} players):")
+        # Print only first 10 results in terminal
+        for i, record in enumerate(filtered_results[:10], 1):
+            position = record.get('position')
+            player_name = record.get('player_name')
+            
+            # Build stats string
+            stats_str = []
+            for key, val in record.items():
+                if key not in ['player_name', 'position'] and val is not None:
+                    stats_str.append(f"{key}: {val}")
+            
+            print(f"{i}. {player_name} ({position}): {', '.join(stats_str)}")
+        
+        if len(filtered_results) > 10:
+            print(f"   ... and {len(filtered_results) - 10} more results")
+        
+        return filtered_results
+
+    def _query_dynamic_with_team_filter(
+        self,
+        entities: Dict[str, List],
+        season_to_use: str,
+        teams: List[str],
+        gameweeks: List[str],
+        players_filter: List[str],
+        positions: List[str],
+        statistics: List[str],
+        ranking: Optional[str],
+        threshold: Optional[Dict],
+        limit: int
+    ) -> List[Dict]:
+        """
+        Helper method for query_dynamic_fallback when team filtering is needed.
+        
+        Strategy: A player is considered to be ON a team if they played in most
+        of that team's fixtures (>= 15 out of 38, or whatever threshold makes sense).
+        This distinguishes team players from opponents who only face them 1-2 times.
+        
+        Note: When filtering by gameweek, we show ALL players in that fixture.
+        """
+        
+        params = {"season": season_to_use, "teams": teams}
+        
+        # For gameweek filtering, we need a different approach - show fixture details
+        if gameweeks:
+            return self._query_team_gameweek_players(
+                season_to_use, teams, gameweeks, players_filter, positions,
+                statistics, ranking, threshold, limit
+            )
+        
+        # For full season team queries, use match count to identify team players
+        cypher = """
+        // Find fixtures involving target team(s)
+        MATCH (s:Season {season_name: $season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+        MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+        WHERE home.name IN $teams OR away.name IN $teams
+        
+        // Find players who played in these fixtures
+        MATCH (p:Player)-[r:PLAYED_IN]->(f)
+        MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        
+        // Determine the target team for this fixture
+        WITH p, pos, r, gw,
+             CASE WHEN home.name IN $teams THEN home.name ELSE away.name END AS target_team
+        """
+        
+        # Build WHERE clauses
+        where_clauses = []
+        
+        # Filter by specific players (case-insensitive substring match)
+        if players_filter:
+            params["players"] = [name.lower() for name in players_filter]
+            where_clauses.append("ANY(name IN $players WHERE toLower(p.player_name) CONTAINS name)")
+        
+        # Filter by positions - handle common position name variations
+        if positions:
+            # Map common names to DB format
+            position_map = {
+                "Forward": "FWD", "FWD": "FWD", "Striker": "FWD",
+                "Midfielder": "MID", "MID": "MID", "Midfield": "MID",
+                "Defender": "DEF", "DEF": "DEF", "Defense": "DEF",
+                "Goalkeeper": "GK", "GK": "GK", "Goalie": "GK"
+            }
+            mapped_positions = [position_map.get(p, p) for p in positions]
+            params["positions"] = mapped_positions
+            where_clauses.append("pos.name IN $positions")
+        
+        if where_clauses:
+            cypher += "WHERE " + " AND ".join(where_clauses) + "\n"
+        
+        # For full season, require at least 10 matches to filter to actual team players
+        min_matches = 10
+        
+        # Build aggregation - group by player and collect their team
+        if statistics:
+            stats_with = ", ".join([f"SUM(r.{stat}) AS total_{stat}" for stat in statistics])
+            stats_return = ", ".join([f"total_{stat}" for stat in statistics])
+            
+            cypher += f"""
+        WITH p, pos, target_team, {stats_with}, COUNT(r) AS matches_in_team_fixtures
+        // Only include players who played in many of this team's fixtures (team players)
+        WHERE matches_in_team_fixtures >= {min_matches}
+        """
+            
+            # Apply threshold if provided
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat in statistics:
+                    cypher += f"AND total_{thresh_stat} {op} $threshold_value\n"
+            
+            # Order by ALL statistics in the order they were specified
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            order_by_clauses = ", ".join([f"total_{stat} {order_dir}" for stat in statistics])
+            
+            # LIMIT 10 if ranking specified, else LIMIT 50
+            limit_val = 10 if ranking else 50
+            
+            cypher += f"""
+        RETURN p.player_name AS player_name, pos.name AS position, target_team AS team, 
+               {stats_return}, matches_in_team_fixtures AS matches
+        ORDER BY {order_by_clauses}
+        LIMIT {limit_val}
+        """
+        else:
+            cypher += f"""
+        WITH p, pos, target_team,
+             SUM(r.total_points) AS total_points,
+             SUM(r.goals_scored) AS goals_scored,
+             SUM(r.assists) AS assists,
+             SUM(r.minutes) AS minutes,
+             COUNT(r) AS matches_in_team_fixtures
+        // Only include players who played in many of this team's fixtures (team players)
+        WHERE matches_in_team_fixtures >= {min_matches}
+        """
+            
+            # Apply threshold if provided
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat == "total_points":
+                    cypher += f"AND total_points {op} $threshold_value\n"
+                elif thresh_stat == "goals_scored":
+                    cypher += f"AND goals_scored {op} $threshold_value\n"
+                elif thresh_stat == "assists":
+                    cypher += f"AND assists {op} $threshold_value\n"
+            
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            
+            # LIMIT 10 if ranking specified, else LIMIT 50
+            limit_val = 10 if ranking else 50
+            
+            cypher += f"""
+        RETURN p.player_name AS player_name, pos.name AS position, target_team AS team,
+               total_points, goals_scored, assists, minutes, matches_in_team_fixtures AS matches
+        ORDER BY total_points {order_dir}
+        LIMIT {limit_val}
+        """
+        
+        # Build description
+        desc_parts = [f"teams: {', '.join(teams)}"]
+        if players_filter:
+            desc_parts.append(f"players: {', '.join(players_filter)}")
+        if positions:
+            desc_parts.append(f"positions: {', '.join(positions)}")
+        if statistics:
+            desc_parts.append(f"statistics: {', '.join(statistics)}")
+        if threshold:
+            desc_parts.append(f"threshold: {threshold}")
+        if ranking:
+            desc_parts.append(f"ranking: {ranking}")
+        
+        print(f"\n📊 Executing Query 11 (Fallback): Dynamic query with team filter")
+        print(f"   Filters: {' | '.join(desc_parts)}")
+        print(f"   Season: {season_to_use}")
+        print(f"   Note: Shows players who played frequently in {', '.join(teams)} fixtures")
+        print(f"Cypher Query:\n{cypher}")
+        print(f"Parameters: {params}")
+        
+        results = self.conn.execute_query(cypher, params)
+        
+        # Format output - filter out results with no position
+        filtered_results = [r for r in results if r.get('position')]
+        
+        print(f"\n✅ Results ({len(filtered_results)} players):")
+        # Print only first 10 results in terminal
+        for i, record in enumerate(filtered_results[:10], 1):
+            position = record.get('position')
+            player_name = record.get('player_name')
+            team = record.get('team') or 'Unknown team'
+            
+            stats_str = []
+            for key, val in record.items():
+                if key not in ['player_name', 'position', 'team'] and val is not None:
+                    stats_str.append(f"{key}: {val}")
+            
+            print(f"{i}. {player_name} ({position}, {team}): {', '.join(stats_str)}")
+        
+        if len(filtered_results) > 10:
+            print(f"   ... and {len(filtered_results) - 10} more results")
+        
+        return filtered_results
+
+    def _query_team_gameweek_players(
+        self,
+        season_to_use: str,
+        teams: List[str],
+        gameweeks: List[str],
+        players_filter: List[str],
+        positions: List[str],
+        statistics: List[str],
+        ranking: Optional[str],
+        threshold: Optional[Dict],
+        limit: int
+    ) -> List[Dict]:
+        """
+        Query players who played in a specific gameweek's fixture involving a team.
+        
+        Note: This returns ALL players who played in the fixture, including both
+        the target team and their opponent. This is useful for analyzing specific
+        matchups or gameweek performances.
+        """
+        
+        params = {
+            "season": season_to_use, 
+            "teams": teams,
+            "gameweeks": [int(gw) for gw in gameweeks]
+        }
+        
+        # Build query to get players from specific gameweek fixtures
+        cypher = """
+        // Find the specific fixture(s) involving the target team in the specified gameweek(s)
+        MATCH (s:Season {season_name: $season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        WHERE gw.GW_number IN $gameweeks
+        MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+        MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+        WHERE home.name IN $teams OR away.name IN $teams
+        
+        // Find all players who played in this fixture
+        MATCH (p:Player)-[r:PLAYED_IN]->(f)
+        MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        
+        // Include both home and away team info
+        WITH p, pos, r, gw, home, away,
+             CASE WHEN home.name IN $teams THEN home.name ELSE away.name END AS target_team,
+             home.name + ' vs ' + away.name AS fixture_name
+        """
+        
+        where_clauses = []
+        
+        if players_filter:
+            params["players"] = [name.lower() for name in players_filter]
+            where_clauses.append("ANY(name IN $players WHERE toLower(p.player_name) CONTAINS name)")
+        
+        if positions:
+            position_map = {
+                "Forward": "FWD", "FWD": "FWD", "Striker": "FWD",
+                "Midfielder": "MID", "MID": "MID", "Midfield": "MID",
+                "Defender": "DEF", "DEF": "DEF", "Defense": "DEF",
+                "Goalkeeper": "GK", "GK": "GK", "Goalie": "GK"
+            }
+            mapped_positions = [position_map.get(p, p) for p in positions]
+            params["positions"] = mapped_positions
+            where_clauses.append("pos.name IN $positions")
+        
+        if where_clauses:
+            cypher += "WHERE " + " AND ".join(where_clauses) + "\n"
+        
+        # Build return clause based on statistics
+        if statistics:
+            stats_select = ", ".join([f"r.{stat} AS {stat}" for stat in statistics])
+            
+            cypher += f"""
+        RETURN p.player_name AS player_name, pos.name AS position,
+               gw.GW_number AS gameweek, fixture_name, target_team AS team,
+               {stats_select}, r.minutes AS minutes
+        """
+            
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat in statistics:
+                    cypher = cypher.rstrip() + f"\nWHERE r.{thresh_stat} {op} $threshold_value\n"
+            
+            # Order by ALL statistics in the order they were specified
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            order_by_clauses = ", ".join([f"r.{stat} {order_dir}" for stat in statistics])
+            cypher += f"ORDER BY {order_by_clauses}\n"
+        else:
+            cypher += """
+        RETURN p.player_name AS player_name, pos.name AS position,
+               gw.GW_number AS gameweek, fixture_name, target_team AS team,
+               r.total_points AS total_points, r.goals_scored AS goals_scored,
+               r.assists AS assists, r.minutes AS minutes
+        """
+            
+            if threshold:
+                thresh_stat = threshold.get("stat")
+                thresh_op = threshold.get("operator", ">")
+                thresh_val = threshold.get("value", 0)
+                params["threshold_value"] = thresh_val
+                
+                op_map = {">": ">", "GT": ">", ">=": ">=", "GE": ">=", 
+                          "<": "<", "LT": "<", "<=": "<=", "LE": "<=", 
+                          "=": "=", "EQ": "="}
+                op = op_map.get(thresh_op, ">")
+                
+                if thresh_stat in ["total_points", "goals_scored", "assists", "minutes"]:
+                    cypher = cypher.rstrip() + f"\nWHERE r.{thresh_stat} {op} $threshold_value\n"
+            
+            order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
+            cypher += f"ORDER BY r.total_points {order_dir}\n"
+        
+        # LIMIT 10 if ranking specified, else LIMIT 50
+        limit_val = 10 if ranking else 50
+        cypher += f"LIMIT {limit_val}"
+        
+        # Build description
+        desc_parts = [f"teams: {', '.join(teams)}", f"gameweeks: {', '.join(map(str, gameweeks))}"]
+        if players_filter:
+            desc_parts.append(f"players: {', '.join(players_filter)}")
+        if positions:
+            desc_parts.append(f"positions: {', '.join(positions)}")
+        if statistics:
+            desc_parts.append(f"statistics: {', '.join(statistics)}")
+        if threshold:
+            desc_parts.append(f"threshold: {threshold}")
+        if ranking:
+            desc_parts.append(f"ranking: {ranking}")
+        
+        print(f"\n📊 Executing Query 11 (Fallback): Gameweek fixture players")
+        print(f"   Filters: {' | '.join(desc_parts)}")
+        print(f"   Season: {season_to_use}")
+        print(f"   Note: Shows ALL players in {', '.join(teams)} fixtures for GW {', '.join(map(str, gameweeks))}")
+        print(f"Cypher Query:\n{cypher}")
+        print(f"Parameters: {params}")
+        
+        results = self.conn.execute_query(cypher, params)
+        
+        # Filter out results with no position
+        filtered_results = [r for r in results if r.get('position')]
+        
+        print(f"\n✅ Results ({len(filtered_results)} players):")
+        # Print only first 10 results in terminal
+        for i, record in enumerate(filtered_results[:10], 1):
+            position = record.get('position')
+            player_name = record.get('player_name')
+            fixture = record.get('fixture_name') or ''
+            gw = record.get('gameweek', '')
+            
+            stats_str = []
+            for key, val in record.items():
+                if key not in ['player_name', 'position', 'team', 'fixture_name', 'gameweek'] and val is not None:
+                    stats_str.append(f"{key}: {val}")
+            
+            print(f"{i}. {player_name} ({position}) in GW{gw} [{fixture}]: {', '.join(stats_str)}")
+        
+        if len(filtered_results) > 10:
+            print(f"   ... and {len(filtered_results) - 10} more results")
+        
+        return filtered_results
+
 
 # ============================================================
 # 4. MAIN EXECUTION
@@ -923,52 +1528,135 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         # Get intent for disambiguation
         intent = preprocessing_output.get("intent", "")
         
-        # Query 16: Compare two players (2 players, 0 teams, 0 statistics)
-        if len(players) == 2 and len(teams) == 0 and len(statistics) == 0:
+        # Query 16: Compare two players (exactly 2 players, nothing else, no threshold)
+        if (
+            len(players) == 2
+            and len(teams) == 0
+            and len(statistics) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and threshold is None
+        ):
             return builder.query_compare_two_players(entities, ranking, threshold)
-        
-        # Query 23: Head-to-head fixtures (2 teams, intent is FIXTURE-RELATED)
-        if len(teams) == 2 and len(players) == 0 and intent == "FIXTURE-RELATED":
+
+        # Query 23: Head-to-head fixtures (exactly 2 teams, fixture intent, nothing else, no threshold)
+        if (
+            len(teams) == 2
+            and len(players) == 0
+            and len(statistics) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and intent == "FIXTURE-RELATED"
+            and threshold is None
+        ):
             return builder.query_head_to_head_fixtures(entities, ranking, threshold)
-        
-        # Query 17: Gameweek fixtures (1 gameweek, no teams/players/stats)
-        if len(gameweeks) == 1 and len(teams) == 0 and len(players) == 0 and len(statistics) == 0:
+
+        # Query 17: Gameweek fixtures (exactly 1 gameweek, nothing else, no threshold)
+        if (
+            len(gameweeks) == 1
+            and len(teams) == 0
+            and len(players) == 0
+            and len(statistics) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and threshold is None
+        ):
             return builder.query_gameweek_fixtures(entities, ranking, threshold)
-        
-        # Query 8: Single player performance (1 player, 0 statistics)
-        if len(players) == 1 and len(statistics) == 0:
+
+        # Query 8: Single player performance (exactly 1 player, nothing else, no threshold)
+        if (
+            len(players) == 1
+            and len(statistics) == 0
+            and len(teams) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and threshold is None
+        ):
             return builder.query_player_performance(entities, ranking, threshold)
-        
-        # Query 9: Team fixtures (1 team, 0 players, 0 statistics)
-        if len(teams) == 1 and len(players) == 0 and len(statistics) == 0:
+
+        # Query 9: Team fixtures (exactly 1 team, nothing else, no threshold)
+        if (
+            len(teams) == 1
+            and len(players) == 0
+            and len(statistics) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and threshold is None
+        ):
             return builder.query_team_fixtures(entities, ranking, threshold)
-        
-        # Query 10: Gameweek top performers (1 gameweek, 1 statistic, ranking=best)
-        if len(gameweeks) == 1 and len(statistics) == 1 and ranking == "best":
+
+        # Query 10: Gameweek top performers (1 gameweek, 1 statistic, nothing else, no threshold)
+        if (
+            len(gameweeks) == 1
+            and len(statistics) == 1
+            and len(players) == 0
+            and len(teams) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and ranking == "best"
+            and threshold is None
+        ):
             return builder.query_gameweek_top_performers(entities, ranking, threshold)
+
+        # Query 3: Top players by stat + position (1 stat, 1 position, nothing else, no threshold)
+        if (
+            len(statistics) == 1
+            and len(positions) == 1
+            and len(players) == 0
+            and len(teams) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and ranking == "best"
+            and threshold is None
+        ):
+            return builder.query_top_players_by_stat_and_position(entities, ranking, threshold)
+
+        # Query 4: Worst players by stat + position (1 stat, 1 position, nothing else, no threshold)
+        if (
+            len(statistics) == 1
+            and len(positions) == 1
+            and len(players) == 0
+            and len(teams) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and ranking == "worst"
+            and threshold is None
+        ):
+            return builder.query_worst_players_by_stat_and_position(entities, ranking, threshold)
+
+        # Query 1: Top players by statistic (1 stat only, no other entities, no threshold)
+        if (
+            len(statistics) == 1
+            and len(players) == 0
+            and len(teams) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and ranking == "best"
+            and threshold is None
+        ):
+            return builder.query_top_players_by_statistic(entities, ranking, threshold)
+
+        # Query 2: Worst players by statistic (1 stat only, no other entities, no threshold)
+        if (
+            len(statistics) == 1
+            and len(players) == 0
+            and len(teams) == 0
+            and len(positions) == 0
+            and len(seasons) == 0
+            and len(gameweeks) == 0
+            and ranking == "worst"
+            and threshold is None
+        ):
+            return builder.query_worst_players_by_statistic(entities, ranking, threshold)
         
-        # Query 3: Top players by stat + position (1 stat, 1 position, ranking=best)
-        if len(statistics) == 1 and len(positions) == 1 and ranking == "best":
-            if not players and not teams and not seasons and not gameweeks:
-                return builder.query_top_players_by_stat_and_position(entities, ranking, threshold)
-        
-        # Query 4: Worst players by stat + position (1 stat, 1 position, ranking=worst)
-        if len(statistics) == 1 and len(positions) == 1 and ranking == "worst":
-            if not players and not teams and not seasons and not gameweeks:
-                return builder.query_worst_players_by_stat_and_position(entities, ranking, threshold)
-        
-        # Query 1: Top players by statistic (1 stat, ranking=best, no other entities)
-        if len(statistics) == 1 and ranking == "best":
-            if not players and not teams and not positions and not seasons and not gameweeks:
-                return builder.query_top_players_by_statistic(entities, ranking, threshold)
-        
-        # Query 2: Worst players by statistic (1 stat, ranking=worst, no other entities)
-        if len(statistics) == 1 and ranking == "worst":
-            if not players and not teams and not positions and not seasons and not gameweeks:
-                return builder.query_worst_players_by_statistic(entities, ranking, threshold)
-        
-        print("⚠ No matching query found for the given entities")
-        return []
+        # Query 11 (Fallback): Dynamic query for any combination not matching base queries
+        print("⚠ No base query matched. Using dynamic fallback query (Query 11)...")
+        return builder.query_dynamic_fallback(entities, ranking, threshold)
             
     finally:
         conn.close()
@@ -982,31 +1670,197 @@ if __name__ == "__main__":
     import preprocessing
     
     print("=" * 70)
-    print("BASELINE QUERY TESTING - Queries 1, 2, 3, 4, 8, 9, 10, 16, 17, 23")
+    print("BASELINE QUERY TESTING - Including Fallback Query 11")
     print("=" * 70)
     
+    # Natural language test queries - processed through preprocessing.py
     test_cases = [
-        "Liverpool vs Newcastle fixtures",    # Query 23: Head-to-head
+        # ============================================================
+        # BASE QUERY TESTS (Queries 1-10, 16, 17, 23)
+        # ============================================================
+        
+        # # Query 1: Top players by single statistic (various stats)
+        # "Who are the best players by goals scored?",
+        # "Top players by assists this season",
+        # "Best players by total points",
+        # "Players with the most clean sheets",
+        # "Who has the most bonus points?",
+        
+        # # Query 2: Worst players by single statistic
+        # "Worst players by total points",
+        # "Who are the worst players by goals scored?",
+        # "Players with the least assists",
+        
+        # # Query 3: Top players by stat + position
+        # "Best forwards by goals scored",
+        # "Top midfielders by assists",
+        # "Best defenders by clean sheets",
+        # "Top goalkeepers by saves",
+        
+        # # Query 4: Worst players by stat + position
+        # "Worst midfielders by assists",
+        # "Worst forwards by total points",
+        # "Worst defenders by goals conceded",
+        
+        # # Query 8: Player performance (single player stats)
+        # "How did Salah perform this season?",
+        # "Show me Haaland's stats",
+        # "What are Saka's numbers this season?",
+        # "Tell me about Kevin De Bruyne's performance",
+        
+        # # Query 9: Team fixtures
+        # "Show me Arsenal fixtures",
+        # "What are Liverpool's matches?",
+        # "Chelsea fixtures this season",
+        # "Man City's schedule",
+        
+        # # Query 10: Gameweek top performers
+        # "Best players by total points in gameweek 15",
+        # "Top scorers in gameweek 20",
+        # "Who performed best in GW 10?",
+        
+        # # Query 16: Compare two players
+        # "Compare Salah and Haaland",
+        # "Saka vs Martinelli",
+        # "Compare De Bruyne and Bruno Fernandes",
+        
+        # # Query 17: Gameweek fixtures
+        # "What fixtures are in gameweek 10?",
+        # "Show me GW 5 matches",
+        # "Gameweek 20 fixtures",
+        
+        # # Query 23: Head to head
+        # "Arsenal vs Liverpool head to head",
+        # "Man City vs Chelsea history",
+        # "Spurs vs Man United fixtures",
+        
+        # ============================================================
+        # FALLBACK QUERY TESTS (Query 11 - Dynamic)
+        # These have extra entities that don't fit base queries
+        # ============================================================
+        
+        # Multiple statistics (fallback - more than 1 stat)
+        # "Best players by goals and assists combined",
+        # "Top players by goals scored and total points",
+        # "Players ranked by assists and bonus points",
+        
+        # # Team + Statistic (fallback - team filter on stats)
+        # # "Top Arsenal players by total points",
+        # # "Best Chelsea players by goals scored",
+        # # "Liverpool players with most assists",
+        # "Man United top scorers",
+        
+        # Position + Team (fallback - position + team combo)
+        # "Best forwards from Man City",
+        # "Top defenders from Arsenal",
+        # "Chelsea midfielders ranked by points",
+        # "Liverpool goalkeepers by saves",
+        
+        # Gameweek + Team (fallback - gw + team combo)
+        # "Liverpool players in gameweek 10",
+        # "How did Arsenal players do in GW 15?",
+        # "Man City performance in gameweek 20",
+        
+        # Statistic with threshold (fallback - uses threshold)
+        # "Players with less than 10 goals",
+        # # "Midfielders with more than or equal 70 total points",
+        # # "Forwards with 5 assists",
+        
+        # # Team + Threshold (fallback - team + threshold)
+        # # "Chelsea players with more than 5 goals",
+        # # "Arsenal players with at least 50 points",
+        # # "Liverpool players with more than 3 assists",
+        
+        # # Complex combinations (fallback - multiple filters)
+        # # "Best forwards from Arsenal by goals scored",
+        # # "Top Man City midfielders by assists",
+        # # "Chelsea defenders with clean sheets",
+        
+        # # ============================================================
+        # # EDGE CASES & VARIATIONS
+        # # ============================================================
+        
+        # # Different phrasing
+        # # "Who scored the most goals?",
+        # # "Which defenders have the most clean sheets?",
+        # # "Show me the top assist providers",
+        
+        # # Specific team queries with stats
+        # # "Newcastle players ranked by total points",
+        # # "Brighton forwards by goals",
+        # # "West Ham midfielders with assists",
+        
+        # # Different gameweeks
+        # # "Best players in gameweek 1 and gameweek 2",
+        # # "Top performers in GW 38", #limitation
+        # # "Gameweek 25 results",#limitation
+
+        # # #diiferent seasons
+        # # "Top players by goals scored in the 2022/2023 and 2021/2022 season",
+        # # "Compare Salah points this season and last season",
+        # # "Compare Salah and KDB points this gameweek and last gameweek",
+        
+        # # ============================================================
+        # # NEW TEST CASES - General queries (no specific positions)
+        # # ============================================================
+        
+        # # Top players by various stats (Query 1)
+        # "Top 10 players by goals scored",
+        # "Best players by assists",
+        # "Players with most total points this season",
+        # "Who has the highest bonus points?",
+        
+        # # Worst players (Query 2)
+        # "Worst players by minutes played",
+        # "Players with fewest goals",
+        
+        # # Team-based queries (no position filter)
+        # "Arsenal players by total points",
+        # "Liverpool top scorers",
+        # "Man City players with most assists",
+        # "Chelsea best performers",
+        
+        # # Threshold queries (no position)
+        # "Players with more than 20 goals",
+        # "Players with at least 10 assists",
+        # "Players with more than 200 total points",
+        
+        # # Team + Threshold (no position)
+        # "Arsenal players with more than 10 goals",
+        # "Liverpool players with at least 150 points",
+        
+        # # Gameweek queries (no position)
+        # "Best players in gameweek 10",
+        # "Top performers in gameweek 25",
+        
+        # # Multiple stats (no position)
+        # "Players ranked by goals and assists",
+        # "Best players by total points and bonus",
+        "how many points did salah score in gameweek 10",
     ]
     
-    for test_query in test_cases:
-        print(f"\n🔹 Test Query: '{test_query}'")
+    for i, query in enumerate(test_cases, 1):
+        print(f"\n{'='*70}")
+        print(f"🔹 Test {i}: '{query}'")
         print("-" * 70)
         
-        # Get preprocessing output
-        preprocessing_result = preprocessing.process_user_query(test_query)
+        try:
+            # Process through preprocessing layer (uses LLM API)
+            preprocessing_result = preprocessing.process_user_query(query)
+            
+            print("\n📥 Preprocessing Output:")
+            print(f"   Intent:    {preprocessing_result['intent']}")
+            print(f"   Entities:  {preprocessing_result['entities']}")
+            print(f"   Ranking:   {preprocessing_result['ranking']}")
+            print(f"   Threshold: {preprocessing_result['threshold']}")
+            
+            # Execute baseline query
+            print("\n" + "-" * 70)
+            results = execute_baseline_query(preprocessing_result)
+            
+            print(f"\n✅ Test {i} completed. Retrieved {len(results)} results.")
+            
+        except Exception as e:
+            print(f"\n❌ Test {i} failed with error: {e}")
         
-        print("\n📥 Preprocessing Output:")
-        print(f"Intent:    {preprocessing_result['intent']}")
-        print(f"Entities:  {preprocessing_result['entities']}")
-        print(f"Ranking:   {preprocessing_result['ranking']}")
-        print(f"Threshold: {preprocessing_result['threshold']}")
-        
-        # Execute baseline query
-        print("\n" + "=" * 70)
-        results = execute_baseline_query(preprocessing_result)
         print("=" * 70)
-        
-        print(f"\n✅ Query completed. Retrieved {len(results)} results.")
-        print("\n" + "=" * 70)
-

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from baseline_retrieval import BaselineRetriever
+from baseline import execute_baseline_query
 from embedding_bge_m3 import SemanticSearchBGEM3, load_config
 from preprocessing import process_user_query
 
@@ -144,14 +144,20 @@ def build_retrieval_context(
     entities = pre["entities"]
 
     # --- 2) Baseline KG query ---
-    baseline = BaselineRetriever()
-    try:
-        baseline_out = baseline.run_from_intent_entities(intent, entities, user_query)
-    finally:
-        baseline.close()
+    # The current baseline implementation exposes a single function
+    # `execute_baseline_query` which expects the full preprocessing
+    # output dictionary and returns a list of result rows.
+    baseline_results = execute_baseline_query(pre)
 
-    baseline_desc = baseline_out["description"]
-    baseline_results = baseline_out["results"]
+    # Build a lightweight textual description for the LLM context.
+    baseline_desc = (
+        f"Baseline KG results for intent='{intent}', "
+        f"entities={json.dumps(entities, ensure_ascii=False)}, "
+        f"ranking={pre.get('ranking')}, threshold={pre.get('threshold')}"
+    )
+
+    # The baseline API no longer exposes explicit fallback metadata,
+    # so we conservatively treat this as a non-fallback query here.
     baseline_is_fallback = _is_baseline_fallback(baseline_desc)
 
     # --- 3) Embedding search (BGE-M3) ---
