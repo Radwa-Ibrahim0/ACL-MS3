@@ -8,7 +8,10 @@ def load_config():
     config = {}
     with open("config.txt", "r") as f:
         for line in f:
-            key, value = line.strip().split("=", 1)
+            line = line.strip()
+            if not line or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
             config[key] = value
     return config
 

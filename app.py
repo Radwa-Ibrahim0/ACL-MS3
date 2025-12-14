@@ -14,6 +14,8 @@ import streamlit as st
 import json
 import time
 import logging
+import base64
+import os
 from typing import Dict, List, Any, Optional, Tuple
 
 # Import the Graph-RAG system components
@@ -37,180 +39,753 @@ logging.basicConfig(level=logging.WARNING)
 # ============================================================
 
 st.set_page_config(
-    page_title="FPL Graph-RAG Assistant",
+    page_title="FPL Assistant",
     page_icon="⚽",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ============================================================
-# CUSTOM CSS - MINIMALISTIC FOOTBALL THEME
+# CUSTOM CSS - FPL INSPIRED THEME
 # ============================================================
 
 st.markdown("""
 <style>
-    /* Main theme colors - Premier League inspired */
     :root {
-        --primary-purple: #37003c;
-        --accent-green: #00ff87;
-        --dark-green: #02894e;
-        --text-light: #ffffff;
-        --text-muted: #8a8a8a;
-        --bg-card: #f7f7f7;
-        --border-light: #e5e5e5;
+        --fpl-purple: #37003c;
+        --fpl-magenta: #963cff;
+        --fpl-cyan: #04f5ff;
+        --fpl-green: #00ff87;
+        --fpl-white: #ffffff;
+        --fpl-gray-100: #f8f9fa;
+        --fpl-gray-200: #e9ecef;
+        --fpl-gray-300: #dee2e6;
+        --fpl-gray-400: #adb5bd;
+        --fpl-gray-600: #6c757d;
     }
-    
-    /* Clean header */
-    .main-header {
-        background: #37003c;
-        padding: 2rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
+
+    html, body, [class*="css"] {
+        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--fpl-gray-100);
     }
-    
-    .main-header h1 {
-        color: #00ff87 !important;
-        font-size: 2rem;
-        margin: 0;
-        font-weight: 600;
+
+    header[data-testid="stHeader"] {
+        background: transparent;
+    }
+
+    /* Remove white space around banner and content */
+    .main .block-container {
+        padding-top: 0rem;
+        padding-bottom: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        max-width: 1200px;
+    }
+
+    /* Reduce spacing between elements */
+    .main .block-container > div {
+        margin-bottom: 0 !important;
+    }
+
+    /* Remove form border/box */
+    [data-testid="stForm"] {
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    /* Tighter spacing for headings */
+    h3 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Banner taller with increased height and padding */
+    .fpl-header {
+        background: linear-gradient(135deg, #37003c 0%, #963cff 50%, #00ff87 100%);
+        padding: 0;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        min-height: 220px;
+    }
+
+    .fpl-header-content {
+        padding: 2.5rem 2.5rem;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Photo moved to the left with adjusted positioning */
+    .fpl-header-image {
+        position: relative;
+        width: 340px;
+        min-height: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        overflow: hidden;
+        padding-left: 10px;
+    }
+
+    .fpl-header-image img {
+        height: 180px;
+        width: auto;
+        object-fit: contain;
+        object-position: bottom left;
+    }
+
+    .fpl-header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 8px 16px;
+        border-radius: 20px;
+        margin-bottom: 0.75rem;
+    }
+
+    .fpl-header-badge span {
+        color: var(--fpl-green);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .fpl-header h1 {
+        color: #ffffff !important;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
         letter-spacing: -0.5px;
     }
-    
-    .main-header p {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.95rem;
-        margin-top: 0.5rem;
+
+    .fpl-header p {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.05rem;
+        margin: 0;
         font-weight: 400;
     }
-    
-    /* Minimalistic card styling */
+
     .info-card {
-        background: #ffffff;
-        border-left: 3px solid #00ff87;
+        background: var(--fpl-white);
+        border-left: 3px solid var(--fpl-green);
         padding: 1rem;
-        border-radius: 4px;
+        border-radius: 6px;
         margin: 0.5rem 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(55, 0, 60, 0.06);
     }
-    
+
     .context-card {
-        background: #ffffff;
-        border: 1px solid #e5e5e5;
+        background: var(--fpl-white);
+        border: 1px solid var(--fpl-gray-300);
         padding: 1rem;
-        border-radius: 4px;
+        border-radius: 8px;
         margin: 0.5rem 0;
     }
-    
+
     .result-card {
-        background: #ffffff;
-        border: 2px solid #37003c;
-        padding: 1.5rem;
-        border-radius: 8px;
+        background: var(--fpl-white);
+        border: 2px solid var(--fpl-magenta);
+        padding: 1.25rem;
+        border-radius: 12px;
         margin: 1rem 0;
+        box-shadow: 0 8px 24px rgba(55, 0, 60, 0.06);
     }
-    
-    /* Clean badge design */
+
     .player-badge {
         display: inline-block;
-        background: #37003c;
-        color: #00ff87;
+        background: var(--fpl-purple);
+        color: var(--fpl-green);
         padding: 0.25rem 0.75rem;
-        border-radius: 4px;
+        border-radius: 999px;
         font-weight: 500;
         font-size: 0.85rem;
         margin: 0.15rem;
     }
-    
+
     .stat-badge {
         display: inline-block;
-        background: #f0f0f0;
-        color: #37003c;
+        background: var(--fpl-gray-100);
+        color: var(--fpl-purple);
         padding: 0.25rem 0.75rem;
-        border-radius: 4px;
+        border-radius: 8px;
         font-weight: 500;
         font-size: 0.85rem;
         margin: 0.15rem;
-        border: 1px solid #e5e5e5;
+        border: 1px solid var(--fpl-gray-300);
     }
-    
-    /* Clean sidebar */
+
+    .position-badge {
+        display: inline-block;
+        background: var(--fpl-magenta);
+        color: var(--fpl-white);
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    /* Entity badge with category label */
+    .entity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0.15rem;
+    }
+
+    .entity-category {
+        background: var(--fpl-gray-200);
+        color: var(--fpl-gray-600);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px 0 0 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .entity-value {
+        background: var(--fpl-purple);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0 4px 4px 0;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    /* Non-copiable intent text */
+    .intent-display {
+        background: var(--fpl-gray-200);
+        color: var(--fpl-purple);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        display: inline-block;
+    }
+
+    .threshold-display {
+        background: var(--fpl-gray-200);
+        color: var(--fpl-purple);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+
+    /* Ultra-compact sidebar with no scroll */
     section[data-testid="stSidebar"] {
-        background: #fafafa;
-        border-right: 1px solid #e5e5e5;
+        background: var(--fpl-gray-100);
+        border-right: 1px solid var(--fpl-gray-300);
+        box-shadow: none;
     }
-    
+
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"] {
+        padding: 0.5rem 0.5rem 0.5rem;
+    }
+
+    /* Remove top padding from sidebar */
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        padding-top: 0.5rem !important;
+    }
+
+    /* Bigger Settings title - no extra margin */
+    .sidebar-title {
+        color: var(--fpl-purple);
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 0.35rem 0;
+        padding: 0;
+        line-height: 1.2;
+    }
+
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4 {
+        color: var(--fpl-purple) !important;
+        margin: 0;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
     section[data-testid="stSidebar"] .stSelectbox label,
     section[data-testid="stSidebar"] .stSlider label,
-    section[data-testid="stSidebar"] .stCheckbox label {
-        color: #37003c !important;
+    section[data-testid="stSidebar"] .stCheckbox label,
+    section[data-testid="stSidebar"] .stRadio label {
+        color: var(--fpl-purple) !important;
         font-weight: 500;
-        font-size: 0.9rem;
+        margin-bottom: 0 !important;
+        font-size: 0.8rem;
+    }
+
+    /* Even tighter spacing for sidebar components */
+    section[data-testid="stSidebar"] [data-testid="stSelectbox"],
+    section[data-testid="stSidebar"] [data-testid="stSlider"],
+    section[data-testid="stSidebar"] [data-testid="stCheckbox"],
+    section[data-testid="stSidebar"] [data-testid="stRadio"],
+    section[data-testid="stSidebar"] [data-testid="stMultiselect"],
+    section[data-testid="stSidebar"] [data-testid="stExpander"] {
+        margin-bottom: 0.1rem;
+    }
+
+    section[data-testid="stSidebar"] .stCheckbox,
+    section[data-testid="stSidebar"] .stRadio {
+        margin-bottom: 0;
     }
     
-    /* Clean button styling */
-    .stButton > button {
-        background: #37003c;
-        color: #00ff87;
-        font-weight: 600;
+    section[data-testid="stSidebar"] .stRadio > div {
+        gap: 0.1rem;
+    }
+
+    section[data-testid="stSidebar"] .stSelectbox > div > div {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    /* Expander styling for collapsible sections */
+    section[data-testid="stSidebar"] [data-testid="stExpander"] {
         border: none;
-        padding: 0.5rem 1.5rem;
-        border-radius: 4px;
-        transition: all 0.2s ease;
+        background: transparent;
     }
-    
-    .stButton > button:hover {
-        background: #4a0050;
-        box-shadow: 0 2px 8px rgba(55, 0, 60, 0.2);
+
+    section[data-testid="stSidebar"] [data-testid="stExpander"] summary {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--fpl-purple);
+        padding: 0.25rem 0;
     }
-    
-    /* Info boxes */
-    .stSuccess {
-        background-color: rgba(0, 255, 135, 0.08) !important;
-        border-color: #00ff87 !important;
+
+    section[data-testid="stSidebar"] [data-testid="stExpander"] > div {
+        padding: 0;
     }
-    
-    .stInfo {
-        background-color: rgba(55, 0, 60, 0.05) !important;
+
+    /* ========== PURPLE RADIO BUTTONS & CHECKBOXES ========== */
+    /* Native HTML input accent */
+    input[type="radio"],
+    input[type="checkbox"] {
+        accent-color: #37003c !important;
+    }
+
+    /* BaseWeb Radio - stable sizing */
+    [data-baseweb="radio"] {
+        align-items: center !important;
+    }
+
+    [data-baseweb="radio"] > div:first-child {
+        border-color: #37003c !important;
+        background-color: transparent !important;
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+    }
+
+    /* BaseWeb Radio - inner fill when checked */
+    [data-baseweb="radio"] > div:first-child > div {
+        background-color: #37003c !important;
+        width: 10px !important;
+        height: 10px !important;
+    }
+
+    /* ========== CHECKBOX PURPLE OVERRIDE ========== */
+    /* Target the checkbox container */
+    .stCheckbox > label > div:first-child {
+        background-color: transparent !important;
         border-color: #37003c !important;
     }
-    
-    /* Table styling */
-    .dataframe {
-        border: 1px solid #e5e5e5 !important;
+
+    /* Checked state */
+    .stCheckbox > label > div:first-child[data-checked="true"],
+    .stCheckbox [aria-checked="true"] > div:first-child {
+        background-color: #37003c !important;
+        border-color: #37003c !important;
     }
-    
+
+    /* BaseWeb Checkbox styling */
+    div[data-baseweb="checkbox"] > div:first-child {
+        border-color: #37003c !important;
+    }
+
+    div[data-baseweb="checkbox"][aria-checked="true"] > div:first-child {
+        background-color: #37003c !important;
+        border-color: #37003c !important;
+    }
+
+    /* Override any inline styles on checkbox */
+    .stCheckbox div[role="checkbox"] > div:first-child {
+        background-color: inherit;
+        border-color: #37003c !important;
+    }
+
+    .stCheckbox div[role="checkbox"][aria-checked="true"] > div:first-child {
+        background-color: #37003c !important;
+    }
+
+    /* Checkbox checkmark SVG */
+    [data-baseweb="checkbox"] svg,
+    .stCheckbox svg {
+        fill: white !important;
+        stroke: white !important;
+    }
+
+    /* ========== FORCE SIDEBAR TO STAY OPEN ========== */
+    /* Hide collapse button */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Hide sidebar toggle button */
+    button[kind="header"],
+    [data-testid="stSidebarCollapseButton"],
+    section[data-testid="stSidebar"] button[aria-label="Close sidebar"],
+    section[data-testid="stSidebar"] button[aria-expanded] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Force sidebar to always be visible */
+    section[data-testid="stSidebar"] {
+        transform: none !important;
+        width: 300px !important;
+        min-width: 300px !important;
+    }
+
+    section[data-testid="stSidebar"][aria-expanded="false"] {
+        transform: none !important;
+        margin-left: 0 !important;
+    }
+
+    section[data-testid="stSidebar"] hr {
+        margin: 0.15rem 0 !important;
+        border-color: var(--fpl-gray-300) !important;
+    }
+
+    /* Tabs without orange */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 4px;
+        background: var(--fpl-gray-200);
+        padding: 4px;
+        border-radius: 8px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        border-radius: 6px;
+        color: var(--fpl-gray-600);
+        padding: 8px 16px;
+        font-weight: 500;
+    }
+
+    .stTabs [data-baseweb="tab"]:hover {
+        background: var(--fpl-white);
+        color: var(--fpl-purple);
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: var(--fpl-white) !important;
+        color: var(--fpl-purple) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .stTabs [data-baseweb="tab-highlight"] {
+        background-color: transparent !important;
+    }
+
+    .stTabs [data-baseweb="tab-border"] {
+        display: none;
+    }
+
+    /* Submit button purple styling */
+    button[kind="primary"],
+    button[data-testid="stBaseButton-primary"] {
+        background: var(--fpl-purple) !important;
+        color: var(--fpl-white) !important;
+        font-weight: 600 !important;
+        border: none !important;
+        height: 42px !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+    }
+
+    button[kind="primary"]:hover,
+    button[data-testid="stBaseButton-primary"]:hover {
+        background: #4a0050 !important;
+    }
+
+    /* Arrow button styling */
+    .arrow-btn button {
+        background: var(--fpl-purple) !important;
+        color: var(--fpl-white) !important;
+        font-weight: 600;
+        border: none !important;
+        padding: 0 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        width: 42px !important;
+        min-width: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+    }
+
+    .arrow-btn button:hover {
+        background: #4a0050 !important;
+    }
+
+    div[data-testid="stFormSubmitButton"] button {
+        background: var(--fpl-purple);
+        color: var(--fpl-white);
+        font-weight: 600;
+        border: none;
+        height: 42px;
+        border-radius: 6px;
+        padding: 0 1rem;
+        box-shadow: none;
+        min-height: 42px;
+    }
+
+    div[data-testid="stFormSubmitButton"] button:hover {
+        background: #4a0050;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Form input styling */
+    .stTextInput > div > div > input {
+        height: 42px;
+        border-radius: 6px;
+        border: 1px solid var(--fpl-gray-300);
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: var(--fpl-purple);
+        box-shadow: 0 0 0 1px var(--fpl-purple);
+    }
+
+    .stSuccess {
+        background-color: rgba(0, 255, 135, 0.1) !important;
+        border-color: var(--fpl-green) !important;
+    }
+
+    .stInfo {
+        background-color: rgba(55, 0, 60, 0.06) !important;
+        border-color: var(--fpl-purple) !important;
+    }
+
+    .dataframe {
+        border: 1px solid var(--fpl-gray-300) !important;
+    }
+
     .dataframe th {
-        background: #37003c !important;
-        color: #00ff87 !important;
+        background: var(--fpl-purple) !important;
+        color: var(--fpl-green) !important;
         font-weight: 500 !important;
         font-size: 0.9rem !important;
     }
-    
-    /* Footer */
+
+    /* Example query pills - beautiful gradient style */
+    .query-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .query-pill {
+        background: linear-gradient(135deg, #37003c 0%, #963cff 100%);
+        color: white !important;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(55, 0, 60, 0.3);
+        text-decoration: none;
+    }
+
+    .query-pill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(150, 60, 255, 0.4);
+        background: linear-gradient(135deg, #4a0050 0%, #a855f7 100%);
+    }
+
+    /* Toggle buttons for settings */
+    .toggle-container {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid var(--fpl-gray-300);
+        background: var(--fpl-white);
+        color: var(--fpl-gray-600);
+    }
+
+    .toggle-btn.active {
+        background: var(--fpl-purple);
+        color: white;
+        border-color: var(--fpl-purple);
+    }
+
+    .toggle-btn:hover:not(.active) {
+        border-color: var(--fpl-purple);
+        color: var(--fpl-purple);
+    }
+
+    /* Segmented control / pill selector for sidebar options */
+    .segment-container {
+        display: flex;
+        background: var(--fpl-gray-200);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 3px;
+    }
+
+    .segment-btn {
+        flex: 1;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        background: transparent;
+        color: var(--fpl-gray-600);
+        text-align: center;
+    }
+
+    .segment-btn.active {
+        background: var(--fpl-purple);
+        color: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* Pill button styling for example queries - extra rounded */
+    .query-pills button {
+        background: linear-gradient(135deg, #37003c 0%, #963cff 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50px !important;
+        padding: 8px 16px !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
+        box-shadow: 0 2px 8px rgba(55, 0, 60, 0.3) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .query-pills button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(150, 60, 255, 0.4) !important;
+        background: linear-gradient(135deg, #4a0050 0%, #a855f7 100%) !important;
+    }
+
+    /* Input and submit in same row - no extra box */
+    .input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    /* Full prompt code block styling with black background */
+    .full-prompt-box {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-x: auto;
+        border: 1px solid #333;
+    }
+
     .footer {
         text-align: center;
-        color: #8a8a8a;
-        padding: 2rem;
-        margin-top: 3rem;
-        border-top: 1px solid #e5e5e5;
+        color: var(--fpl-gray-400);
+        padding: 1rem;
+        margin-top: 1rem;
+        border-top: 1px solid var(--fpl-gray-300);
+        font-size: 0.8rem;
+    }
+
+    h3, h4, h5 {
+        color: var(--fpl-purple) !important;
+        font-weight: 600 !important;
+    }
+
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 0.25rem;
+    }
+
+    /* Select box focus */
+    .stSelectbox > div > div {
+        border-color: var(--fpl-gray-300);
+    }
+    
+    .stSelectbox > div > div:focus-within {
+        border-color: var(--fpl-purple) !important;
+        box-shadow: 0 0 0 1px var(--fpl-purple) !important;
+    }
+
+    /* Multiselect tags */
+    [data-baseweb="tag"] {
+        background-color: var(--fpl-purple) !important;
+    }
+
+    /* Progress bar */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(90deg, var(--fpl-purple), var(--fpl-green)) !important;
+    }
+
+    /* Compact intent and entities display */
+    .query-analysis-container {
+        background: var(--fpl-white);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--fpl-gray-300);
+        margin: 0.5rem 0 1rem 0;
+    }
+
+    .intent-section strong {
+        color: var(--fpl-purple);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.3rem;
         font-size: 0.85rem;
-    }
-    
-    /* Section headers */
-    h3 {
-        color: #37003c !important;
-        font-weight: 600 !important;
-        font-size: 1.3rem !important;
-    }
-    
-    h4 {
-        color: #37003c !important;
-        font-weight: 600 !important;
-    }
-    
-    h5 {
-        color: #37003c !important;
-        font-weight: 500 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -220,31 +795,29 @@ st.markdown("""
 # INITIALIZATION & CACHING
 # ============================================================
 
-@st.cache_resource
 def load_configuration():
-    """Load configuration from config.txt"""
+    """Load configuration from config.txt (no caching - always fresh)"""
     return load_config()
 
 
-@st.cache_resource
-def get_available_models(_config: Dict[str, str]) -> Dict[str, Dict[str, str]]:
-    """Get available LLM models with their configurations"""
-    api_key = _config.get("OPENROUTER_API_KEY", "")
+def get_available_models(config: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+    """Get available LLM models with their configurations (no caching - always fresh API key)"""
+    api_key = config.get("OPENROUTER_API_KEY", "")
     
     models = {
-        "GPT-OSS-20B (Free)": {
-            "name": "GPT-OSS-20B",
-            "model": "openai/gpt-oss-20b:free",
-            "api_key": api_key,
-            "description": "Fast and efficient for general queries"
-        },
-        "Mistral-7B-Instruct (Free)": {
+        "Mistral-7B-Instruct": {
             "name": "Mistral-7B",
             "model": "mistralai/mistral-7b-instruct:free",
             "api_key": api_key,
             "description": "Good balance of speed and quality"
         },
-        "Gemma-3-27B (Free)": {
+        "GPT-OSS-20B": {
+            "name": "GPT-OSS-20B",
+            "model": "openai/gpt-oss-20b:free",
+            "api_key": api_key,
+            "description": "Fast and efficient for general queries"
+        },
+        "Gemma-3-27B": {
             "name": "Gemma-3-27B",
             "model": "google/gemma-3-27b-it:free",
             "api_key": api_key,
@@ -365,109 +938,106 @@ def call_llm(prompt: str, model_config: Dict[str, str]) -> Tuple[str, ModelMetri
 # UI COMPONENTS
 # ============================================================
 
+def get_base64_image(image_path: str) -> str:
+    """Load image and convert to base64 for HTML embedding"""
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except Exception as e:
+        return ""
+
+
 def render_header():
-    """Render the main header"""
-    st.markdown("""
-    <div class="main-header">
-        <h1>FPL Graph-RAG Assistant</h1>
-        <p>AI-powered Fantasy Premier League advisor using Knowledge Graph technology</p>
+    """Render the FPL-style hero banner with player image"""
+    # Get the directory where app.py is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    image_path = os.path.join(script_dir, "player-comp-4-2x-D7jkZCyT.png")
+    
+    # Convert image to base64 for HTML embedding
+    img_base64 = get_base64_image(image_path)
+    
+    # Build image tag - use base64 if available, otherwise hide image section
+    if img_base64:
+        image_html = f'<img src="data:image/png;base64,{img_base64}" alt="Premier League Players" />'
+    else:
+        image_html = ''
+    
+    st.markdown(f"""
+    <div class="fpl-header">
+        <div class="fpl-header-content">
+            <div class="fpl-header-badge">
+                <span>⚽</span>
+                <span>Fantasy Premier League</span>
+            </div>
+            <h1>FPL Assistant</h1>
+            <p>AI-powered Fantasy Football advisor using Knowledge Graph technology</p>
+        </div>
+        <div class="fpl-header-image">
+            {image_html}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 
 def render_sidebar():
-    """Render the sidebar with settings"""
+    """Render the sidebar with dropdown and toggle settings"""
     config = load_configuration()
     models = get_available_models(config)
     
     with st.sidebar:
-        st.markdown("### Settings")
-        st.markdown("---")
+        st.markdown('<p class="sidebar-title">⚙️ Settings</p>', unsafe_allow_html=True)
         
-        # Model selection
-        st.markdown("#### LLM Model")
-        
-        # Mode: Single or Compare
-        model_mode = st.radio(
-            "Mode",
-            options=["Single Model", "Compare Models"],
-            help="Choose single model or compare multiple models"
-        )
-        
-        if model_mode == "Single Model":
-            selected_model = st.selectbox(
-                "Select Model",
-                options=list(models.keys()),
-                help="Choose which AI model to use for generating answers"
+        with st.expander("🤖 LLM Model", expanded=True):
+            # Use selectbox instead of radio for model mode
+            model_mode = st.selectbox(
+                "Mode",
+                options=["Single Model", "Compare Models"],
+                help="Choose single model or compare multiple models",
+                label_visibility="collapsed"
             )
-            st.markdown(f"*{models[selected_model]['description']}*")
-            compare_models_list = []
-        else:
-            selected_model = list(models.keys())[0]  # Default
-            compare_models_list = st.multiselect(
-                "Select Models to Compare",
-                options=list(models.keys()),
-                default=list(models.keys())[:2],
-                help="Choose multiple models to compare their responses"
+            
+            if model_mode == "Single Model":
+                selected_model = st.selectbox(
+                    "Select Model",
+                    options=list(models.keys()),
+                    help="Choose which AI model to use",
+                    label_visibility="collapsed",
+                    key="model_select"
+                )
+                st.caption(f"_{models[selected_model]['description']}_")
+                compare_models_list = []
+            else:
+                selected_model = list(models.keys())[0]
+                compare_models_list = st.multiselect(
+                    "Models to Compare",
+                    options=list(models.keys()),
+                    default=list(models.keys())[:2],
+                    label_visibility="collapsed"
+                )
+        
+        with st.expander("🔍 Retrieval Method", expanded=True):
+            # Use selectbox instead of radio
+            retrieval_method = st.selectbox(
+                "Method",
+                options=["Hybrid (Both)", "Baseline Only", "Embeddings Only"],
+                help="How to retrieve from Knowledge Graph",
+                label_visibility="collapsed"
             )
         
-        st.markdown("---")
-        
-        # Retrieval method selection
-        st.markdown("#### Retrieval Method")
-        retrieval_method = st.radio(
-            "Select Method",
-            options=["Hybrid (Both)", "Baseline Only", "Embeddings Only"],
-            help="Choose how to retrieve information from the Knowledge Graph"
-        )
-        
-        st.markdown("---")
-        
-        # Advanced settings
-        st.markdown("#### Advanced")
-        top_k = st.slider(
-            "Results per method",
-            min_value=5,
-            max_value=20,
-            value=10,
-            help="Number of results to retrieve"
-        )
-        
-        show_cypher = st.checkbox(
-            "Show Cypher Queries",
-            value=True,
-            help="Display the Cypher queries executed"
-        )
-        
-        show_context = st.checkbox(
-            "Show Raw Context",
-            value=True,
-            help="Display the raw KG context before LLM processing"
-        )
-        
-        st.markdown("---")
-        
-        # Example queries
-        st.markdown("#### Example Queries")
-        example_queries = [
-            "Who are the top goal scorers?",
-            "Best midfielders for assists",
-            "Tell me about Mohamed Salah",
-            "Top defenders with clean sheets",
-            "Compare Kane and Haaland",
-            "Best budget forwards",
-            "Who should I captain this week?"
-        ]
-        
-        selected_example = st.selectbox(
-            "Try an example",
-            options=[""] + example_queries,
-            help="Select an example query to try"
-        )
+        with st.expander("🔧 Display Options", expanded=False):
+            # Use multiselect styled as pills for display options
+            display_options = st.multiselect(
+                "Show in results",
+                options=["📝 Cypher Queries", "📄 Raw Context"],
+                default=["📝 Cypher Queries", "📄 Raw Context"],
+                label_visibility="collapsed"
+            )
+            show_cypher = "📝 Cypher Queries" in display_options
+            show_context = "📄 Raw Context" in display_options
         
         st.markdown("---")
         st.markdown("""
-        <div style='text-align: center; color: #888; font-size: 0.8em;'>
+        <div style='text-align: center; color: var(--fpl-gray-400); font-size: 0.7em;'>
             Built for FPL managers<br>
             Powered by Neo4j & BGE-M3
         </div>
@@ -480,40 +1050,34 @@ def render_sidebar():
         "compare_models": compare_models_list,
         "all_models": models,
         "retrieval_method": retrieval_method,
-        "top_k": top_k,
+        "top_k": 10,
         "show_cypher": show_cypher,
         "show_context": show_context,
-        "example_query": selected_example
     }
 
 
 def render_entity_badges(entities: Dict[str, List]):
-    """Render entity badges"""
+    """Render entity badges with category labels - unified purple theme"""
     html = ""
     
     for entity_type, values in entities.items():
         if values:
             for val in values:
-                if entity_type == "Player":
-                    html += f'<span class="player-badge">{val}</span> '
-                elif entity_type == "Team":
-                    html += f'<span class="stat-badge">{val}</span> '
-                elif entity_type == "Position":
-                    html += f'<span class="stat-badge">{val}</span> '
-                elif entity_type == "Statistic":
-                    html += f'<span class="stat-badge">{val}</span> '
-                elif entity_type == "Gameweek":
-                    html += f'<span class="stat-badge">GW{val}</span> '
-                else:
-                    html += f'<span class="stat-badge">{val}</span> '
+                display_val = f"GW{val}" if entity_type == "Gameweek" else val
+                html += f'''<span class="entity-badge">
+                    <span class="entity-category">{entity_type}</span>
+                    <span class="entity-value">{display_val}</span>
+                </span>'''
     
     if html:
         st.markdown(html, unsafe_allow_html=True)
+    else:
+        st.caption("None detected")
 
 
 def render_baseline_results(results: List[Dict], desc: str):
     """Render baseline retrieval results"""
-    st.markdown("##### Baseline Graph Results")
+    st.markdown("##### 🔍 Baseline Graph Results")
     st.caption(desc)
     
     if results:
@@ -531,7 +1095,7 @@ def render_baseline_results(results: List[Dict], desc: str):
 
 def render_embedding_results(results: List[Dict]):
     """Render embedding search results"""
-    st.markdown("##### Semantic Search Results")
+    st.markdown("##### 🧠 Semantic Search Results")
     
     if results:
         display_data = []
@@ -551,35 +1115,38 @@ def render_embedding_results(results: List[Dict]):
 
 def render_cypher_query(cypher: str):
     """Render Cypher query in a styled box"""
-    st.markdown("##### Cypher Query Preview")
+    st.markdown("##### 📝 Cypher Query Preview")
     st.code(cypher, language="cypher")
 
 
 def render_llm_response(answer: str, metrics: ModelMetrics):
     """Render the LLM response with metrics"""
-    st.markdown("""
+    # Use a styled container for the response
+    st.markdown(f"""
     <div class="result-card">
-        <h4 style="color: #37003c; margin-top: 0;">AI Assistant Response</h4>
+        <h4 style="color: #37003c; margin-top: 0;">🤖 AI Assistant Response</h4>
+        <div style="color: #333; line-height: 1.6; margin-top: 0.5rem;">
+            {answer.replace(chr(10), '<br>')}
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown(answer)
-    
-    # Metrics
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Response Time", f"{metrics.response_time_sec:.2f}s")
-    with col2:
-        if metrics.input_tokens:
-            st.metric("Input Tokens", metrics.input_tokens)
-    with col3:
-        if metrics.output_tokens:
-            st.metric("Output Tokens", metrics.output_tokens)
+    # Metrics in collapsible section
+    with st.expander("⚡ Performance Metrics", expanded=False):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("⏱️ Response Time", f"{metrics.response_time_sec:.2f}s")
+        with col2:
+            if metrics.input_tokens:
+                st.metric("📥 Input Tokens", metrics.input_tokens)
+        with col3:
+            if metrics.output_tokens:
+                st.metric("📤 Output Tokens", metrics.output_tokens)
 
 
 def render_recommendations(results: List[Dict], query_type: str = "general"):
     """Render player recommendations with explanations"""
-    st.markdown("##### Player Recommendations")
+    st.markdown("##### ⭐ Player Recommendations")
     
     if not results:
         st.info("No specific recommendations available for this query.")
@@ -592,13 +1159,13 @@ def render_recommendations(results: List[Dict], query_type: str = "general"):
             with col1:
                 position = player.get('position', 'N/A')
                 if position == 'GK':
-                    st.markdown("🧤 **Goalkeeper**")
+                    st.markdown("Goalkeeper")
                 elif position == 'DEF':
-                    st.markdown("🛡️ **Defender**")
+                    st.markdown("Defender")
                 elif position == 'MID':
-                    st.markdown("⚡ **Midfielder**")
+                    st.markdown("Midfielder")
                 elif position == 'FWD':
-                    st.markdown("⚽ **Forward**")
+                    st.markdown("Forward")
             
             with col2:
                 if 'total_points' in player:
@@ -623,29 +1190,58 @@ def main():
     settings = render_sidebar()
     config = load_configuration()
     
-    # Handle example query selection
-    if settings["example_query"]:
-        st.session_state["query_input"] = settings["example_query"]
+    st.markdown("### 💬 Ask Your FPL Question")
     
-    # Main query input
-    st.markdown("### Ask Your FPL Question")
-    
-    query = st.text_input(
-        "Enter your question about Fantasy Premier League",
-        value=st.session_state.get("query_input", ""),
-        placeholder="e.g., Who are the best midfielders for goals this season?",
-        key="main_query"
-    )
-    
-    col1, col2, col3 = st.columns([1, 1, 4])
-    with col1:
-        submit_btn = st.button("Get Answer", type="primary", use_container_width=True)
-    with col2:
-        clear_btn = st.button("Clear", use_container_width=True)
-    
-    if clear_btn:
+    # Initialize session state
+    if "query_input" not in st.session_state:
         st.session_state["query_input"] = ""
+    
+    # Beautiful gradient pill buttons for example queries
+    example_queries = [
+        ("⚽ Top Scorers", "Who are the top goal scorers?"),
+        ("🎯 Best Midfielders", "Best midfielders for FPL"),
+        ("👑 About Salah", "Tell me about Mohamed Salah"),
+        ("🧤 Clean Sheets", "Best defenders for clean sheets"),
+        ("⚔️ Kane vs Haaland", "Compare Kane and Haaland"),
+    ]
+    
+    # Render as HTML pills with onclick JavaScript won't work, so use streamlit columns
+    st.markdown('<div class="query-pills">', unsafe_allow_html=True)
+    cols = st.columns(len(example_queries))
+    clicked_query = None
+    
+    for idx, (label, full_query) in enumerate(example_queries):
+        with cols[idx]:
+            # Style button as pill using custom CSS class
+            if st.button(label, key=f"pill_{idx}", use_container_width=True):
+                clicked_query = full_query
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Handle pill click
+    if clicked_query:
+        st.session_state["query_input"] = clicked_query
         st.rerun()
+    
+    # Get current query from state
+    current_query = st.session_state.get("query_input", "")
+    
+    # Input field and submit button without form wrapper
+    col_input, col_btn = st.columns([10, 1])
+    with col_input:
+        query = st.text_input(
+            "Enter your question",
+            value=current_query,
+            placeholder="e.g., Who are the best midfielders for goals?",
+            key="main_query",
+            label_visibility="collapsed"
+        )
+    with col_btn:
+        submit_btn = st.button("→", key="submit_btn", use_container_width=True, type="primary")
+    
+    # Update session state with the current query value
+    if query != current_query:
+        st.session_state["query_input"] = query
     
     if submit_btn and query:
         st.markdown("---")
@@ -659,19 +1255,6 @@ def main():
         progress_bar.progress(10)
         
         preprocessing_output = run_preprocessing(query)
-        
-        # Display preprocessing results
-        st.markdown("### Query Analysis")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown(f"**Intent:** `{preprocessing_output.get('intent', 'Unknown')}`")
-            if preprocessing_output.get('ranking'):
-                st.markdown(f"**Ranking:** `{preprocessing_output.get('ranking')}`")
-        
-        with col2:
-            st.markdown("**Detected Entities:**")
-            render_entity_badges(preprocessing_output.get('entities', {}))
         
         progress_bar.progress(25)
         
@@ -700,37 +1283,6 @@ def main():
         
         progress_bar.progress(70)
         
-        # Display retrieval results
-        if settings["show_context"]:
-            st.markdown("### Retrieved Context")
-            
-            if settings["show_cypher"] and cypher_preview:
-                render_cypher_query(cypher_preview)
-            
-            context_tabs = st.tabs(["Baseline Results", "Embedding Results", "Recommendations"])
-            
-            with context_tabs[0]:
-                if retrieval_method != "Embeddings Only":
-                    render_baseline_results(baseline_results, baseline_desc if retrieval_method != "Embeddings Only" else "")
-                else:
-                    st.info("Baseline retrieval disabled. Switch to Hybrid or Baseline Only to see these results.")
-            
-            with context_tabs[1]:
-                if retrieval_method != "Baseline Only":
-                    render_embedding_results(embedding_results)
-                else:
-                    st.info("Embedding retrieval disabled. Switch to Hybrid or Embeddings Only to see these results.")
-            
-            with context_tabs[2]:
-                # Show recommendations from both sources
-                all_results = baseline_results + embedding_results
-                render_recommendations(all_results)
-        
-        progress_bar.progress(85)
-        
-        # Step 3: LLM Generation
-        status_text.text("Generating response with AI...")
-        
         # Build context for LLM
         context = RetrievalContext(
             user_query=query,
@@ -744,18 +1296,20 @@ def main():
         
         prompt = build_structured_prompt(context)
         
+        progress_bar.progress(85)
+        
+        # Step 3: LLM Generation
+        status_text.text("Generating response with AI...")
+        
         # Check if we're in comparison mode
         if settings.get("model_mode") == "Compare Models" and settings.get("compare_models"):
             # Compare multiple models
             progress_bar.progress(90)
             status_text.text("Comparing multiple models...")
             
-            st.markdown("### Model Comparison")
-            
             comparison_results = []
-            model_cols = st.columns(len(settings["compare_models"]))
             
-            for idx, model_name in enumerate(settings["compare_models"]):
+            for model_name in settings["compare_models"]:
                 model_config = settings["all_models"][model_name]
                 try:
                     answer, metrics = call_llm(prompt, model_config)
@@ -779,7 +1333,10 @@ def main():
             status_text.empty()
             progress_bar.empty()
             
-            # Display comparison results side by side
+            # DISPLAY AI RESPONSE FIRST
+            st.markdown("### 🎯 Answer")
+            
+            model_cols = st.columns(len(comparison_results))
             for idx, result in enumerate(comparison_results):
                 with model_cols[idx]:
                     st.markdown(f"#### {result['model']}")
@@ -790,19 +1347,66 @@ def main():
                     else:
                         st.error(result['answer'])
             
-            # Show metrics comparison table
-            st.markdown("#### Performance Metrics")
-            metrics_data = []
-            for result in comparison_results:
-                if result['success'] and result['metrics']:
-                    metrics_data.append({
-                        "Model": result['model'],
-                        "Response Time (s)": f"{result['metrics'].response_time_sec:.2f}",
-                        "Input Tokens": result['metrics'].input_tokens or "N/A",
-                        "Output Tokens": result['metrics'].output_tokens or "N/A"
-                    })
-            if metrics_data:
-                st.dataframe(metrics_data, use_container_width=True)
+            # Show metrics comparison table in collapsible
+            with st.expander("⚡ Performance Metrics", expanded=False):
+                metrics_data = []
+                for result in comparison_results:
+                    if result['success'] and result['metrics']:
+                        metrics_data.append({
+                            "Model": result['model'],
+                            "Response Time (s)": f"{result['metrics'].response_time_sec:.2f}",
+                            "Input Tokens": result['metrics'].input_tokens or "N/A",
+                            "Output Tokens": result['metrics'].output_tokens or "N/A"
+                        })
+                if metrics_data:
+                    st.dataframe(metrics_data, use_container_width=True)
+            
+            # Each section individually collapsible
+            with st.expander("🔎 Query Analysis", expanded=False):
+                col1, col2, col3, col4 = st.columns([1.2, 1, 1, 2])
+                with col1:
+                    st.markdown("**🎯 Intent**")
+                    intent_val = preprocessing_output.get('intent', 'Unknown')
+                    st.markdown(f'<span class="intent-display">{intent_val}</span>', unsafe_allow_html=True)
+                with col2:
+                    st.markdown("**📊 Ranking**")
+                    ranking_val = preprocessing_output.get('ranking', '—')
+                    st.markdown(f'<span class="intent-display">{ranking_val if ranking_val else "—"}</span>', unsafe_allow_html=True)
+                with col3:
+                    st.markdown("**🔢 Threshold**")
+                    threshold_val = preprocessing_output.get('threshold', '—')
+                    st.markdown(f'<span class="threshold-display">{threshold_val if threshold_val else "—"}</span>', unsafe_allow_html=True)
+                with col4:
+                    st.markdown("**🏷️ Entities**")
+                    render_entity_badges(preprocessing_output.get('entities', {}))
+            
+            if settings["show_cypher"] and cypher_preview:
+                with st.expander("📝 Cypher Query Preview", expanded=False):
+                    render_cypher_query(cypher_preview)
+            
+            # Combined context in ONE collapsible with tabs
+            with st.expander("📚 Retrieved Context & Recommendations", expanded=False):
+                context_tabs = st.tabs(["Baseline Results", "Embedding Results", "Recommendations"])
+                
+                with context_tabs[0]:
+                    if retrieval_method != "Embeddings Only":
+                        render_baseline_results(baseline_results, baseline_desc)
+                    else:
+                        st.info("Baseline retrieval disabled. Switch to Hybrid or Baseline Only to see these results.")
+                
+                with context_tabs[1]:
+                    if retrieval_method != "Baseline Only":
+                        render_embedding_results(embedding_results)
+                    else:
+                        st.info("Embedding retrieval disabled. Switch to Hybrid or Embeddings Only to see these results.")
+                
+                with context_tabs[2]:
+                    all_results = baseline_results + embedding_results
+                    render_recommendations(all_results)
+            
+            if settings["show_context"]:
+                with st.expander("💬 Full LLM Prompt", expanded=False):
+                    st.markdown(f'<div class="full-prompt-box">{prompt}</div>', unsafe_allow_html=True)
         
         else:
             # Single model mode
@@ -815,20 +1419,62 @@ def main():
                 status_text.empty()
                 progress_bar.empty()
                 
-                # Display LLM response
-                st.markdown("### Answer")
+                # DISPLAY AI RESPONSE FIRST
+                st.markdown("### 🎯 Answer")
                 render_llm_response(answer, metrics)
+                
+                # Each section individually collapsible
+                with st.expander("🔎 Query Analysis", expanded=False):
+                    col1, col2, col3, col4 = st.columns([1.2, 1, 1, 2])
+                    with col1:
+                        st.markdown("**🎯 Intent**")
+                        intent_val = preprocessing_output.get('intent', 'Unknown')
+                        st.markdown(f'<span class="intent-display">{intent_val}</span>', unsafe_allow_html=True)
+                    with col2:
+                        st.markdown("**📊 Ranking**")
+                        ranking_val = preprocessing_output.get('ranking', '—')
+                        st.markdown(f'<span class="intent-display">{ranking_val if ranking_val else "—"}</span>', unsafe_allow_html=True)
+                    with col3:
+                        st.markdown("**🔢 Threshold**")
+                        threshold_val = preprocessing_output.get('threshold', '—')
+                        st.markdown(f'<span class="threshold-display">{threshold_val if threshold_val else "—"}</span>', unsafe_allow_html=True)
+                    with col4:
+                        st.markdown("**🏷️ Entities**")
+                        render_entity_badges(preprocessing_output.get('entities', {}))
+                
+                if settings["show_cypher"] and cypher_preview:
+                    with st.expander("📝 Cypher Query Preview", expanded=False):
+                        render_cypher_query(cypher_preview)
+                
+                # Combined context in ONE collapsible with tabs
+                with st.expander("📚 Retrieved Context & Recommendations", expanded=False):
+                    context_tabs = st.tabs(["Baseline Results", "Embedding Results", "Recommendations"])
+                    
+                    with context_tabs[0]:
+                        if retrieval_method != "Embeddings Only":
+                            render_baseline_results(baseline_results, baseline_desc)
+                        else:
+                            st.info("Baseline retrieval disabled. Switch to Hybrid or Baseline Only to see these results.")
+                    
+                    with context_tabs[1]:
+                        if retrieval_method != "Baseline Only":
+                            render_embedding_results(embedding_results)
+                        else:
+                            st.info("Embedding retrieval disabled. Switch to Hybrid or Embeddings Only to see these results.")
+                    
+                    with context_tabs[2]:
+                        all_results = baseline_results + embedding_results
+                        render_recommendations(all_results)
+                
+                if settings["show_context"]:
+                    with st.expander("💬 Full LLM Prompt", expanded=False):
+                        st.markdown(f'<div class="full-prompt-box">{prompt}</div>', unsafe_allow_html=True)
                 
             except Exception as e:
                 progress_bar.progress(100)
                 status_text.empty()
                 st.error(f"Error generating response: {str(e)}")
                 st.info("Try selecting a different model or checking your API configuration.")
-        
-        # Show full context (collapsible)
-        if settings["show_context"]:
-            with st.expander("View Full LLM Prompt"):
-                st.text(prompt)
     
     elif submit_btn:
         st.warning("Please enter a question to get started!")
@@ -837,7 +1483,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div class="footer">
-        <p>FPL Graph-RAG Assistant | Built with Streamlit, Neo4j, and BGE-M3</p>
+        <p>FPL Assistant | Built with Streamlit, Neo4j, and BGE-M3</p>
         <p>Using Knowledge Graph + Retrieval Augmented Generation for intelligent FPL advice</p>
     </div>
     """, unsafe_allow_html=True)
