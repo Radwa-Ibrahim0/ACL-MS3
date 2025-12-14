@@ -1121,15 +1121,15 @@ def render_cypher_query(cypher: str):
 
 def render_llm_response(answer: str, metrics: ModelMetrics):
     """Render the LLM response with metrics"""
-    # Use a styled container for the response
-    st.markdown(f"""
+    # Header styled container
+    st.markdown("""
     <div class="result-card">
         <h4 style="color: #37003c; margin-top: 0;">🤖 AI Assistant Response</h4>
-        <div style="color: #333; line-height: 1.6; margin-top: 0.5rem;">
-            {answer.replace(chr(10), '<br>')}
-        </div>
     </div>
     """, unsafe_allow_html=True)
+    
+    # Use st.markdown for the answer so markdown formatting works
+    st.markdown(answer)
     
     # Metrics in collapsible section
     with st.expander("⚡ Performance Metrics", expanded=False):
@@ -1225,24 +1225,25 @@ def main():
     
     # Get current query from state
     current_query = st.session_state.get("query_input", "")
-    
-    # Input field and submit button without form wrapper
-    col_input, col_btn = st.columns([10, 1])
-    with col_input:
-        query = st.text_input(
-            "Enter your question",
-            value=current_query,
-            placeholder="e.g., Who are the best midfielders for goals?",
-            key="main_query",
-            label_visibility="collapsed"
-        )
-    with col_btn:
-        submit_btn = st.button("→", key="submit_btn", use_container_width=True, type="primary")
-    
+
+    # Wrap input + submit in a form so pressing Enter runs the query
+    with st.form("query_form"):
+        col_input, col_btn = st.columns([10, 1])
+        with col_input:
+            query = st.text_input(
+                "Enter your question",
+                value=current_query,
+                placeholder="e.g., Who are the best midfielders for goals?",
+                key="main_query",
+                label_visibility="collapsed"
+            )
+        with col_btn:
+            submit_btn = st.form_submit_button("→", use_container_width=True)
+
     # Update session state with the current query value
     if query != current_query:
         st.session_state["query_input"] = query
-    
+
     if submit_btn and query:
         st.markdown("---")
         
