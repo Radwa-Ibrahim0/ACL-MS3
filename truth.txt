@@ -1,0 +1,213 @@
+
+FPL Graph-RAG Evaluation Questions (Concrete, No Parameters)
+===========================================================
+
+Seasons available: 2021-22, 2022-23
+Gameweeks: 1–38
+All queries are executable directly on Neo4j and align with the KG schema from Create_kg.py
+
+------------------------------------------------------------
+
+Q1. Top 10 players by total points in the 2021-22 season
+--------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.total_points) AS points
+RETURN p.player_name AS player, points
+ORDER BY points DESC
+LIMIT 10;
+
+
+Q2. Bottom 10 players by total points in the 2021-22 season (min 900 minutes)
+-----------------------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.total_points) AS points, SUM(r.minutes) AS minutes
+WHERE minutes >= 900
+RETURN p.player_name AS player, points, minutes
+ORDER BY points ASC
+LIMIT 10;
+
+
+Q3. Top 10 goal scorers in the 2022-23 season
+--------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.goals_scored) AS goals
+RETURN p.player_name AS player, goals
+ORDER BY goals DESC
+LIMIT 10;
+
+
+Q4. Top 10 assist providers in the 2022-23 season
+-------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.assists) AS assists
+RETURN p.player_name AS player, assists
+ORDER BY assists DESC
+LIMIT 10;
+
+
+Q5. Top 10 defenders by clean sheets in the 2021-22 season
+----------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'DEF'})
+MATCH (p)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.clean_sheets) AS clean_sheets
+RETURN p.player_name AS player, clean_sheets
+ORDER BY clean_sheets DESC
+LIMIT 10;
+
+
+Q6. Top 10 goalkeepers by saves in the 2022-23 season
+-----------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})
+MATCH (p)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.saves) AS saves
+RETURN p.player_name AS player, saves
+ORDER BY saves DESC
+LIMIT 10;
+
+
+Q7. Players with at least 150 total points in the 2021-22 season
+----------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.total_points) AS points
+WHERE points >= 150
+RETURN p.player_name AS player, points
+ORDER BY points DESC;
+
+
+Q8. Forwards with at least 15 goals in the 2022-23 season
+---------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'FWD'})
+MATCH (p)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.goals_scored) AS goals
+WHERE goals >= 15
+RETURN p.player_name AS player, goals
+ORDER BY goals DESC;
+
+
+Q9. Midfielders with at least 10 assists in the 2021-22 season
+--------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'MID'})
+MATCH (p)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.assists) AS assists
+WHERE assists >= 10
+RETURN p.player_name AS player, assists
+ORDER BY assists DESC;
+
+
+Q10. Top 15 players by ICT index in the 2022-23 season
+------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.ict_index) AS ict
+RETURN p.player_name AS player, ict
+ORDER BY ict DESC
+LIMIT 15;
+
+
+Q11. All fixtures in Gameweek 1 of the 2021-22 season
+-----------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+RETURN f.fixture_number AS fixture, home.name AS home, away.name AS away, f.kickoff_time
+ORDER BY fixture;
+
+
+Q12. Top 10 players by points in Gameweek 1 of the 2022-23 season
+----------------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.total_points) AS points
+RETURN p.player_name AS player, points
+ORDER BY points DESC
+LIMIT 10;
+
+
+Q13. Players who scored at least 2 goals in Gameweek 5 of the 2021-22 season
+---------------------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:5})-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.goals_scored) AS goals
+WHERE goals >= 2
+RETURN p.player_name AS player, goals
+ORDER BY goals DESC;
+
+
+Q14. Players who received a red card in the 2022-23 season
+----------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.red_cards) AS reds
+WHERE reds > 0
+RETURN p.player_name AS player, reds
+ORDER BY reds DESC;
+
+
+Q15. Players with at least 5 yellow cards in the 2021-22 season
+---------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.yellow_cards) AS yellows
+WHERE yellows >= 5
+RETURN p.player_name AS player, yellows
+ORDER BY yellows DESC;
+
+
+Q16. Top 10 players by bonus points in the 2022-23 season
+----------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.bonus) AS bonus
+RETURN p.player_name AS player, bonus
+ORDER BY bonus DESC
+LIMIT 10;
+
+
+Q17. Goalkeepers with at least 1 penalty save in the 2021-22 season
+-------------------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})
+MATCH (p)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.penalties_saved) AS saved
+WHERE saved >= 1
+RETURN p.player_name AS player, saved
+ORDER BY saved DESC;
+
+
+Q18. Top 10 players by creativity in the 2022-23 season
+-------------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.creativity) AS creativity
+RETURN p.player_name AS player, creativity
+ORDER BY creativity DESC
+LIMIT 10;
+
+
+Q19. Top 10 players by influence in the 2021-22 season
+------------------------------------------------------
+MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.influence) AS influence
+RETURN p.player_name AS player, influence
+ORDER BY influence DESC
+LIMIT 10;
+
+
+Q20. Top 10 players by threat in the 2022-23 season
+---------------------------------------------------
+MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+MATCH (p:Player)-[r:PLAYED_IN]->(f)
+WITH p, SUM(r.threat) AS threat
+RETURN p.player_name AS player, threat
+ORDER BY threat DESC
+LIMIT 10;

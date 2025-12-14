@@ -1,0 +1,1495 @@
+{
+  "metadata": {
+    "evaluation_timestamp": "2025-12-14T14:20:11.121872",
+    "truth_file": "truth.txt",
+    "total_queries": 20,
+    "successful_queries": 20,
+    "failed_queries": 0,
+    "neo4j_uri": "neo4j://127.0.0.1:7687",
+    "success_rate": "100.00%"
+  },
+  "queries": [
+    {
+      "question_id": "Q1",
+      "question_text": "Top 10 players by total points in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nRETURN p.player_name AS player, points\nORDER BY points DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nRETURN p.player_name AS player, points\nORDER BY points DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Mohamed Salah",
+          "points": 265
+        },
+        {
+          "player": "Heung-Min Son",
+          "points": 258
+        },
+        {
+          "player": "Trent Alexander-Arnold",
+          "points": 208
+        },
+        {
+          "player": "Jarrod Bowen",
+          "points": 206
+        },
+        {
+          "player": "João Pedro Cavaco Cancelo",
+          "points": 201
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "points": 196
+        },
+        {
+          "player": "Harry Kane",
+          "points": 192
+        },
+        {
+          "player": "Andrew Robertson",
+          "points": 186
+        },
+        {
+          "player": "Sadio Mané",
+          "points": 183
+        },
+        {
+          "player": "Virgil van Dijk",
+          "points": 183
+        }
+      ]
+    },
+    {
+      "question_id": "Q2",
+      "question_text": "Bottom 10 players by total points in the 2021-22 season (min 900 minutes)",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points, SUM(r.minutes) AS minutes\nWHERE minutes >= 900\nRETURN p.player_name AS player, points, minutes\nORDER BY points ASC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points, SUM(r.minutes) AS minutes\nWHERE minutes >= 900\nRETURN p.player_name AS player, points, minutes\nORDER BY points ASC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Ciaran Clark",
+          "points": 14,
+          "minutes": 1012
+        },
+        {
+          "player": "Willy Boly",
+          "points": 17,
+          "minutes": 900
+        },
+        {
+          "player": "William Troost-Ekong",
+          "points": 18,
+          "minutes": 1388
+        },
+        {
+          "player": "Ozan Kabak",
+          "points": 18,
+          "minutes": 923
+        },
+        {
+          "player": "Lyanco Evangelista Silveira Neves Vojnovic",
+          "points": 19,
+          "minutes": 906
+        },
+        {
+          "player": "Matt Ritchie",
+          "points": 20,
+          "minutes": 1333
+        },
+        {
+          "player": "Sam Byram",
+          "points": 20,
+          "minutes": 1023
+        },
+        {
+          "player": "Christian Kabasele",
+          "points": 21,
+          "minutes": 1190
+        },
+        {
+          "player": "Jonjoe Kenny",
+          "points": 21,
+          "minutes": 1015
+        },
+        {
+          "player": "Héctor Junior Firpo Adames",
+          "points": 22,
+          "minutes": 1709
+        }
+      ]
+    },
+    {
+      "question_id": "Q3",
+      "question_text": "Top 10 goal scorers in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nRETURN p.player_name AS player, goals\nORDER BY goals DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nRETURN p.player_name AS player, goals\nORDER BY goals DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Erling Haaland",
+          "goals": 36
+        },
+        {
+          "player": "Harry Kane",
+          "goals": 30
+        },
+        {
+          "player": "Ivan Toney",
+          "goals": 20
+        },
+        {
+          "player": "Mohamed Salah",
+          "goals": 19
+        },
+        {
+          "player": "Callum Wilson",
+          "goals": 18
+        },
+        {
+          "player": "Marcus Rashford",
+          "goals": 17
+        },
+        {
+          "player": "Gabriel Martinelli Silva",
+          "goals": 15
+        },
+        {
+          "player": "Martin Ødegaard",
+          "goals": 15
+        },
+        {
+          "player": "Ollie Watkins",
+          "goals": 15
+        },
+        {
+          "player": "Bukayo Saka",
+          "goals": 14
+        }
+      ]
+    },
+    {
+      "question_id": "Q4",
+      "question_text": "Top 10 assist providers in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.assists) AS assists\nRETURN p.player_name AS player, assists\nORDER BY assists DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.assists) AS assists\nRETURN p.player_name AS player, assists\nORDER BY assists DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Kevin De Bruyne",
+          "assists": 18
+        },
+        {
+          "player": "Mohamed Salah",
+          "assists": 13
+        },
+        {
+          "player": "Leandro Trossard",
+          "assists": 13
+        },
+        {
+          "player": "Morgan Gibbs-White",
+          "assists": 12
+        },
+        {
+          "player": "Riyad Mahrez",
+          "assists": 12
+        },
+        {
+          "player": "Bukayo Saka",
+          "assists": 12
+        },
+        {
+          "player": "Trent Alexander-Arnold",
+          "assists": 11
+        },
+        {
+          "player": "Michael Olise",
+          "assists": 11
+        },
+        {
+          "player": "Jack Grealish",
+          "assists": 10
+        },
+        {
+          "player": "Dominic Solanke",
+          "assists": 10
+        }
+      ]
+    },
+    {
+      "question_id": "Q5",
+      "question_text": "Top 10 defenders by clean sheets in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'DEF'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.clean_sheets) AS clean_sheets\nRETURN p.player_name AS player, clean_sheets\nORDER BY clean_sheets DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'DEF'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.clean_sheets) AS clean_sheets\nRETURN p.player_name AS player, clean_sheets\nORDER BY clean_sheets DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Virgil van Dijk",
+          "clean_sheets": 21
+        },
+        {
+          "player": "João Pedro Cavaco Cancelo",
+          "clean_sheets": 19
+        },
+        {
+          "player": "Trent Alexander-Arnold",
+          "clean_sheets": 18
+        },
+        {
+          "player": "Aymeric Laporte",
+          "clean_sheets": 18
+        },
+        {
+          "player": "Andrew Robertson",
+          "clean_sheets": 17
+        },
+        {
+          "player": "Joel Matip",
+          "clean_sheets": 17
+        },
+        {
+          "player": "Eric Dier",
+          "clean_sheets": 16
+        },
+        {
+          "player": "Antonio Rüdiger",
+          "clean_sheets": 15
+        },
+        {
+          "player": "Rúben Santos Gato Alves Dias",
+          "clean_sheets": 14
+        },
+        {
+          "player": "Matthew Cash",
+          "clean_sheets": 13
+        }
+      ]
+    },
+    {
+      "question_id": "Q6",
+      "question_text": "Top 10 goalkeepers by saves in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.saves) AS saves\nRETURN p.player_name AS player, saves\nORDER BY saves DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.saves) AS saves\nRETURN p.player_name AS player, saves\nORDER BY saves DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "David Raya Martin",
+          "saves": 154
+        },
+        {
+          "player": "Bernd Leno",
+          "saves": 144
+        },
+        {
+          "player": "Jordan Pickford",
+          "saves": 124
+        },
+        {
+          "player": "Lukasz Fabianski",
+          "saves": 109
+        },
+        {
+          "player": "José Malheiro de Sá",
+          "saves": 108
+        },
+        {
+          "player": "Alisson Ramses Becker",
+          "saves": 107
+        },
+        {
+          "player": "David De Gea Quintana",
+          "saves": 101
+        },
+        {
+          "player": "Norberto Murara Neto",
+          "saves": 100
+        },
+        {
+          "player": "Emiliano Martínez Romero",
+          "saves": 98
+        },
+        {
+          "player": "Illan Meslier",
+          "saves": 94
+        }
+      ]
+    },
+    {
+      "question_id": "Q7",
+      "question_text": "Players with at least 150 total points in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nWHERE points >= 150\nRETURN p.player_name AS player, points\nORDER BY points DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nWHERE points >= 150\nRETURN p.player_name AS player, points\nORDER BY points DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 26,
+      "results": [
+        {
+          "player": "Mohamed Salah",
+          "points": 265
+        },
+        {
+          "player": "Heung-Min Son",
+          "points": 258
+        },
+        {
+          "player": "Trent Alexander-Arnold",
+          "points": 208
+        },
+        {
+          "player": "Jarrod Bowen",
+          "points": 206
+        },
+        {
+          "player": "João Pedro Cavaco Cancelo",
+          "points": 201
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "points": 196
+        },
+        {
+          "player": "Harry Kane",
+          "points": 192
+        },
+        {
+          "player": "Andrew Robertson",
+          "points": 186
+        },
+        {
+          "player": "Sadio Mané",
+          "points": 183
+        },
+        {
+          "player": "Virgil van Dijk",
+          "points": 183
+        },
+        {
+          "player": "James Maddison",
+          "points": 181
+        },
+        {
+          "player": "Bukayo Saka",
+          "points": 179
+        },
+        {
+          "player": "Alisson Ramses Becker",
+          "points": 176
+        },
+        {
+          "player": "Diogo Jota",
+          "points": 175
+        },
+        {
+          "player": "Joel Matip",
+          "points": 170
+        },
+        {
+          "player": "Mason Mount",
+          "points": 169
+        },
+        {
+          "player": "Raheem Sterling",
+          "points": 163
+        },
+        {
+          "player": "Aymeric Laporte",
+          "points": 160
+        },
+        {
+          "player": "James Ward-Prowse",
+          "points": 159
+        },
+        {
+          "player": "Cristiano Ronaldo dos Santos Aveiro",
+          "points": 159
+        },
+        {
+          "player": "Hugo Lloris",
+          "points": 158
+        },
+        {
+          "player": "Bernardo Mota Veiga de Carvalho e Silva",
+          "points": 155
+        },
+        {
+          "player": "Ederson Santana de Moraes",
+          "points": 155
+        },
+        {
+          "player": "Bruno Miguel Borges Fernandes",
+          "points": 151
+        },
+        {
+          "player": "Antonio Rüdiger",
+          "points": 150
+        },
+        {
+          "player": "Wilfried Zaha",
+          "points": 150
+        }
+      ]
+    },
+    {
+      "question_id": "Q8",
+      "question_text": "Forwards with at least 15 goals in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'FWD'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nWHERE goals >= 15\nRETURN p.player_name AS player, goals\nORDER BY goals DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'FWD'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nWHERE goals >= 15\nRETURN p.player_name AS player, goals\nORDER BY goals DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 5,
+      "results": [
+        {
+          "player": "Erling Haaland",
+          "goals": 36
+        },
+        {
+          "player": "Harry Kane",
+          "goals": 30
+        },
+        {
+          "player": "Ivan Toney",
+          "goals": 20
+        },
+        {
+          "player": "Callum Wilson",
+          "goals": 18
+        },
+        {
+          "player": "Ollie Watkins",
+          "goals": 15
+        }
+      ]
+    },
+    {
+      "question_id": "Q9",
+      "question_text": "Midfielders with at least 10 assists in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'MID'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.assists) AS assists\nWHERE assists >= 10\nRETURN p.player_name AS player, assists\nORDER BY assists DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'MID'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.assists) AS assists\nWHERE assists >= 10\nRETURN p.player_name AS player, assists\nORDER BY assists DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 6,
+      "results": [
+        {
+          "player": "Jarrod Bowen",
+          "assists": 17
+        },
+        {
+          "player": "Mohamed Salah",
+          "assists": 14
+        },
+        {
+          "player": "Harvey Barnes",
+          "assists": 12
+        },
+        {
+          "player": "James Maddison",
+          "assists": 11
+        },
+        {
+          "player": "Mason Mount",
+          "assists": 11
+        },
+        {
+          "player": "Heung-Min Son",
+          "assists": 10
+        }
+      ]
+    },
+    {
+      "question_id": "Q10",
+      "question_text": "Top 15 players by ICT index in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.ict_index) AS ict\nRETURN p.player_name AS player, ict\nORDER BY ict DESC\nLIMIT 15;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.ict_index) AS ict\nRETURN p.player_name AS player, ict\nORDER BY ict DESC\nLIMIT 15;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 15,
+      "results": [
+        {
+          "player": "Harry Kane",
+          "ict": 358.20000000000005
+        },
+        {
+          "player": "Erling Haaland",
+          "ict": 358.09999999999997
+        },
+        {
+          "player": "Mohamed Salah",
+          "ict": 353.69999999999993
+        },
+        {
+          "player": "Bruno Borges Fernandes",
+          "ict": 322.89999999999986
+        },
+        {
+          "player": "Bukayo Saka",
+          "ict": 322.79999999999995
+        },
+        {
+          "player": "Martin Ødegaard",
+          "ict": 298.30000000000007
+        },
+        {
+          "player": "Gabriel Martinelli Silva",
+          "ict": 298.1
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "ict": 297.6
+        },
+        {
+          "player": "Kieran Trippier",
+          "ict": 281.3000000000001
+        },
+        {
+          "player": "Solly March",
+          "ict": 270.0
+        },
+        {
+          "player": "Pascal Groß",
+          "ict": 266.99999999999994
+        },
+        {
+          "player": "Ivan Toney",
+          "ict": 258.7
+        },
+        {
+          "player": "Marcus Rashford",
+          "ict": 254.49999999999997
+        },
+        {
+          "player": "James Maddison",
+          "ict": 252.89999999999995
+        },
+        {
+          "player": "Ollie Watkins",
+          "ict": 247.00000000000003
+        }
+      ]
+    },
+    {
+      "question_id": "Q11",
+      "question_text": "All fixtures in Gameweek 1 of the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (f)-[:HAS_HOME_TEAM]->(home:Team)\nMATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)\nRETURN f.fixture_number AS fixture, home.name AS home, away.name AS away, f.kickoff_time\nORDER BY fixture;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (f)-[:HAS_HOME_TEAM]->(home:Team)\nMATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)\nRETURN f.fixture_number AS fixture, home.name AS home, away.name AS away, f.kickoff_time\nORDER BY fixture;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "fixture": 1,
+          "home": "Brentford",
+          "away": "Arsenal",
+          "f.kickoff_time": "2021-08-13 19:00:00+00:00"
+        },
+        {
+          "fixture": 2,
+          "home": "Burnley",
+          "away": "Brighton",
+          "f.kickoff_time": "2021-08-14 14:00:00+00:00"
+        },
+        {
+          "fixture": 3,
+          "home": "Chelsea",
+          "away": "Crystal Palace",
+          "f.kickoff_time": "2021-08-14 14:00:00+00:00"
+        },
+        {
+          "fixture": 4,
+          "home": "Everton",
+          "away": "Southampton",
+          "f.kickoff_time": "2021-08-14 14:00:00+00:00"
+        },
+        {
+          "fixture": 5,
+          "home": "Leicester",
+          "away": "Wolves",
+          "f.kickoff_time": "2021-08-14 14:00:00+00:00"
+        },
+        {
+          "fixture": 6,
+          "home": "Man Utd",
+          "away": "Leeds",
+          "f.kickoff_time": "2021-08-14 11:30:00+00:00"
+        },
+        {
+          "fixture": 7,
+          "home": "Norwich",
+          "away": "Liverpool",
+          "f.kickoff_time": "2021-08-14 16:30:00+00:00"
+        },
+        {
+          "fixture": 8,
+          "home": "Watford",
+          "away": "Aston Villa",
+          "f.kickoff_time": "2021-08-14 14:00:00+00:00"
+        },
+        {
+          "fixture": 9,
+          "home": "Newcastle",
+          "away": "West Ham",
+          "f.kickoff_time": "2021-08-15 13:00:00+00:00"
+        },
+        {
+          "fixture": 10,
+          "home": "Spurs",
+          "away": "Man City",
+          "f.kickoff_time": "2021-08-15 15:30:00+00:00"
+        }
+      ]
+    },
+    {
+      "question_id": "Q12",
+      "question_text": "Top 10 players by points in Gameweek 1 of the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nRETURN p.player_name AS player, points\nORDER BY points DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(gw:Gameweek {GW_number:1})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.total_points) AS points\nRETURN p.player_name AS player, points\nORDER BY points DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Pascal Groß",
+          "points": 15
+        },
+        {
+          "player": "Fabian Schär",
+          "points": 15
+        },
+        {
+          "player": "Erling Haaland",
+          "points": 13
+        },
+        {
+          "player": "Dejan Kulusevski",
+          "points": 13
+        },
+        {
+          "player": "Aleksandar Mitrović",
+          "points": 13
+        },
+        {
+          "player": "Lloyd Kelly",
+          "points": 12
+        },
+        {
+          "player": "Mohamed Salah",
+          "points": 12
+        },
+        {
+          "player": "Oleksandr Zinchenko",
+          "points": 12
+        },
+        {
+          "player": "Jorge Luiz Frello Filho",
+          "points": 11
+        },
+        {
+          "player": "Daniel Castelo Podence",
+          "points": 10
+        }
+      ]
+    },
+    {
+      "question_id": "Q13",
+      "question_text": "Players who scored at least 2 goals in Gameweek 5 of the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:5})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nWHERE goals >= 2\nRETURN p.player_name AS player, goals\nORDER BY goals DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(gw:Gameweek {GW_number:5})-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.goals_scored) AS goals\nWHERE goals >= 2\nRETURN p.player_name AS player, goals\nORDER BY goals DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 1,
+      "results": [
+        {
+          "player": "Ismaila Sarr",
+          "goals": 2
+        }
+      ]
+    },
+    {
+      "question_id": "Q14",
+      "question_text": "Players who received a red card in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.red_cards) AS reds\nWHERE reds > 0\nRETURN p.player_name AS player, reds\nORDER BY reds DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.red_cards) AS reds\nWHERE reds > 0\nRETURN p.player_name AS player, reds\nORDER BY reds DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 29,
+      "results": [
+        {
+          "player": "Carlos Henrique Casimiro",
+          "reds": 2
+        },
+        {
+          "player": "João Cancelo",
+          "reds": 1
+        },
+        {
+          "player": "Kiernan Dewsbury-Hall",
+          "reds": 1
+        },
+        {
+          "player": "Shandon Baptiste",
+          "reds": 1
+        },
+        {
+          "player": "Cheick Doucouré",
+          "reds": 1
+        },
+        {
+          "player": "James Tomkins",
+          "reds": 1
+        },
+        {
+          "player": "Tyrick Mitchell",
+          "reds": 1
+        },
+        {
+          "player": "Abdoulaye Doucouré",
+          "reds": 1
+        },
+        {
+          "player": "Conor Gallagher",
+          "reds": 1
+        },
+        {
+          "player": "Kalidou Koulibaly",
+          "reds": 1
+        },
+        {
+          "player": "Mason Holgate",
+          "reds": 1
+        },
+        {
+          "player": "Cristian Romero",
+          "reds": 1
+        },
+        {
+          "player": "Emerson Leite de Souza Junior",
+          "reds": 1
+        },
+        {
+          "player": "Lucas Rodrigues Moura da Silva",
+          "reds": 1
+        },
+        {
+          "player": "Jonathan Castro Otto",
+          "reds": 1
+        },
+        {
+          "player": "Junior Firpo Adames",
+          "reds": 1
+        },
+        {
+          "player": "Luis Sinisterra Lucumí",
+          "reds": 1
+        },
+        {
+          "player": "Nathan Collins",
+          "reds": 1
+        },
+        {
+          "player": "Nélson Cabral Semedo",
+          "reds": 1
+        },
+        {
+          "player": "Tyler Adams",
+          "reds": 1
+        },
+        {
+          "player": "Douglas Luiz Soares de Paulo",
+          "reds": 1
+        },
+        {
+          "player": "Darwin Núñez Ribeiro",
+          "reds": 1
+        },
+        {
+          "player": "Nathaniel Chalobah",
+          "reds": 1
+        },
+        {
+          "player": "Nick Pope",
+          "reds": 1
+        },
+        {
+          "player": "Matheus Luiz Nunes",
+          "reds": 1
+        },
+        {
+          "player": "Wout Faes",
+          "reds": 1
+        },
+        {
+          "player": "Diego Da Silva Costa",
+          "reds": 1
+        },
+        {
+          "player": "João Félix Sequeira",
+          "reds": 1
+        },
+        {
+          "player": "Mario Lemina",
+          "reds": 1
+        }
+      ]
+    },
+    {
+      "question_id": "Q15",
+      "question_text": "Players with at least 5 yellow cards in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.yellow_cards) AS yellows\nWHERE yellows >= 5\nRETURN p.player_name AS player, yellows\nORDER BY yellows DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.yellow_cards) AS yellows\nWHERE yellows >= 5\nRETURN p.player_name AS player, yellows\nORDER BY yellows DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 98,
+      "results": [
+        {
+          "player": "James Tarkowski",
+          "yellows": 11
+        },
+        {
+          "player": "Tyrone Mings",
+          "yellows": 11
+        },
+        {
+          "player": "Héctor Junior Firpo Adames",
+          "yellows": 11
+        },
+        {
+          "player": "Josh Brownhill",
+          "yellows": 10
+        },
+        {
+          "player": "Yves Bissouma",
+          "yellows": 10
+        },
+        {
+          "player": "Bruno Miguel Borges Fernandes",
+          "yellows": 10
+        },
+        {
+          "player": "Jan Bednarek",
+          "yellows": 10
+        },
+        {
+          "player": "Granit Xhaka",
+          "yellows": 10
+        },
+        {
+          "player": "Conor Gallagher",
+          "yellows": 10
+        },
+        {
+          "player": "Rodrigo Moreno",
+          "yellows": 9
+        },
+        {
+          "player": "Scott McTominay",
+          "yellows": 9
+        },
+        {
+          "player": "Oriol Romeu Vidal",
+          "yellows": 9
+        },
+        {
+          "player": "Richarlison de Andrade",
+          "yellows": 9
+        },
+        {
+          "player": "Rúben Diogo da Silva Neves",
+          "yellows": 9
+        },
+        {
+          "player": "Antonio Rüdiger",
+          "yellows": 9
+        },
+        {
+          "player": "Dan Burn",
+          "yellows": 8
+        },
+        {
+          "player": "Declan Rice",
+          "yellows": 8
+        },
+        {
+          "player": "Joelinton Cássio Apolinário de Lira",
+          "yellows": 8
+        },
+        {
+          "player": "John McGinn",
+          "yellows": 8
+        },
+        {
+          "player": "Matthew Cash",
+          "yellows": 8
+        },
+        {
+          "player": "Brandon Williams",
+          "yellows": 8
+        },
+        {
+          "player": "Luke Shaw",
+          "yellows": 8
+        },
+        {
+          "player": "Mohammed Salisu",
+          "yellows": 8
+        },
+        {
+          "player": "Max Aarons",
+          "yellows": 8
+        },
+        {
+          "player": "Christian Nørgaard",
+          "yellows": 8
+        },
+        {
+          "player": "Ivan Toney",
+          "yellows": 8
+        },
+        {
+          "player": "Joel Ward",
+          "yellows": 8
+        },
+        {
+          "player": "Marcos Alonso",
+          "yellows": 8
+        },
+        {
+          "player": "Cristian Romero",
+          "yellows": 8
+        },
+        {
+          "player": "Cristiano Ronaldo dos Santos Aveiro",
+          "yellows": 8
+        },
+        {
+          "player": "Ashley Westwood",
+          "yellows": 7
+        },
+        {
+          "player": "Neal Maupay",
+          "yellows": 7
+        },
+        {
+          "player": "Shane Duffy",
+          "yellows": 7
+        },
+        {
+          "player": "Douglas Luiz Soares de Paulo",
+          "yellows": 7
+        },
+        {
+          "player": "Emmanuel Dennis",
+          "yellows": 7
+        },
+        {
+          "player": "Ollie Watkins",
+          "yellows": 7
+        },
+        {
+          "player": "Daniel James",
+          "yellows": 7
+        },
+        {
+          "player": "Diego Llorente",
+          "yellows": 7
+        },
+        {
+          "player": "Harry Maguire",
+          "yellows": 7
+        },
+        {
+          "player": "Paul Pogba",
+          "yellows": 7
+        },
+        {
+          "player": "Raphael Dias Belloli",
+          "yellows": 7
+        },
+        {
+          "player": "Allan Marques Loureiro",
+          "yellows": 7
+        },
+        {
+          "player": "Mason Holgate",
+          "yellows": 7
+        },
+        {
+          "player": "Fabio Henrique Tavares",
+          "yellows": 7
+        },
+        {
+          "player": "Pontus Jansson",
+          "yellows": 7
+        },
+        {
+          "player": "João Pedro Cavaco Cancelo",
+          "yellows": 7
+        },
+        {
+          "player": "Joël Veltman",
+          "yellows": 6
+        },
+        {
+          "player": "Allan Saint-Maximin",
+          "yellows": 6
+        },
+        {
+          "player": "Jarrod Bowen",
+          "yellows": 6
+        },
+        {
+          "player": "Michail Antonio",
+          "yellows": 6
+        },
+        {
+          "player": "Imrân Louza",
+          "yellows": 6
+        },
+        {
+          "player": "Jacob Ramsey",
+          "yellows": 6
+        },
+        {
+          "player": "Will Hughes",
+          "yellows": 6
+        },
+        {
+          "player": "Pascal Struijk",
+          "yellows": 6
+        },
+        {
+          "player": "Abdoulaye Doucouré",
+          "yellows": 6
+        },
+        {
+          "player": "Ben Godfrey",
+          "yellows": 6
+        },
+        {
+          "player": "Lucas Digne",
+          "yellows": 6
+        },
+        {
+          "player": "Romain Saïss",
+          "yellows": 6
+        },
+        {
+          "player": "Bukayo Saka",
+          "yellows": 6
+        },
+        {
+          "player": "Gabriel Magalhães",
+          "yellows": 6
+        },
+        {
+          "player": "Sergi Canós",
+          "yellows": 6
+        },
+        {
+          "player": "Thomas Partey",
+          "yellows": 6
+        },
+        {
+          "player": "Ben Davies",
+          "yellows": 6
+        },
+        {
+          "player": "Bernardo Mota Veiga de Carvalho e Silva",
+          "yellows": 6
+        },
+        {
+          "player": "Oliver Skipp",
+          "yellows": 6
+        },
+        {
+          "player": "Marc Cucurella",
+          "yellows": 6
+        },
+        {
+          "player": "Mathias Normann",
+          "yellows": 6
+        },
+        {
+          "player": "Adam Webster",
+          "yellows": 5
+        },
+        {
+          "player": "Emil Krafth",
+          "yellows": 5
+        },
+        {
+          "player": "Isaac Hayden",
+          "yellows": 5
+        },
+        {
+          "player": "Jamaal Lascelles",
+          "yellows": 5
+        },
+        {
+          "player": "Javier Manquillo",
+          "yellows": 5
+        },
+        {
+          "player": "Jonjo Shelvey",
+          "yellows": 5
+        },
+        {
+          "player": "Matt Ritchie",
+          "yellows": 5
+        },
+        {
+          "player": "Joshua King",
+          "yellows": 5
+        },
+        {
+          "player": "Marvelous Nakamba",
+          "yellows": 5
+        },
+        {
+          "player": "Adam Forshaw",
+          "yellows": 5
+        },
+        {
+          "player": "Frederico Rodrigues de Paula Santos",
+          "yellows": 5
+        },
+        {
+          "player": "Liam Cooper",
+          "yellows": 5
+        },
+        {
+          "player": "Mateusz Klich",
+          "yellows": 5
+        },
+        {
+          "player": "Stuart Dallas",
+          "yellows": 5
+        },
+        {
+          "player": "Tyler Roberts",
+          "yellows": 5
+        },
+        {
+          "player": "Kyle Walker-Peters",
+          "yellows": 5
+        },
+        {
+          "player": "Andrew Robertson",
+          "yellows": 5
+        },
+        {
+          "player": "Pierre Lees-Melou",
+          "yellows": 5
+        },
+        {
+          "player": "Sadio Mané",
+          "yellows": 5
+        },
+        {
+          "player": "Raúl Jiménez",
+          "yellows": 5
+        },
+        {
+          "player": "Çaglar Söyüncü",
+          "yellows": 5
+        },
+        {
+          "player": "Albert Sambi Lokonga",
+          "yellows": 5
+        },
+        {
+          "player": "Kristoffer Ajer",
+          "yellows": 5
+        },
+        {
+          "player": "Jorge Luiz Frello Filho",
+          "yellows": 5
+        },
+        {
+          "player": "Aymeric Laporte",
+          "yellows": 5
+        },
+        {
+          "player": "Harry Kane",
+          "yellows": 5
+        },
+        {
+          "player": "Moussa Sissoko",
+          "yellows": 5
+        },
+        {
+          "player": "Rodrigo Hernandez",
+          "yellows": 5
+        },
+        {
+          "player": "Rúben Santos Gato Alves Dias",
+          "yellows": 5
+        },
+        {
+          "player": "Emerson Aparecido Leite de Souza Junior",
+          "yellows": 5
+        },
+        {
+          "player": "Rodrigo Bentancur",
+          "yellows": 5
+        }
+      ]
+    },
+    {
+      "question_id": "Q16",
+      "question_text": "Top 10 players by bonus points in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.bonus) AS bonus\nRETURN p.player_name AS player, bonus\nORDER BY bonus DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.bonus) AS bonus\nRETURN p.player_name AS player, bonus\nORDER BY bonus DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Harry Kane",
+          "bonus": 48
+        },
+        {
+          "player": "Erling Haaland",
+          "bonus": 40
+        },
+        {
+          "player": "Kieran Trippier",
+          "bonus": 39
+        },
+        {
+          "player": "Ivan Toney",
+          "bonus": 35
+        },
+        {
+          "player": "Martin Ødegaard",
+          "bonus": 30
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "bonus": 26
+        },
+        {
+          "player": "Ollie Watkins",
+          "bonus": 25
+        },
+        {
+          "player": "Bruno Borges Fernandes",
+          "bonus": 23
+        },
+        {
+          "player": "Mohamed Salah",
+          "bonus": 23
+        },
+        {
+          "player": "Marcus Rashford",
+          "bonus": 21
+        }
+      ]
+    },
+    {
+      "question_id": "Q17",
+      "question_text": "Goalkeepers with at least 1 penalty save in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.penalties_saved) AS saved\nWHERE saved >= 1\nRETURN p.player_name AS player, saved\nORDER BY saved DESC;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[:PLAYS_AS]->(:Position {name:'GK'})\nMATCH (p)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.penalties_saved) AS saved\nWHERE saved >= 1\nRETURN p.player_name AS player, saved\nORDER BY saved DESC;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 8,
+      "results": [
+        {
+          "player": "Lukasz Fabianski",
+          "saved": 3
+        },
+        {
+          "player": "David de Gea",
+          "saved": 2
+        },
+        {
+          "player": "Kasper Schmeichel",
+          "saved": 2
+        },
+        {
+          "player": "Angus Gunn",
+          "saved": 1
+        },
+        {
+          "player": "Ben Foster",
+          "saved": 1
+        },
+        {
+          "player": "Emiliano Martínez",
+          "saved": 1
+        },
+        {
+          "player": "Freddie Woodman",
+          "saved": 1
+        },
+        {
+          "player": "Jack Butland",
+          "saved": 1
+        }
+      ]
+    },
+    {
+      "question_id": "Q18",
+      "question_text": "Top 10 players by creativity in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.creativity) AS creativity\nRETURN p.player_name AS player, creativity\nORDER BY creativity DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.creativity) AS creativity\nRETURN p.player_name AS player, creativity\nORDER BY creativity DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Kieran Trippier",
+          "creativity": 1802.2000000000003
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "creativity": 1476.6999999999996
+        },
+        {
+          "player": "Bruno Borges Fernandes",
+          "creativity": 1437.6999999999998
+        },
+        {
+          "player": "Pascal Groß",
+          "creativity": 1210.3999999999999
+        },
+        {
+          "player": "Trent Alexander-Arnold",
+          "creativity": 1168.1999999999998
+        },
+        {
+          "player": "James Ward-Prowse",
+          "creativity": 1151.4
+        },
+        {
+          "player": "Martin Ødegaard",
+          "creativity": 1100.4
+        },
+        {
+          "player": "Bukayo Saka",
+          "creativity": 1091.7999999999997
+        },
+        {
+          "player": "Michael Olise",
+          "creativity": 1014.5999999999999
+        },
+        {
+          "player": "James Maddison",
+          "creativity": 970.0
+        }
+      ]
+    },
+    {
+      "question_id": "Q19",
+      "question_text": "Top 10 players by influence in the 2021-22 season",
+      "expected_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.influence) AS influence\nRETURN p.player_name AS player, influence\nORDER BY influence DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2021-22'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.influence) AS influence\nRETURN p.player_name AS player, influence\nORDER BY influence DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Mohamed Salah",
+          "influence": 1203.8
+        },
+        {
+          "player": "Heung-Min Son",
+          "influence": 1128.5999999999997
+        },
+        {
+          "player": "Kasper Schmeichel",
+          "influence": 1064.0
+        },
+        {
+          "player": "Illan Meslier",
+          "influence": 1059.6000000000004
+        },
+        {
+          "player": "Kevin De Bruyne",
+          "influence": 973.4
+        },
+        {
+          "player": "Harry Kane",
+          "influence": 969.4000000000001
+        },
+        {
+          "player": "David de Gea",
+          "influence": 947.1999999999999
+        },
+        {
+          "player": "José Malheiro de Sá",
+          "influence": 938.8000000000002
+        },
+        {
+          "player": "James Ward-Prowse",
+          "influence": 933.6000000000001
+        },
+        {
+          "player": "Bruno Miguel Borges Fernandes",
+          "influence": 901.0000000000001
+        }
+      ]
+    },
+    {
+      "question_id": "Q20",
+      "question_text": "Top 10 players by threat in the 2022-23 season",
+      "expected_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.threat) AS threat\nRETURN p.player_name AS player, threat\nORDER BY threat DESC\nLIMIT 10;",
+      "executed_query": "MATCH (s:Season {season_name:'2022-23'})-[:HAS_GW]->(:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)\nMATCH (p:Player)-[r:PLAYED_IN]->(f)\nWITH p, SUM(r.threat) AS threat\nRETURN p.player_name AS player, threat\nORDER BY threat DESC\nLIMIT 10;",
+      "successful": true,
+      "error_message": null,
+      "records_returned": 10,
+      "results": [
+        {
+          "player": "Erling Haaland",
+          "threat": 1825.0
+        },
+        {
+          "player": "Harry Kane",
+          "threat": 1678.0
+        },
+        {
+          "player": "Mohamed Salah",
+          "threat": 1620.0
+        },
+        {
+          "player": "Gabriel Martinelli Silva",
+          "threat": 1300.0
+        },
+        {
+          "player": "Marcus Rashford",
+          "threat": 1288.0
+        },
+        {
+          "player": "Gabriel Fernando de Jesus",
+          "threat": 1282.0
+        },
+        {
+          "player": "Ollie Watkins",
+          "threat": 1268.0
+        },
+        {
+          "player": "Ivan Toney",
+          "threat": 1240.0
+        },
+        {
+          "player": "Bukayo Saka",
+          "threat": 1164.0
+        },
+        {
+          "player": "Aleksandar Mitrović",
+          "threat": 1141.0
+        }
+      ]
+    }
+  ]
+}
