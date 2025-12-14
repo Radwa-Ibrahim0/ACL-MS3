@@ -1012,8 +1012,8 @@ class BaselineQueryBuilder:
             order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
             order_by_clauses = ", ".join([f"total_{stat} {order_dir}" for stat in statistics])
             
-            # LIMIT 10 if ranking specified, else LIMIT 50
-            limit_val = 10 if ranking else 50
+            # Use the limit parameter passed in (defaults to 10)
+            limit_val = limit
             
             cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, {stats_return}
@@ -1052,8 +1052,8 @@ class BaselineQueryBuilder:
             
             order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
             
-            # LIMIT 10 if ranking specified, else LIMIT 50
-            limit_val = 10 if ranking else 50
+            # Use the limit parameter passed in (defaults to 10)
+            limit_val = limit
             
             cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, 
@@ -1217,8 +1217,8 @@ class BaselineQueryBuilder:
             order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
             order_by_clauses = ", ".join([f"total_{stat} {order_dir}" for stat in statistics])
             
-            # LIMIT 10 if ranking specified, else LIMIT 50
-            limit_val = 10 if ranking else 50
+            # Use the limit parameter
+            limit_val = limit
             
             cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, target_team AS team, 
@@ -1259,8 +1259,8 @@ class BaselineQueryBuilder:
             
             order_dir = "DESC" if ranking == "best" else ("ASC" if ranking == "worst" else "DESC")
             
-            # LIMIT 10 if ranking specified, else LIMIT 50
-            limit_val = 10 if ranking else 50
+            # Use the limit parameter
+            limit_val = limit
             
             cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, target_team AS team,
@@ -1496,7 +1496,8 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
                 "intent": str,
                 "entities": {...},
                 "ranking": str | None,
-                "threshold": dict | None
+                "threshold": dict | None,
+                "limit": int | None
             }
     
     Returns:
@@ -1516,6 +1517,18 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         entities = preprocessing_output.get("entities", {})
         ranking = preprocessing_output.get("ranking")
         threshold = preprocessing_output.get("threshold")
+        limit = preprocessing_output.get("limit")  # Extract limit from preprocessing
+        
+        # Determine effective limit:
+        # - If explicit limit provided, use it
+        # - If threshold provided without limit, return all matches (use high limit)
+        # - Otherwise use default of 10
+        if limit is not None:
+            effective_limit = limit
+        elif threshold is not None:
+            effective_limit = 500  # Return all matching when threshold specified
+        else:
+            effective_limit = 10  # Default limit
         
         # Extract entity counts
         statistics = entities.get("Statistic", [])
@@ -1600,7 +1613,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and ranking == "best"
             and threshold is None
         ):
-            return builder.query_gameweek_top_performers(entities, ranking, threshold)
+            return builder.query_gameweek_top_performers(entities, ranking, threshold, effective_limit)
 
         # Query 3: Top players by stat + position (1 stat, 1 position, nothing else, no threshold)
         if (
@@ -1613,7 +1626,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and ranking == "best"
             and threshold is None
         ):
-            return builder.query_top_players_by_stat_and_position(entities, ranking, threshold)
+            return builder.query_top_players_by_stat_and_position(entities, ranking, threshold, effective_limit)
 
         # Query 4: Worst players by stat + position (1 stat, 1 position, nothing else, no threshold)
         if (
@@ -1626,7 +1639,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and ranking == "worst"
             and threshold is None
         ):
-            return builder.query_worst_players_by_stat_and_position(entities, ranking, threshold)
+            return builder.query_worst_players_by_stat_and_position(entities, ranking, threshold, effective_limit)
 
         # Query 1: Top players by statistic (1 stat only, no other entities, no threshold)
         if (
@@ -1639,7 +1652,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and ranking == "best"
             and threshold is None
         ):
-            return builder.query_top_players_by_statistic(entities, ranking, threshold)
+            return builder.query_top_players_by_statistic(entities, ranking, threshold, effective_limit)
 
         # Query 2: Worst players by statistic (1 stat only, no other entities, no threshold)
         if (
@@ -1652,11 +1665,11 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and ranking == "worst"
             and threshold is None
         ):
-            return builder.query_worst_players_by_statistic(entities, ranking, threshold)
+            return builder.query_worst_players_by_statistic(entities, ranking, threshold, effective_limit)
         
         # Query 11 (Fallback): Dynamic query for any combination not matching base queries
         print("⚠ No base query matched. Using dynamic fallback query (Query 11)...")
-        return builder.query_dynamic_fallback(entities, ranking, threshold)
+        return builder.query_dynamic_fallback(entities, ranking, threshold, effective_limit)
             
     finally:
         conn.close()
@@ -1837,6 +1850,7 @@ if __name__ == "__main__":
         # "Players ranked by goals and assists",
         # "Best players by total points and bonus",
         "how many points did salah score in gameweek 10",
+        "Top 15 players by ICT index in the 2022-23 season"
     ]
     
     for i, query in enumerate(test_cases, 1):

@@ -596,6 +596,47 @@ def extract_entities(query: str, nlp) -> Dict[str, List[Any]]:
 # 6.b RANKING AND THRESHOLD EXTRACTION (NEW)
 # ============================================================
 
+def extract_limit(query: str) -> Optional[int]:
+    """
+    Extract limit/count parameter from query.
+    
+    Returns:
+        int - the number of results requested (e.g., "top 10" -> 10)
+        None - if no specific limit is mentioned, or if threshold implies all results
+    
+    Examples:
+        "Top 10 players" -> 10
+        "Top 15 players by ICT" -> 15
+        "Bottom 5 players" -> 5
+        "Players with at least 150 points" -> None (return all matching)
+    """
+    query_lower = query.lower()
+    
+    # Patterns for extracting limits
+    limit_patterns = [
+        r"top\s+(\d+)",
+        r"bottom\s+(\d+)",
+        r"best\s+(\d+)",
+        r"worst\s+(\d+)",
+        r"first\s+(\d+)",
+        r"last\s+(\d+)",
+        r"(\d+)\s+best",
+        r"(\d+)\s+worst",
+        r"(\d+)\s+top",
+        r"show\s+(\d+)",
+        r"list\s+(\d+)",
+        r"get\s+(\d+)",
+        r"find\s+(\d+)",
+    ]
+    
+    for pattern in limit_patterns:
+        match = re.search(pattern, query_lower)
+        if match:
+            return int(match.group(1))
+    
+    return None
+
+
 def extract_ranking(query: str) -> Optional[str]:
     """
     Extract ranking parameter from query.
@@ -1024,7 +1065,7 @@ def process_user_query(query: str) -> Dict[str, Any]:
       - extracts entities (spaCy + rules)
       - refines entities with LLM (to fill gaps / normalize)
       - classifies intent (with entity-aware fallback)
-      - extracts ranking and threshold parameters
+      - extracts ranking, threshold, and limit parameters
 
     Returns:
       {
@@ -1039,7 +1080,8 @@ def process_user_query(query: str) -> Dict[str, Any]:
            "Gameweek": [...],   # integers
         },
         "ranking": "best" | "worst" | None,
-        "threshold": {"stat": str, "operator": str, "value": number} | None
+        "threshold": {"stat": str, "operator": str, "value": number} | None,
+        "limit": int | None  # Number of results to return, None means use default or all
       }
     """
     global NLP, CONFIG
@@ -1069,12 +1111,20 @@ def process_user_query(query: str) -> Dict[str, Any]:
         config=CONFIG,
     )
 
+    # 3) Extract limit from query (rule-based)
+    limit = extract_limit(query)
+    
+    # If threshold is present and no explicit limit, return all matches (None means no limit)
+    # If threshold is present WITH explicit limit, use that limit
+    # If no threshold and no limit, baseline will use default (10)
+
     return {
         "query": query,
         "intent": intent,
         "entities": entities,
         "ranking": ranking,
         "threshold": threshold,
+        "limit": limit,
     }
 
 
@@ -1106,8 +1156,9 @@ if __name__ == "__main__":
         # "Top forwards by goals scored.",
         # "Who are the best attacking players in terms of goals and threat combined?",
         # "Which players scored more than 5 goals up till this gameweek?",
-        "which players have the least points so far?",
-        "How many goals did far score?",
+        # "which players have the least points so far?",
+        # "How many goals did far score?",
+         "Top 15 players by ICT index in the 2022-23 season",
         # "Show me Brightin's fixtures in 2 gameweeks from now.",
         # "Which Tottenham defenders have been in good form this season?",
         # "Give me players with same number of goals as Haaland.",
@@ -1121,6 +1172,7 @@ if __name__ == "__main__":
         print(f"Entities: {res['entities']}")
         print(f"Ranking:  {res['ranking']}")
         print(f"Threshold:{res['threshold']}")
+        print(f"Limit:    {res['limit']}")
         print("-" * 60)
 
         # For local testing you can comment this out to speed things up
