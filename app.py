@@ -22,6 +22,7 @@ from typing import Dict, List, Any, Optional, Tuple
 from preprocessing import process_user_query
 from baseline import execute_baseline_query, load_config, Neo4jConnection, BaselineQueryBuilder
 from embedding_bge_m3 import SemanticSearchBGEM3, load_config as load_config_embed
+from embedding_minilm import SemanticSearchMiniLM
 from llm_layer import (
     build_retrieval_context,
     build_structured_prompt,
@@ -853,15 +854,19 @@ def run_baseline_retrieval(preprocessing_output: Dict[str, Any]) -> Tuple[List[D
     return results, desc
 
 
-def run_embedding_retrieval(query: str, config: Dict[str, str], top_k: int = 10, position: Optional[str] = None) -> List[Dict]:
-    """Run embedding-based semantic search"""
+def run_embedding_retrieval(query: str, config: Dict[str, str], top_k: int = 10, position: Optional[str] = None, model: str = "BGE-M3") -> List[Dict]:
+    """Run embedding-based semantic search with selected model"""
     try:
-        semantic = SemanticSearchBGEM3(config)
+        if model == "MiniLM":
+            semantic = SemanticSearchMiniLM(config)
+        else:  # Default to BGE-M3
+            semantic = SemanticSearchBGEM3(config)
+        
         results = semantic.search(query, top_k=top_k, position=position)
         semantic.close()
         return results
     except Exception as e:
-        st.error(f"Embedding search error: {e}")
+        st.error(f"Embedding search error ({model}): {e}")
         return []
 
 
@@ -1023,6 +1028,15 @@ def render_sidebar():
                 help="How to retrieve from Knowledge Graph",
                 label_visibility="collapsed"
             )
+            
+            # Embedding model selector
+            embedding_model = st.selectbox(
+                "Embedding Model",
+                options=["BGE-M3", "MiniLM"],
+                help="BGE-M3: Higher quality (1024 dims) | MiniLM: Faster (384 dims)",
+                label_visibility="visible"
+            )
+            st.caption(f"_{'🎯 High quality, slower' if embedding_model == 'BGE-M3' else '⚡ Fast inference, lighter'}_")
         
         with st.expander("🔧 Display Options", expanded=False):
             # Use multiselect styled as pills for display options
@@ -1039,7 +1053,7 @@ def render_sidebar():
         st.markdown("""
         <div style='text-align: center; color: var(--fpl-gray-400); font-size: 0.7em;'>
             Built for FPL managers<br>
-            Powered by Neo4j & BGE-M3
+            Powered by Neo4j & Embeddings
         </div>
         """, unsafe_allow_html=True)
         
@@ -1050,6 +1064,7 @@ def render_sidebar():
         "compare_models": compare_models_list,
         "all_models": models,
         "retrieval_method": retrieval_method,
+        "embedding_model": embedding_model,
         "top_k": 10,
         "show_cypher": show_cypher,
         "show_context": show_context,
@@ -1093,9 +1108,9 @@ def render_baseline_results(results: List[Dict], desc: str):
         st.info("No baseline results returned for this query.")
 
 
-def render_embedding_results(results: List[Dict]):
+def render_embedding_results(results: List[Dict], model_name: str = "BGE-M3"):
     """Render embedding search results"""
-    st.markdown("##### 🧠 Semantic Search Results")
+    st.markdown(f"##### 🧠 Semantic Search Results ({model_name})")
     
     if results:
         display_data = []
@@ -1196,33 +1211,6 @@ def main():
     if "query_input" not in st.session_state:
         st.session_state["query_input"] = ""
     
-    # Beautiful gradient pill buttons for example queries
-    example_queries = [
-        ("⚽ Top Scorers", "Who are the top goal scorers?"),
-        ("🎯 Best Midfielders", "Best midfielders for FPL"),
-        ("👑 About Salah", "Tell me about Mohamed Salah"),
-        ("🧤 Clean Sheets", "Best defenders for clean sheets"),
-        ("⚔️ Kane vs Haaland", "Compare Kane and Haaland"),
-    ]
-    
-    # Render as HTML pills with onclick JavaScript won't work, so use streamlit columns
-    st.markdown('<div class="query-pills">', unsafe_allow_html=True)
-    cols = st.columns(len(example_queries))
-    clicked_query = None
-    
-    for idx, (label, full_query) in enumerate(example_queries):
-        with cols[idx]:
-            # Style button as pill using custom CSS class
-            if st.button(label, key=f"pill_{idx}", use_container_width=True):
-                clicked_query = full_query
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Handle pill click
-    if clicked_query:
-        st.session_state["query_input"] = clicked_query
-        st.rerun()
-    
     # Get current query from state
     current_query = st.session_state.get("query_input", "")
 
@@ -1279,7 +1267,8 @@ def main():
             positions = preprocessing_output.get('entities', {}).get('Position', [])
             pos_filter = positions[0] if positions else None
             embedding_results = run_embedding_retrieval(
-                query, config, top_k=settings["top_k"], position=pos_filter
+                query, config, top_k=settings["top_k"], position=pos_filter,
+                model=settings["embedding_model"]
             )
         
         progress_bar.progress(70)
