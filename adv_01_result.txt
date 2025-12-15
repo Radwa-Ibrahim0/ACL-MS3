@@ -1,0 +1,120 @@
+{
+  "query_id": "ADV_01",
+  "query_text": "Which players scored more than 15 goals in the 2022-23 season?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "Which players scored more than 15 goals in the 2022-23 season?",
+    "intent": "COMPARISON",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "goals_scored"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='COMPARISON', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"goals_scored\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=None, threshold={'stat': 'goals_scored', 'operator': 'GT', 'value': 15}",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_goals_scored": 36
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_goals_scored": 30
+      },
+      {
+        "player_name": "Ivan Toney",
+        "position": "FWD",
+        "total_goals_scored": 20
+      },
+      {
+        "player_name": "Mohamed Salah",
+        "position": "MID",
+        "total_goals_scored": 19
+      },
+      {
+        "player_name": "Callum Wilson",
+        "position": "FWD",
+        "total_goals_scored": 18
+      },
+      {
+        "player_name": "Marcus Rashford",
+        "position": "MID",
+        "total_goals_scored": 17
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Mohamed Salah",
+        "position": "MID",
+        "score": 0.725320041179657
+      },
+      {
+        "player": "Solly March",
+        "position": "MID",
+        "score": 0.7252756357192993
+      },
+      {
+        "player": "Gabriel Martinelli Silva",
+        "position": "MID",
+        "score": 0.7252320647239685
+      },
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7231563329696655
+      },
+      {
+        "player": "Heung-Min Son",
+        "position": "MID",
+        "score": 0.7231496572494507
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7216814756393433
+      },
+      {
+        "player": "Aleksandar Mitrović",
+        "position": "FWD",
+        "score": 0.7206191420555115
+      },
+      {
+        "player": "Bukayo Saka",
+        "position": "MID",
+        "score": 0.7186697721481323
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "**Players who scored more than 15 goals in the 2022‑23 Premier League season**\n\n| Player | Position | Total goals |\n|--------|----------|-------------|\n| Erling Haaland | FWD | 36 |\n| Harry Kane | FWD | 30 |\n| Ivan Toney | FWD | 20 |\n| Mohamed Salah | MID | 19 |\n| Callum Wilson | FWD | 18 |\n| Marcus Rashford | MID | 17 |\n\nAll of these players surpassed the 15‑goal mark according to the structured graph data provided.\n\n**Quick FPL take‑away**\n\nIf you’re looking for a proven goal source, any of these midfielders or forwards is a solid pick – especially the pure strikers (Haaland, Kane, Toney, Wilson) who are more likely to keep a consistent scoring pace. Midfielders Salah and Rashford add a touch of goal‑scoring ability with the added benefit of often picking up assists and chances when they’re the captain. Choose the one that best fits your budget and the rotation risk of their teams.",
+      "response_time_sec": 4.0,
+      "input_tokens": 767,
+      "output_tokens": 420,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In the 2022-23 season, the players who scored more than 15 goals were:\n\n1. **Erling Haaland (FWD)** - 36 goals\n2. **Harry Kane (FWD)** - 30 goals\n3. **Ivan Toney (FWD)** - 20 goals\n\nThese are the only three players who met the criteria of scoring more than 15 goals in that season. While other players like Mohamed Salah and Marcus Rashford had strong seasons, they fell just short of the 15-goal mark.\n\nIf you're considering transfers or captaincy choices, Haaland and Kane were standout performers, while Toney was a solid mid-range option.",
+      "response_time_sec": 3.15,
+      "input_tokens": 847,
+      "output_tokens": 151,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nOkay, here's who scored more than 15 goals in the 2022-23 season, according to the data I have:\n\n*   **Erling Haaland** (36 goals)\n*   **Harry Kane** (30 goals)\n*   **Ivan Toney** (20 goals)\n*   **Callum Wilson** (18 goals)\n*   **Marcus Rashford** (17 goals)\n\nThese are the only players the data shows exceeding that 15-goal mark. Haaland and Kane were clearly the top performers, with significant leads over the rest. If you're looking for differential options, Toney, Wilson, and Rashford could be interesting, though they are less consistent based on these goal totals alone.\n\n\n\n",
+      "response_time_sec": 3.31,
+      "input_tokens": 713,
+      "output_tokens": 157,
+      "error": null
+    }
+  }
+}

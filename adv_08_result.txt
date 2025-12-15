@@ -1,0 +1,152 @@
+{
+  "query_id": "ADV_08",
+  "query_text": "Which Manchester City players had the most assists in the 2022-23 season?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "Which Manchester City players had the most assists in the 2022-23 season?",
+    "intent": "PLAYER-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [
+        "Man City"
+      ],
+      "Position": [],
+      "Statistic": [
+        "assists"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='PLAYER-RELATED', entities={\"Player\": [], \"Team\": [\"Man City\"], \"Position\": [], \"Statistic\": [\"assists\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Kevin De Bruyne",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 18,
+        "matches": 38
+      },
+      {
+        "player_name": "Riyad Mahrez",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 12,
+        "matches": 38
+      },
+      {
+        "player_name": "Jack Grealish",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 10,
+        "matches": 38
+      },
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "team": "Man City",
+        "total_assists": 9,
+        "matches": 38
+      },
+      {
+        "player_name": "Phil Foden",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 7,
+        "matches": 38
+      },
+      {
+        "player_name": "Ilkay Gündogan",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 6,
+        "matches": 38
+      },
+      {
+        "player_name": "Bernardo Veiga de Carvalho e Silva",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 6,
+        "matches": 38
+      },
+      {
+        "player_name": "Rodrigo Hernandez",
+        "position": "MID",
+        "team": "Man City",
+        "total_assists": 6,
+        "matches": 38
+      },
+      {
+        "player_name": "Julián Álvarez",
+        "position": "FWD",
+        "team": "Man City",
+        "total_assists": 3,
+        "matches": 38
+      },
+      {
+        "player_name": "João Cancelo",
+        "position": "DEF",
+        "team": "Man City",
+        "total_assists": 2,
+        "matches": 38
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Kevin De Bruyne",
+        "position": "MID",
+        "score": 0.7180525064468384
+      },
+      {
+        "player": "Rodrigo Hernandez",
+        "position": "MID",
+        "score": 0.717749297618866
+      },
+      {
+        "player": "Harvey Barnes",
+        "position": "MID",
+        "score": 0.7164955139160156
+      },
+      {
+        "player": "Heung-Min Son",
+        "position": "MID",
+        "score": 0.7153691053390503
+      },
+      {
+        "player": "Allan Saint-Maximin",
+        "position": "MID",
+        "score": 0.7150592803955078
+      },
+      {
+        "player": "Sadio Mané",
+        "position": "MID",
+        "score": 0.7143117189407349
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "The 2022‑23 Premier League season saw Manchester City’s best play‑makers as follows:\n\n| Rank | Player | Position | Assists |\n|------|--------|----------|---------|\n| 1st | **Kevin De Bruyne** | Midfielder | 18 |\n| 2nd | **Riyad Mahrez** | Midfielder | 12 |\n| 3rd | **Jack Grealish** | Midfielder | 10 |\n\nSo the top assist‑givers for Man City that season were Kevin De Bruyne (18), Riyad Mahrez (12), and Jack Grealish (10).",
+      "response_time_sec": 1.84,
+      "input_tokens": 867,
+      "output_tokens": 251,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In the 2022-23 season, Kevin De Bruyne led Manchester City with 18 assists, followed by Riyad Mahrez (12) and Jack Grealish (10). Erling Haaland (9) and Phil Foden (7) also contributed significantly. If you're looking for assist potential, De Bruyne is the standout choice, but Mahrez and Grealish offer good alternatives. Haaland's 9 assists show he's not just a goalscorer but also a playmaker. Foden is a solid midfield option with a decent assist tally. Consider your budget and team needs when deciding.",
+      "response_time_sec": 6.99,
+      "input_tokens": 935,
+      "output_tokens": 136,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nOkay, here's the breakdown of Man City players with the most assists in the 2022-23 season, based on the data I have:\n\n**Kevin De Bruyne** was *by far* the most creative force, with **18 assists** in 38 matches. He's the clear answer if you're looking for the top provider.\n\nAfter De Bruyne, **Riyad Mahrez** was next with **12 assists** in 38 matches. \n\n**Jack Grealish** also had a good season, contributing **10 assists** in 38 matches.\n\nInterestingly, **Erling Haaland** chipped in with **9 assists** alongside his goals in 38 matches – showing he's not just a finisher! **Phil Foden** also managed a respectable **7 assists** in 38 matches.\n\nFor FPL, De Bruyne is the standout pick, but Mahrez and Grealish are also strong contenders if you're looking to diversify your team and potentially save some money. Haaland's assists are a nice bonus on top of his goal threat.\n\n\n\n",
+      "response_time_sec": 4.52,
+      "input_tokens": 805,
+      "output_tokens": 233,
+      "error": null
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "query_id": "ADV_10",
+  "query_text": "Which goalkeeper had the most clean sheets in the 2022-23 season and how many did they have?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "Which goalkeeper had the most clean sheets in the 2022-23 season and how many did they have?",
+    "intent": "COMPARISON",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [
+        "GK"
+      ],
+      "Statistic": [
+        "clean_sheets"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='COMPARISON', entities={\"Player\": [], \"Team\": [], \"Position\": [\"GK\"], \"Statistic\": [\"clean_sheets\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "David De Gea Quintana",
+        "position": "GK",
+        "total_clean_sheets": 17
+      },
+      {
+        "player_name": "Alisson Ramses Becker",
+        "position": "GK",
+        "total_clean_sheets": 14
+      },
+      {
+        "player_name": "Nick Pope",
+        "position": "GK",
+        "total_clean_sheets": 14
+      },
+      {
+        "player_name": "Aaron Ramsdale",
+        "position": "GK",
+        "total_clean_sheets": 14
+      },
+      {
+        "player_name": "David Raya Martin",
+        "position": "GK",
+        "total_clean_sheets": 12
+      },
+      {
+        "player_name": "Ederson Santana de Moraes",
+        "position": "GK",
+        "total_clean_sheets": 11
+      },
+      {
+        "player_name": "Emiliano Martínez Romero",
+        "position": "GK",
+        "total_clean_sheets": 11
+      },
+      {
+        "player_name": "José Malheiro de Sá",
+        "position": "GK",
+        "total_clean_sheets": 11
+      },
+      {
+        "player_name": "Lukasz Fabianski",
+        "position": "GK",
+        "total_clean_sheets": 9
+      },
+      {
+        "player_name": "Kepa Arrizabalaga",
+        "position": "GK",
+        "total_clean_sheets": 9
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Alisson Ramses Becker",
+        "position": "GK",
+        "score": 0.7373606562614441
+      },
+      {
+        "player": "Tim Krul",
+        "position": "GK",
+        "score": 0.7276323437690735
+      },
+      {
+        "player": "Hugo Lloris",
+        "position": "GK",
+        "score": 0.7271487712860107
+      },
+      {
+        "player": "Jordan Pickford",
+        "position": "GK",
+        "score": 0.7246065139770508
+      },
+      {
+        "player": "Norberto Murara Neto",
+        "position": "GK",
+        "score": 0.7233772277832031
+      },
+      {
+        "player": "Robert Sánchez",
+        "position": "GK",
+        "score": 0.7227479219436646
+      },
+      {
+        "player": "Caoimhin Kelleher",
+        "position": "GK",
+        "score": 0.7226467132568359
+      },
+      {
+        "player": "David de Gea",
+        "position": "GK",
+        "score": 0.7224759459495544
+      },
+      {
+        "player": "David De Gea Quintana",
+        "position": "GK",
+        "score": 0.7221857309341431
+      },
+      {
+        "player": "Daniel Bachmann",
+        "position": "GK",
+        "score": 0.7217251062393188
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "The goalkeeper with the most clean sheets in the 2022‑23 FPL season was **David De Gea Quintana**, who kept **17 clean sheets**【BASELINE KG results】. \n\nIf you’re looking to boost your squad’s DEF stats, De Gea’s 17‑clean‑sheet tally is the top‑ranked figure in the data you’ve provided. Keep in mind, however, that this figure comes directly from the base statistics table, so it’s the reliable source for the season’s clean‑sheet leaders.",
+      "response_time_sec": 1.7,
+      "input_tokens": 884,
+      "output_tokens": 228,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " David De Gea had the most clean sheets in the 2022-23 season with 17. This is a strong performance, and he was the clear leader in this statistic. If you're looking for a reliable goalkeeper with a proven track record of keeping clean sheets, De Gea is a solid choice. However, consider his team's defensive strength and upcoming fixtures when making your decision.",
+      "response_time_sec": 4.06,
+      "input_tokens": 992,
+      "output_tokens": 84,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\nDavid De Gea Quintana had the most clean sheets in the 2022-23 season with a total of 17. \n\nA few other goalkeepers were close behind, with Alisson Ramses Becker, Nick Pope, and Aaron Ramsdale all achieving 14 clean sheets. While those three had a good season, De Gea clearly outperformed them in terms of keeping opponents from scoring!",
+      "response_time_sec": 2.1,
+      "input_tokens": 825,
+      "output_tokens": 87,
+      "error": null
+    }
+  }
+}

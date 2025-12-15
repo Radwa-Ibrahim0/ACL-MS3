@@ -1,0 +1,137 @@
+{
+  "query_id": "ADV_03",
+  "query_text": "Who scored the most goals in Gameweek 1 of the 2022-23 season?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Who scored the most goals in Gameweek 1 of the 2022-23 season?",
+    "intent": "PLAYER-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "goals_scored"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": [
+        1
+      ]
+    },
+    "baseline_description": "Baseline KG results for intent='PLAYER-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"goals_scored\"], \"Season\": [\"2022-23\"], \"Gameweek\": [1]}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Pascal Groß",
+        "position": "MID",
+        "total_goals_scored": 2
+      },
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_goals_scored": 2
+      },
+      {
+        "player_name": "Aleksandar Mitrović",
+        "position": "FWD",
+        "total_goals_scored": 2
+      },
+      {
+        "player_name": "Dejan Kulusevski",
+        "position": "MID",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Timothy Castagne",
+        "position": "DEF",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Jorge Luiz Frello Filho",
+        "position": "MID",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Ivan Toney",
+        "position": "FWD",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Josh Dasilva",
+        "position": "MID",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Kiernan Dewsbury-Hall",
+        "position": "MID",
+        "total_goals_scored": 1
+      },
+      {
+        "player_name": "Gabriel Martinelli Silva",
+        "position": "MID",
+        "total_goals_scored": 1
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Alisson Ramses Becker",
+        "position": "GK",
+        "score": 0.7168169021606445
+      },
+      {
+        "player": "Mohamed Salah",
+        "position": "MID",
+        "score": 0.7137361764907837
+      },
+      {
+        "player": "David de Gea",
+        "position": "GK",
+        "score": 0.711431086063385
+      },
+      {
+        "player": "Solly March",
+        "position": "MID",
+        "score": 0.7104669809341431
+      },
+      {
+        "player": "Teemu Pukki",
+        "position": "FWD",
+        "score": 0.7094422578811646
+      },
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7091977596282959
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7070497274398804
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "In Gameweek 1 of the 2022‑23 season, three players hit the top of the goal‑scoring chart:\n\n| Player | Position | Goals scored in GW 1 |\n|--------|----------|-----------------------|\n| Pascal Groß | MID | 2 |\n| Erling Haaland | FWD | 2 |\n| Aleksandar Mitrović | FWD | 2 |\n\nAll other top scorers netted just one goal (e.g., Dejan Kulusevski, Timothy Castagne, etc.). So there’s a three‑way tie for “most goals” with two goals each.\n\n**What it means for your squad**\n\n- **Goal‑scoring form**: These players were in great touch at the start of the season, making them attractive picks for the next gameweek.  \n- **Points potential**: Erling Haaland and Aleksandar Mitrović, being forwards, will earn more points for each goal (4 points each vs 2 for midfielders). Pascal Groß, a midfielder, gets 2 points per goal.  \n- **Check fixtures**: If your next gameweek gives them favorable fixtures compared to your current bench, they’re worth considering.\n\nIn short, the answer is a three‑way tie: Pascal Groß, Erling Haaland, and Aleksandar Mitrović each scored two goals in GW 1.",
+      "response_time_sec": 4.94,
+      "input_tokens": 828,
+      "output_tokens": 394,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In Gameweek 1 of the 2022-23 season, three players shared the top spot for most goals scored: Pascal Groß, Erling Haaland, and Aleksandar Mitrović, each with 2 goals. If you're looking for a standout choice, Haaland is a strong pick due to his high-profile move to Manchester City and his proven goal-scoring record. However, all three players had an excellent start to the season, so any of them could be a good addition to your team.",
+      "response_time_sec": 10.91,
+      "input_tokens": 896,
+      "output_tokens": 108,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "In Gameweek 1 of the 2022-23 season, Pascal Groß, Erling Haaland, and Aleksandar Mitrović all scored the most goals with 2 goals each. \n\nWhile Haaland is the most high-profile name of the three, and likely the one most FPL managers will have been targeting, Groß and Mitrović represent potentially good value options if you're looking for differentials. It's worth noting that several other players scored 1 goal each, so there were plenty of attacking returns across the board in that first gameweek.",
+      "response_time_sec": 4.14,
+      "input_tokens": 856,
+      "output_tokens": 0,
+      "error": null
+    }
+  }
+}

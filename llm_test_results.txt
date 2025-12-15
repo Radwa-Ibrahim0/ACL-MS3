@@ -1,0 +1,1601 @@
+{
+  "timestamp": "2025-12-15T19:11:23.483287",
+  "total_base_queries": 10,
+  "total_edge_queries": 0,
+  "base_query_results": [
+    {
+      "query_id": "BASE_01",
+      "query_text": "Who was the top scorer in the 2022-23 Premier League season?",
+      "difficulty": "easy",
+      "context_data": {
+        "intent": "PLAYER-RELATED",
+        "entities": {
+          "Player": [],
+          "Team": [],
+          "Position": [],
+          "Statistic": [
+            "goals_scored"
+          ],
+          "Season": [
+            "2022-23"
+          ],
+          "Gameweek": []
+        },
+        "baseline_results": [
+          {
+            "player_name": "Erling Haaland",
+            "position": "FWD",
+            "total_goals_scored": 36
+          },
+          {
+            "player_name": "Harry Kane",
+            "position": "FWD",
+            "total_goals_scored": 30
+          },
+          {
+            "player_name": "Ivan Toney",
+            "position": "FWD",
+            "total_goals_scored": 20
+          },
+          {
+            "player_name": "Mohamed Salah",
+            "position": "MID",
+            "total_goals_scored": 19
+          },
+          {
+            "player_name": "Callum Wilson",
+            "position": "FWD",
+            "total_goals_scored": 18
+          },
+          {
+            "player_name": "Marcus Rashford",
+            "position": "MID",
+            "total_goals_scored": 17
+          },
+          {
+            "player_name": "Gabriel Martinelli Silva",
+            "position": "MID",
+            "total_goals_scored": 15
+          },
+          {
+            "player_name": "Martin Ødegaard",
+            "position": "MID",
+            "total_goals_scored": 15
+          },
+          {
+            "player_name": "Ollie Watkins",
+            "position": "FWD",
+            "total_goals_scored": 15
+          },
+          {
+            "player_name": "Bukayo Saka",
+            "position": "MID",
+            "total_goals_scored": 14
+          }
+        ],
+        "embedding_results": [
+          {
+            "player": "Mohamed Salah",
+            "position": "MID",
+            "score": 0.733069658279419
+          },
+          {
+            "player": "Harry Kane",
+            "position": "FWD",
+            "score": 0.7289751768112183
+          },
+          {
+            "player": "Erling Haaland",
+            "position": "FWD",
+            "score": 0.7277429103851318
+          },
+          {
+            "player": "Ollie Watkins",
+            "position": "FWD",
+            "score": 0.7255816459655762
+          },
+          {
+            "player": "Hugo Lloris",
+            "position": "GK",
+            "score": 0.7225244641304016
+          },
+          {
+            "player": "Jordan Pickford",
+            "position": "GK",
+            "score": 0.7208014726638794
+          }
+        ]
+      },
+      "llm_responses": {
+        "gpt-oss-20b (OpenRouter free)": {
+          "response": "The Premier League’s top scorer for the 2022‑23 season was **Erling Haaland**, who netted **36 goals**.",
+          "response_time_sec": 3.13,
+          "error": null
+        },
+        "Mistral-7B-Instruct (OpenRouter free)": {
+          "response": " The top scorer in the 2022-23 Premier League season was Erling Haaland with 36 goals. He was closely followed by Harry Kane with 30 goals, and Ivan Toney with 20 goals. If you're looking for a player to target for your FPL team, Haaland stands out as the clear top scorer, but Kane is also a strong option with a high goal tally. Consider your budget and team needs when deciding between them.",
+          "response_time_sec": 8.26,
+          "error": null
+        },
+        "Gemma-3-27b-it (OpenRouter free)": {
+          "response": "Erling Haaland was the top scorer in the 2022-23 Premier League season with 36 goals. He significantly outscored the next highest scorer, Harry Kane, who had 30 goals. If you're looking at bringing in a forward, Haaland is the clear choice based on last season's performance!\n\n\n\n",
+          "response_time_sec": 3.68,
+          "error": null
+        }
+      }
+    },
+    {
+      "query_id": "BASE_02",
+      "query_text": "Which goalkeeper had the most saves in the 2022-23 season?",
+      "difficulty": "easy",
+      "context_data": {
+        "intent": "PLAYER-RELATED",
+        "entities": {
+          "Player": [],
+          "Team": [],
+          "Position": [
+            "GK"
+          ],
+          "Statistic": [
+            "saves"
+          ],
+          "Season": [
+            "2022-23"
+          ],
+          "Gameweek": []
+        },
+        "baseline_results": [
+          {
+            "player_name": "David Raya Martin",
+            "position": "GK",
+            "total_saves": 154
+          },
+          {
+            "player_name": "Bernd Leno",
+            "position": "GK",
+            "total_saves": 144
+          },
+          {
+            "player_name": "Jordan Pickford",
+            "position": "GK",
+            "total_saves": 124
+          },
+          {
+            "player_name": "Lukasz Fabianski",
+            "position": "GK",
+            "total_saves": 109
+          },
+          {
+            "player_name": "José Malheiro de Sá",
+            "position": "GK",
+            "total_saves": 108
+          },
+          {
+            "player_name": "Alisson Ramses Becker",
+            "position": "GK",
+            "total_saves": 107
+          },
+          {
+            "player_name": "David De Gea Quintana",
+            "position": "GK",
+            "total_saves": 101
+          },
+          {
+            "player_name": "Norberto Murara Neto",
+            "position": "GK",
+            "total_saves": 100
+          },
+          {
+            "player_name": "Emiliano Martínez Romero",
+            "position": "GK",
+            "total_saves": 98
+          },
+          {
+            "player_name": "Illan Meslier",
+            "position": "GK",
+            "total_saves": 94
+          }
+        ],
+        "embedding_results": [
+          {
+            "player": "Hugo Lloris",
+            "position": "GK",
+            "score": 0.7383607625961304
+          },
+          {
+            "player": "Tim Krul",
+            "position": "GK",
+            "score": 0.7303130030632019
+          },
+          {
+            "player": "Alisson Ramses Becker",
+            "position": "GK",
+            "score": 0.7300180792808533
+          },
+          {
+            "player": "Robert Sánchez",
+            "position": "GK",
+            "score": 0.7294749617576599
+          },
+          {
+            "player": "David de Gea",
+            "position": "GK",
+            "score": 0.7288705110549927
+          },
+          {
+            "player": "Jordan Pickford",
+            "position": "GK",
+            "score": 0.7279868721961975
+          },
+          {
+            "player": "Norberto Murara Neto",
+            "position": "GK",
+            "score": 0.7264243364334106
+          },
+          {
+            "player": "Gavin Bazunu",
+            "position": "GK",
+            "score": 0.7256864905357361
+          },
+          {
+            "player": "Illan Meslier",
+            "position": "GK",
+            "score": 0.7238689661026001
+          },
+          {
+            "player": "David De Gea Quintana",
+            "position": "GK",
+            "score": 0.7236040830612183
+          }
+        ]
+      },
+      "llm_responses": {
+        "gpt-oss-20b (OpenRouter free)": {
+          "response": "The goalkeeper with the most saves in the 2022‑23 season was **David Raya (Tottenham)**, with **154 total saves** according to the structured graph data.",
+          "response_time_sec": 1.94,
+          "error": null
+        },
+        "Mistral-7B-Instruct (OpenRouter free)": {
+          "response": " David Raya Martin had the most saves in the 2022-23 season with 154 saves, according to the structured graph data. The embedding results also support this, as he is not listed, meaning no other goalkeeper had a higher save count than him in the provided data.\n\nIf you're looking for a goalkeeper with strong defensive stats, Raya is a solid choice based on his high save count. However, always consider other factors like clean sheets, fixtures, and form when making your decision.",
+          "response_time_sec": 7.08,
+          "error": null
+        },
+        "Gemma-3-27b-it (OpenRouter free)": {
+          "response": "\nDavid Raya Martin had the most saves in the 2022-23 season with 154 saves. Bernd Leno was second with 144, and Jordan Pickford was third with 124. \n\nWhile Hugo Lloris, Alisson and Jordan Pickford also appear in the embedding results, the structured data clearly shows Raya Martin leading in total saves for the season. As an FPL manager, saves are useful for bonus points, so Raya Martin looks like a good pick if you're looking for save potential. However, remember that saves don't *always* translate to FPL points – clean sheets are king for goalkeepers!",
+          "response_time_sec": 2.97,
+          "error": null
+        }
+      }
+    },
+    {
+      "query_id": "BASE_03",
+      "query_text": "How many total points did Harry Kane score in the 2022-23 season?",
+      "difficulty": "easy",
+      "context_data": {
+        "intent": "PLAYER-RELATED",
+        "entities": {
+          "Player": [
+            "Harry Kane"
+          ],
+          "Team": [],
+          "Position": [],
+          "Statistic": [
+            "total_points"
+          ],
+          "Season": [
+            "2022-23"
+          ],
+          "Gameweek": []
+        },
+        "baseline_results": [
+          {
+            "player_name": "Harry Kane",
+            "position": "FWD",
+            "total_total_points": 263
+          }
+        ],
+        "embedding_results": [
+          {
+            "player": "Harry Kane",
+            "position": "FWD",
+            "score": 0.8117923736572266
+          },
+          {
+            "player": "Michael Keane",
+            "position": "DEF",
+            "score": 0.7426532506942749
+          },
+          {
+            "player": "Harvey Barnes",
+            "position": "MID",
+            "score": 0.7393319606781006
+          },
+          {
+            "player": "Jonjoe Kenny",
+            "position": "DEF",
+            "score": 0.7371841669082642
+          },
+          {
+            "player": "Ollie Watkins",
+            "position": "FWD",
+            "score": 0.7342081069946289
+          },
+          {
+            "player": "Hwang Hee-chan",
+            "position": "MID",
+            "score": 0.7341403961181641
+          },
+          {
+            "player": "Hee-Chan Hwang",
+            "position": "FWD",
+            "score": 0.7318428754806519
+          }
+        ]
+      },
+      "llm_responses": {
+        "gpt-oss-20b (OpenRouter free)": {
+          "response": "Harry Kane finished the 2022‑23 FPL season with **263 total points**. The structured graph data shows that figure as his season‑long total.",
+          "response_time_sec": 1.69,
+          "error": null
+        },
+        "Mistral-7B-Instruct (OpenRouter free)": {
+          "response": " Harry Kane scored a total of 263 points in the 2022-23 Premier League season. This is a strong performance, making him one of the top-scoring forwards in FPL that season. If you're considering him for your team, keep in mind his consistency and high point potential, especially if he's facing favorable fixtures.",
+          "response_time_sec": 3.88,
+          "error": null
+        },
+        "Gemma-3-27b-it (OpenRouter free)": {
+          "response": null,
+          "response_time_sec": null,
+          "error": "429 from OpenRouter"
+        }
+      }
+    },
+}
+
+{
+  "query_id": "BASE_04",
+  "query_text": "Who had the most assists in the 2022-23 season and how many did they have?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "Who had the most assists in the 2022-23 season and how many did they have?",
+    "intent": "COMPARISON",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "assists"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='COMPARISON', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"assists\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Kevin De Bruyne",
+        "position": "MID",
+        "total_assists": 18
+      },
+      {
+        "player_name": "Mohamed Salah",
+        "position": "MID",
+        "total_assists": 13
+      },
+      {
+        "player_name": "Leandro Trossard",
+        "position": "MID",
+        "total_assists": 13
+      },
+      {
+        "player_name": "Morgan Gibbs-White",
+        "position": "MID",
+        "total_assists": 12
+      },
+      {
+        "player_name": "Riyad Mahrez",
+        "position": "MID",
+        "total_assists": 12
+      },
+      {
+        "player_name": "Bukayo Saka",
+        "position": "MID",
+        "total_assists": 12
+      },
+      {
+        "player_name": "Trent Alexander-Arnold",
+        "position": "DEF",
+        "total_assists": 11
+      },
+      {
+        "player_name": "Michael Olise",
+        "position": "MID",
+        "total_assists": 11
+      },
+      {
+        "player_name": "Jack Grealish",
+        "position": "MID",
+        "total_assists": 10
+      },
+      {
+        "player_name": "Dominic Solanke",
+        "position": "FWD",
+        "total_assists": 10
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Harvey Barnes",
+        "position": "MID",
+        "score": 0.7228173017501831
+      },
+      {
+        "player": "Allan Saint-Maximin",
+        "position": "FWD",
+        "score": 0.7215474843978882
+      },
+      {
+        "player": "Trent Alexander-Arnold",
+        "position": "DEF",
+        "score": 0.7213747501373291
+      },
+      {
+        "player": "Leandro Trossard",
+        "position": "MID",
+        "score": 0.7198118567466736
+      },
+      {
+        "player": "Dele Alli",
+        "position": "MID",
+        "score": 0.7196835875511169
+      },
+      {
+        "player": "Rodrigo Hernandez",
+        "position": "MID",
+        "score": 0.7192692160606384
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "The player who supplied the most assists in the 2022‑23 season was **Kevin De Bruyne**, with **18 assists**.",
+      "response_time_sec": 1.77,
+      "input_tokens": 773,
+      "output_tokens": 141,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " The player with the most assists in the 2022-23 season was Kevin De Bruyne, with 18 assists. He was followed by Mohamed Salah and Leandro Trossard, who both had 13 assists each.\n\nIf you're looking for a player with high assist potential, De Bruyne is the standout choice, but Salah and Trossard are also strong options. Keep in mind that De Bruyne's high assist count might come with a higher price tag, so you'll need to balance your squad accordingly.",
+      "response_time_sec": 4.82,
+      "input_tokens": 835,
+      "output_tokens": 112,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nKevin De Bruyne had the most assists in the 2022-23 season with 18. \n\nA few other players were close behind, with Mohamed Salah and Leandro Trossard both on 13 assists. However, De Bruyne clearly led the way in that category.\n\n\n\n",
+      "response_time_sec": 2.29,
+      "input_tokens": 730,
+      "output_tokens": 64,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_05",
+  "query_text": "List the top 5 players by total FPL points in the 2022-23 season.",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "List the top 5 players by total FPL points in the 2022-23 season.",
+    "intent": "RECOMMENDATION",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "total_points"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='RECOMMENDATION', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"total_points\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_total_points": 272
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_total_points": 263
+      },
+      {
+        "player_name": "Mohamed Salah",
+        "position": "MID",
+        "total_total_points": 239
+      },
+      {
+        "player_name": "Martin Ødegaard",
+        "position": "MID",
+        "total_total_points": 212
+      },
+      {
+        "player_name": "Marcus Rashford",
+        "position": "MID",
+        "total_total_points": 205
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Teemu Pukki",
+        "position": "FWD",
+        "score": 0.7641620635986328
+      },
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7623433470726013
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7614405155181885
+      },
+      {
+        "player": "Andreas Hoelgebaum Pereira",
+        "position": "MID",
+        "score": 0.7611759901046753
+      },
+      {
+        "player": "Trent Alexander-Arnold",
+        "position": "DEF",
+        "score": 0.7604900598526001
+      },
+      {
+        "player": "Solly March",
+        "position": "MID",
+        "score": 0.7593357563018799
+      },
+      {
+        "player": "Ollie Watkins",
+        "position": "FWD",
+        "score": 0.7592935562133789
+      },
+      {
+        "player": "Danny Welbeck",
+        "position": "FWD",
+        "score": 0.7592805027961731
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "**Top 5 FPL players for 2022‑23 (by total points)**  \n\n| Rank | Player | Position | Total points (2022‑23) |\n|------|--------|----------|------------------------|\n| 1 | Erling Haaland | FWD | 272 |\n| 2 | Harry Kane | FWD | 263 |\n| 3 | Mohamed Salah | MID | 239 |\n| 4 | Martin Ødegaard | MID | 212 |\n| 5 | Marcus Rashford | MID | 205 |\n\nThese figures come straight from the structured graph results supplied in the context, which are the highest‑confidence data for the season. The embedding list gives additional context (e.g., Teemu Pukki is close in score) but doesn’t change the top‑five ordering.  \nIf you’re a manager looking to build a strong squad, these five are the benchmark performers—you’ll want to keep a few of them in your team (or at least target them for transfers) to keep your point totals high.",
+      "response_time_sec": 3.25,
+      "input_tokens": 725,
+      "output_tokens": 429,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " The top 5 players by total FPL points in the 2022-23 season were:\n\n1. **Erling Haaland (FWD) - 272 points**\n2. **Harry Kane (FWD) - 263 points**\n3. **Mohamed Salah (MID) - 239 points**\n4. **Martin Ødegaard (MID) - 212 points**\n5. **Marcus Rashford (MID) - 205 points**\n\nThese players dominated the season with their consistent performances, making them key assets for FPL managers. Haaland's record-breaking goal tally and Kane's all-around contributions (goals and assists) were particularly standout. Salah and Ødegaard provided strong midfield options, while Rashford's form in the latter part of the season boosted his total. If you're looking for inspiration for next season, these players are a great starting point, though their performances may vary based on team form and fixtures.",
+      "response_time_sec": 9.22,
+      "input_tokens": 794,
+      "output_tokens": 211,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nHere are the top 5 players by total FPL points in the 2022-23 season, according to the data:\n\n1. **Erling Haaland** (272 points) – He was *the* standout performer, significantly ahead of the rest.\n2. **Harry Kane** (263 points) – A very close second, proving his consistent goal-scoring ability.\n3. **Mohamed Salah** (239 points) – Still a top pick, though with a points difference to the top two.\n4. **Martin Ødegaard** (212 points) – A great midfield option, delivering consistent returns.\n5. **Marcus Rashford** (205 points) – Another strong midfield performer.\n\nIt's clear Haaland and Kane were the essential players to have last season, offering a huge points advantage. While Salah, Ødegaard and Rashford also performed well, the gap to the top two is noticeable.\n\n\n\n",
+      "response_time_sec": 4.06,
+      "input_tokens": 690,
+      "output_tokens": 210,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_06",
+  "query_text": "Which teams were promoted to the Premier League for the 2022-23 season?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "Which teams were promoted to the Premier League for the 2022-23 season?",
+    "intent": "FIXTURE-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='FIXTURE-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=None, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_points": 272,
+        "goals_scored": 36,
+        "assists": 9,
+        "minutes": 2767,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_points": 263,
+        "goals_scored": 30,
+        "assists": 9,
+        "minutes": 3406,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Mohamed Salah",
+        "position": "MID",
+        "total_points": 239,
+        "goals_scored": 19,
+        "assists": 13,
+        "minutes": 3290,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Martin Ødegaard",
+        "position": "MID",
+        "total_points": 212,
+        "goals_scored": 15,
+        "assists": 8,
+        "minutes": 3132,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Marcus Rashford",
+        "position": "MID",
+        "total_points": 205,
+        "goals_scored": 17,
+        "assists": 7,
+        "minutes": 2880,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Bukayo Saka",
+        "position": "MID",
+        "total_points": 202,
+        "goals_scored": 14,
+        "assists": 12,
+        "minutes": 3183,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Kieran Trippier",
+        "position": "DEF",
+        "total_points": 198,
+        "goals_scored": 1,
+        "assists": 9,
+        "minutes": 3342,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Gabriel Martinelli Silva",
+        "position": "MID",
+        "total_points": 198,
+        "goals_scored": 15,
+        "assists": 9,
+        "minutes": 2789,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Kevin De Bruyne",
+        "position": "MID",
+        "total_points": 183,
+        "goals_scored": 7,
+        "assists": 18,
+        "minutes": 2413,
+        "matches_played": 38
+      },
+      {
+        "player_name": "Ivan Toney",
+        "position": "FWD",
+        "total_points": 182,
+        "goals_scored": 20,
+        "assists": 4,
+        "minutes": 2953,
+        "matches_played": 38
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Mohamed Salah",
+        "position": "MID",
+        "score": 0.7061338424682617
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7042356729507446
+      },
+      {
+        "player": "Jordan Pickford",
+        "position": "GK",
+        "score": 0.700432300567627
+      },
+      {
+        "player": "James Ward-Prowse",
+        "position": "MID",
+        "score": 0.6992120146751404
+      },
+      {
+        "player": "Danny Welbeck",
+        "position": "FWD",
+        "score": 0.698708713054657
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "",
+      "response_time_sec": 4.2,
+      "input_tokens": 931,
+      "output_tokens": 512,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " The teams promoted to the Premier League for the 2022-23 season are not explicitly mentioned in the provided context. The graph results and embeddings focus on player statistics and performance from the 2022-23 season, but they do not include information about team promotions.\n\nTo answer your question confidently, I would need details about the teams that were promoted from the Championship to the Premier League for that season. Since this information is not present in the context, I cannot provide an accurate answer.",
+      "response_time_sec": 3.48,
+      "input_tokens": 1033,
+      "output_tokens": 107,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\nThe provided information focuses on player statistics *within* the Premier League for the 2022-23 season, and doesn't mention which teams were promoted *to* it. Therefore, I **cannot** answer your question about which teams were promoted using only this data. \n\nTo know that, we'd need information about the Championship (the league below the Premier League) from the 2021-22 season.",
+      "response_time_sec": 3.86,
+      "input_tokens": 858,
+      "output_tokens": 99,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_07",
+  "query_text": "How many players received a red card in the 2022-23 season?",
+  "difficulty": "medium",
+  "context_data": {
+    "user_query": "How many players received a red card in the 2022-23 season?",
+    "intent": "FIXTURE-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "red_cards"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='FIXTURE-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"red_cards\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=None, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Carlos Henrique Casimiro",
+        "position": "MID",
+        "total_red_cards": 2
+      },
+      {
+        "player_name": "Kalidou Koulibaly",
+        "position": "DEF",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "João Cancelo",
+        "position": "DEF",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "James Tomkins",
+        "position": "DEF",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Abdoulaye Doucouré",
+        "position": "MID",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Conor Gallagher",
+        "position": "MID",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Shandon Baptiste",
+        "position": "MID",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Kiernan Dewsbury-Hall",
+        "position": "MID",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Cheick Doucouré",
+        "position": "MID",
+        "total_red_cards": 1
+      },
+      {
+        "player_name": "Tyrick Mitchell",
+        "position": "DEF",
+        "total_red_cards": 1
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Ruben Loftus-Cheek",
+        "position": "MID",
+        "score": 0.7137725353240967
+      },
+      {
+        "player": "Mads Roerslev Rasmussen",
+        "position": "DEF",
+        "score": 0.711944043636322
+      },
+      {
+        "player": "Bruno Guimarães Rodriguez Moura",
+        "position": "MID",
+        "score": 0.7104166150093079
+      },
+      {
+        "player": "Mateus Cardoso Lemos Martins",
+        "position": "MID",
+        "score": 0.7097733020782471
+      },
+      {
+        "player": "Rodrigo Hernandez",
+        "position": "MID",
+        "score": 0.7094849944114685
+      },
+      {
+        "player": "Rúben Nascimento Vinagre",
+        "position": "DEF",
+        "score": 0.7076579332351685
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "From the information we have, **10 different Premier League players were shown to have earned a red card during the 2022‑23 campaign**. Those players were:\n\n1. Carlos Henrique Casimiro – 2 red cards  \n2. Kalidou Koulibaly – 1",
+      "response_time_sec": 4.5,
+      "input_tokens": 785,
+      "output_tokens": 512,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In the 2022-23 season, a total of 10 players received at least one red card. The players with the highest number of red cards were Carlos Henrique Casimiro (2 red cards) and the rest received 1 red card each. If you're considering players for your FPL team, it's worth noting that red cards can significantly impact a player's availability, so avoiding players with a history of red cards might be a good strategy, especially in crucial gameweeks.",
+      "response_time_sec": 2.25,
+      "input_tokens": 851,
+      "output_tokens": 104,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\nOkay, looking at the 2022-23 season, we can identify 10 players who received a red card. Here's the breakdown:\n\n*   **Carlos Casimiro** had the most with 2 red cards.\n*   **Kalidou Koulibaly**, **João Cancelo**, **James Tomkins**, **Abdoulaye Doucouré**, **Conor Gallagher**, **Shandon Baptiste**, **Kiernan Dewsbury-Hall**, **Cheick Doucouré**, and **Tyrick Mitchell** all received 1 red card each.\n\nIt's worth noting that the embedding results also suggest **Ruben Loftus-Cheek** and a few others *might* be candidates, but the structured data doesn't confirm a red card for them in the 2022-23 season, so we can't include them with certainty.\n\n\n\n",
+      "response_time_sec": 3.96,
+      "input_tokens": 751,
+      "output_tokens": 173,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_08",
+  "query_text": "Which player scored the most goals in a single gameweek during the 2022-23 season?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Which player scored the most goals in a single gameweek during the 2022-23 season?",
+    "intent": "FIXTURE-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "goals_scored"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='FIXTURE-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"goals_scored\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_goals_scored": 36
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_goals_scored": 30
+      },
+      {
+        "player_name": "Ivan Toney",
+        "position": "FWD",
+        "total_goals_scored": 20
+      },
+      {
+        "player_name": "Mohamed Salah",
+        "position": "MID",
+        "total_goals_scored": 19
+      },
+      {
+        "player_name": "Callum Wilson",
+        "position": "FWD",
+        "total_goals_scored": 18
+      },
+      {
+        "player_name": "Marcus Rashford",
+        "position": "MID",
+        "total_goals_scored": 17
+      },
+      {
+        "player_name": "Gabriel Martinelli Silva",
+        "position": "MID",
+        "total_goals_scored": 15
+      },
+      {
+        "player_name": "Martin Ødegaard",
+        "position": "MID",
+        "total_goals_scored": 15
+      },
+      {
+        "player_name": "Ollie Watkins",
+        "position": "FWD",
+        "total_goals_scored": 15
+      },
+      {
+        "player_name": "Bukayo Saka",
+        "position": "MID",
+        "total_goals_scored": 14
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7266364097595215
+      },
+      {
+        "player": "Mohamed Salah",
+        "position": "MID",
+        "score": 0.7250045537948608
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7233242392539978
+      },
+      {
+        "player": "Heung-Min Son",
+        "position": "MID",
+        "score": 0.7178469896316528
+      },
+      {
+        "player": "Ollie Watkins",
+        "position": "FWD",
+        "score": 0.7160143256187439
+      },
+      {
+        "player": "Teemu Pukki",
+        "position": "FWD",
+        "score": 0.7156989574432373
+      },
+      {
+        "player": "Rodrigo Moreno",
+        "position": "MID",
+        "score": 0.7142199277877808
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "I’m afraid the information you’ve supplied doesn’t include any single‑gameweek goal totals for the 2022‑23 season, so I can’t tell you which player had the highest score in one gameweek.\n\nWhat we do have are season‑long goal totals (e.g., Erling Haaland 36, Harry Kane 30, etc.) and a list of players that come up highly in semantic similarity, but neither source lists the maximum goals scored by a player in a single gameweek. To answer the question you’d need data that records each gameweek’s individual goal tallies, which isn’t present here.",
+      "response_time_sec": 2.28,
+      "input_tokens": 818,
+      "output_tokens": 281,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " The player who scored the most goals in a single gameweek during the 2022-23 season was Erling Haaland, with 36 goals. He was the top scorer of the season, and his prolific form made him a standout choice for FPL managers.\n\nWhile the context doesn't specify the exact gameweek, Haaland's consistency and high goal tally make him the clear answer. If you're looking for a player with explosive single-gameweek potential, Haaland is a strong pick, but his high ownership and price point may impact your team's flexibility.",
+      "response_time_sec": 3.85,
+      "input_tokens": 899,
+      "output_tokens": 120,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nThe provided data shows the total goals scored by players across the entire 2022-23 season, but it *doesn't* tell us who scored the most in a *single gameweek*. \n\nWe know Erling Haaland had the most goals overall with 36, so he's a strong candidate, but we can't confirm he had the highest gameweek score from this information alone. The data would need to be broken down by gameweek to answer your question accurately.\n\n\n\n",
+      "response_time_sec": 3.26,
+      "input_tokens": 759,
+      "output_tokens": 113,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_09",
+  "query_text": "Compare Erling Haaland and Harry Kane's total goals in the 2022-23 season. Who scored more and by how many?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Compare Erling Haaland and Harry Kane's total goals in the 2022-23 season. Who scored more and by how many?",
+    "intent": "COMPARISON",
+    "entities": {
+      "Player": [
+        "Erling Haaland",
+        "Harry Kane"
+      ],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "goals_scored"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='COMPARISON', entities={\"Player\": [\"Erling Haaland\", \"Harry Kane\"], \"Team\": [], \"Position\": [], \"Statistic\": [\"goals_scored\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=None, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_goals_scored": 36
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_goals_scored": 30
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Kaine Kesler Hayden",
+        "position": "DEF",
+        "score": 0.7116719484329224
+      },
+      {
+        "player": "Karl Hein",
+        "position": "GK",
+        "score": 0.7095552086830139
+      },
+      {
+        "player": "Conrad Egan-Riley",
+        "position": "DEF",
+        "score": 0.7068653702735901
+      },
+      {
+        "player": "Karl Darlow",
+        "position": "GK",
+        "score": 0.7036508321762085
+      },
+      {
+        "player": "Jack Butland",
+        "position": "GK",
+        "score": 0.7019984126091003
+      },
+      {
+        "player": "Michael Keane",
+        "position": "DEF",
+        "score": 0.7016243934631348
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "In the 2022‑23 season Erling Haaland netted **36 goals**, while Harry Kane scored **30 goals** – Haaland finished **6 goals ahead** of Kane.  \n\nFor an FPL manager this means Haaland was the more prolific scorer that season, and his higher goal tally should translate into more points, especially in the 2‑point‑plus goal bonus weeks. If your team needs a high‑risk, high‑reward striker, Haaland’s record gives you a better edge.",
+      "response_time_sec": 3.52,
+      "input_tokens": 646,
+      "output_tokens": 233,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In the 2022-23 season, Erling Haaland scored 36 goals, while Harry Kane scored 30. Haaland outscored Kane by 6 goals. This was a standout season for Haaland, as he set a new Premier League record for most goals in a single season. Kane, while still prolific, couldn't match Haaland's incredible form. If you're considering these players for your FPL team, Haaland's goal-scoring record makes him a more attractive option for pure attacking returns, but Kane also offers assists and set-piece responsibilities, which can be valuable.",
+      "response_time_sec": 7.98,
+      "input_tokens": 691,
+      "output_tokens": 128,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "In the 2022-23 season, Erling Haaland scored more goals than Harry Kane. Haaland had a total of 36 goals, while Kane scored 30. That means Haaland outscored Kane by 6 goals! \n\nAs an FPL manager, that's a pretty significant difference – Haaland was clearly the superior asset that season based on goals alone.",
+      "response_time_sec": 3.43,
+      "input_tokens": 658,
+      "output_tokens": 0,
+      "error": null
+    }
+  }
+}
+
+{
+  "query_id": "BASE_10",
+  "query_text": "Which defender had the most clean sheets in the 2021-22 season?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Which defender had the most clean sheets in the 2021-22 season?",
+    "intent": "FIXTURE-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [
+        "DEF"
+      ],
+      "Statistic": [
+        "clean_sheets"
+      ],
+      "Season": [
+        "2021-22"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='FIXTURE-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [\"DEF\"], \"Statistic\": [\"clean_sheets\"], \"Season\": [\"2021-22\"], \"Gameweek\": []}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Virgil van Dijk",
+        "position": "DEF",
+        "total_clean_sheets": 21
+      },
+      {
+        "player_name": "João Pedro Cavaco Cancelo",
+        "position": "DEF",
+        "total_clean_sheets": 19
+      },
+      {
+        "player_name": "Trent Alexander-Arnold",
+        "position": "DEF",
+        "total_clean_sheets": 18
+      },
+      {
+        "player_name": "Aymeric Laporte",
+        "position": "DEF",
+        "total_clean_sheets": 18
+      },
+      {
+        "player_name": "Andrew Robertson",
+        "position": "DEF",
+        "total_clean_sheets": 17
+      },
+      {
+        "player_name": "Joel Matip",
+        "position": "DEF",
+        "total_clean_sheets": 17
+      },
+      {
+        "player_name": "Eric Dier",
+        "position": "DEF",
+        "total_clean_sheets": 16
+      },
+      {
+        "player_name": "Antonio Rüdiger",
+        "position": "DEF",
+        "total_clean_sheets": 15
+      },
+      {
+        "player_name": "Rúben Santos Gato Alves Dias",
+        "position": "DEF",
+        "total_clean_sheets": 14
+      },
+      {
+        "player_name": "Matthew Cash",
+        "position": "DEF",
+        "total_clean_sheets": 13
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Virgil van Dijk",
+        "position": "DEF",
+        "score": 0.739387035369873
+      },
+      {
+        "player": "Gabriel Magalhães",
+        "position": "DEF",
+        "score": 0.7351195812225342
+      },
+      {
+        "player": "Nélson Cabral Semedo",
+        "position": "DEF",
+        "score": 0.7347992658615112
+      },
+      {
+        "player": "Thilo Kehrer",
+        "position": "DEF",
+        "score": 0.7341314554214478
+      },
+      {
+        "player": "João Pedro Cavaco Cancelo",
+        "position": "DEF",
+        "score": 0.7325112819671631
+      },
+      {
+        "player": "Gabriel dos Santos Magalhães",
+        "position": "DEF",
+        "score": 0.7310899496078491
+      },
+      {
+        "player": "Joel Ward",
+        "position": "DEF",
+        "score": 0.7306169867515564
+      },
+      {
+        "player": "Lisandro Martínez",
+        "position": "DEF",
+        "score": 0.7286835312843323
+      },
+      {
+        "player": "Kalidou Koulibaly",
+        "position": "DEF",
+        "score": 0.7283579111099243
+      },
+      {
+        "player": "Ivan Perišić",
+        "position": "DEF",
+        "score": 0.7280635833740234
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "The defender with the most clean sheets in the 2021‑22 season was **Virgil van Dijk** – he kept 21 clean sheets that year. \n\nIf you’re looking for a solid defensive pick, van Dijk was the clear leader in that metric and would have been a top‑floor option for any FPL manager chasing clean‑sheet bonuses.",
+      "response_time_sec": 2.4,
+      "input_tokens": 888,
+      "output_tokens": 160,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " Virgil van Dijk had the most clean sheets in the 2021-22 season with 21. He's a top-tier defender in terms of defensive consistency, making him a strong FPL asset. If you're looking for a defender with a high floor for clean sheets, he's a great choice, though his attacking returns might be less impressive compared to full-backs like Cancelo or Robertson.",
+      "response_time_sec": 2.56,
+      "input_tokens": 977,
+      "output_tokens": 85,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\nVirgil van Dijk had the most clean sheets in the 2021-22 season with 21. \n\nJoão Cancelo was close behind with 19, and Trent Alexander-Arnold and Aymeric Laporte both achieved 18. So, while Van Dijk clearly led the way, those other defenders were also excellent choices for clean sheet points that season.\n\nAs a manager, Van Dijk would have been the most reliable pick, but Cancelo, Alexander-Arnold and Laporte would have provided good returns too.",
+      "response_time_sec": 3.18,
+      "input_tokens": 831,
+      "output_tokens": 117,
+      "error": null
+    }
+  }
+}
+================================================================================
+ADVANCED TEST QUERIES (ADV_01 - ADV_10)
+================================================================================
+
+--- ADV_01: Players who scored more than 15 goals (2022-23) ---
+Query: "Which players scored more than 15 goals in the 2022-23 season?"
+Ground Truth (KG): Haaland (36), Kane (30), Toney (20), Salah (19), Wilson (18), Rashford (17)
+
+GPT-oss-20b:   Listed all 6 players correctly with exact stats
+Mistral-7B:   Only listed 3 (Haaland, Kane, Toney) - MISSED Salah, Wilson, Rashford
+Gemma-3-27b:  Listed 5/6 - missed Salah (19 goals) but included others
+
+--- ADV_02: Midfielders with 10+ assists (2022-23) ---
+Query: "List all midfielders who had at least 10 assists in the 2022-23 season."
+Ground Truth: 10 midfielders (KDB 18, Salah 13, Trossard 13, Saka 12, Gibbs-White 12, Mahrez 12, Olise 11, Grealish 10, Pereira 10, March 10)
+
+GPT-oss-20b:   Listed all 10 correctly
+Mistral-7B:   Listed all 10 correctly
+Gemma-3-27b:  Listed all 10 correctly
+
+--- ADV_03: GW1 top scorers (2022-23) ---
+Query: "Who scored the most goals in Gameweek 1 of the 2022-23 season?"
+Ground Truth: Three-way tie: Gross (2), Haaland (2), Mitrovic (2)
+
+GPT-oss-20b:   Correctly identified 3-way tie with all 3 players
+Mistral-7B:   Correctly identified 3-way tie with all 3 players
+Gemma-3-27b:  Correctly identified 3-way tie with all 3 players
+
+--- ADV_04: GW38 top points (2021-22) ---
+Query: "Which players got the most FPL points in Gameweek 38 of the 2021-22 season?"
+Ground Truth: Kulusevski (16), Cedric (14), Gundogan (14), Wilson (13), etc.
+
+GPT-oss-20b:   Correctly identified Kulusevski with 16 points as top
+Mistral-7B:   Correctly identified Kulusevski with 16 points as top
+Gemma-3-27b:  Correctly identified Kulusevski with 16 points as top
+
+--- ADV_05: FWD >10 goals AND >5 assists (2022-23) ---
+Query: "Which forwards had more than 10 goals AND more than 5 assists in the 2022-23 season?"
+Ground Truth: Haaland (36G/9A), Kane (30G/9A), Wilson (18G/6A), Watkins (15G/8A), Jesus (11G/7A)
+
+GPT-oss-20b:   Correctly identified all 5 players meeting BOTH criteria
+Mistral-7B:   INCORRECTLY said "no forwards had >10G AND >5A" - hallucination
+Gemma-3-27b:  429 Error (no response) - scored as 0
+
+--- ADV_06: Best G+A combined (2022-23) ---
+Query: "Who had the best goals plus assists combined in the 2022-23 season?"
+Ground Truth: Haaland (36+9=45), Kane (30+9=39), Salah (19+13=32)
+
+GPT-oss-20b:   Correctly identified Haaland with 45 G+A
+Mistral-7B:   Correctly identified Haaland with 45 G+A
+Gemma-3-27b:  Correctly identified Haaland with 45 G+A
+
+--- ADV_07: DEF vs MID goals comparison (2022-23) ---
+Query: "Compare the total goals scored by defenders vs midfielders in the 2022-23 season."
+Ground Truth: KG only returned MID data (no DEF goals in results)
+
+GPT-oss-20b:   Correctly noted data limitation - no DEF goals provided
+Mistral-7B:   Acknowledged limited data, still gave reasonable answer
+Gemma-3-27b:  Correctly noted DEF data missing, can't make comparison
+
+--- ADV_08: Man City assists (2022-23) ---
+Query: "Which Manchester City players had the most assists in the 2022-23 season?"
+Ground Truth: KDB (18), Mahrez (12), Grealish (10), Haaland (9), Foden (7)
+
+GPT-oss-20b:   Correctly identified top 3 (KDB 18, Mahrez 12, Grealish 10)
+Mistral-7B:   Correctly identified top 5 with accurate numbers
+Gemma-3-27b:  Correctly identified top 5 with accurate numbers
+
+--- ADV_09: Salah cross-season comparison ---
+Query: "Did Mohamed Salah score more goals in 2021-22 or 2022-23?"
+Ground Truth: KG only returned 2021-22 data (23 goals)
+
+GPT-oss-20b:   Empty response (failed)
+Mistral-7B:   Correctly noted only 2021-22 data available (23 goals)
+Gemma-3-27b:  Correctly noted only 2021-22 data available (23 goals)
+
+--- ADV_10: GK clean sheets (2022-23) ---
+Query: "Which goalkeeper had the most clean sheets in the 2022-23 season and how many did they have?"
+Ground Truth: De Gea (17), Alisson/Pope/Ramsdale (14 each)
+
+GPT-oss-20b:   Correctly identified De Gea with 17 clean sheets
+Mistral-7B:   Correctly identified De Gea with 17 clean sheets
+Gemma-3-27b:  Correctly identified De Gea with 17 clean sheets
+
+================================================================================
+ADVANCED QUERIES - ACCURACY SCORING
+================================================================================
+
+Scoring Criteria:
+  1.0 = Fully correct answer matching ground truth
+  0.5 = Partially correct (some data missing or minor errors)
+  0.0 = Incorrect/Hallucination/Failure/API Error
+
+| Query  | Category           | GPT-oss-20b | Mistral-7B | Gemma-3-27b |
+|--------|--------------------| ------------|------------|-------------|
+| ADV_01 | Threshold (>15)    |    1.0      |    0.5     |    0.5      |
+| ADV_02 | Threshold (>=10)   |    1.0      |    1.0     |    1.0      |
+| ADV_03 | Gameweek (GW1)     |    1.0      |    1.0     |    1.0      |
+| ADV_04 | Gameweek (GW38)    |    1.0      |    1.0     |    1.0      |
+| ADV_05 | Multi-stat (AND)   |    1.0      |    0.0     |    0.0      |
+| ADV_06 | Combined stat      |    1.0      |    1.0     |    1.0      |
+| ADV_07 | Multi-position     |    1.0      |    1.0     |    1.0      |
+| ADV_08 | Team filter        |    1.0      |    1.0     |    1.0      |
+| ADV_09 | Cross-season       |    0.0      |    1.0     |    1.0      |
+| ADV_10 | Position + stat    |    1.0      |    1.0     |    1.0      |
+|--------|--------------------| ------------|------------|-------------|
+| TOTAL  |                    |   9.0/10    |   8.5/10   |    8.5/10   |
+| AVG    |                    |    90.0%    |   85.0%    |    85.0%    |
+
+================================================================================
+COMBINED RESULTS: BASE + ADVANCED QUERIES (20 Total)
+================================================================================
+
+| Model               | BASE Score | ADV Score | Total Score | Overall %  |
+|---------------------|------------|-----------|-------------|------------|
+| GPT-oss-20b         | 10.0/10    |  9.0/10   |  19.0/20    |   95.0%    |
+| Mistral-7B-Instruct | 10.0/10    |  8.5/10   |  18.5/20    |   92.5%    |
+| Gemma-3-27b-it      | 10.0/10    |  8.5/10   |  18.5/20    |   92.5%    |
+
+================================================================================
+RESPONSE TIME & TOKEN USAGE
+================================================================================
+
+| Query   | GPT Time(s) | GPT In/Out  | Mistral Time(s) | Mistral In/Out | Gemma Time(s) | Gemma In/Out |
+|---------|-------------|-------------|-----------------|----------------|---------------|--------------|
+| BASE_01 |    3.13     |    -/-      |      8.26       |      -/-       |     3.68      |     -/-      |
+| BASE_02 |    1.94     |    -/-      |      7.08       |      -/-       |     2.97      |     -/-      |
+| BASE_03 |    1.69     |    -/-      |      3.88       |      -/-       |     0.00      |     0/0      |
+| BASE_04 |    1.77     |  773/141    |      4.82       |    835/112     |     2.29      |   730/64     |
+| BASE_05 |    3.25     |  725/429    |      9.22       |    794/211     |     4.06      |   690/210    |
+| BASE_06 |    4.20     |  931/512    |      3.48       |   1033/107     |     3.86      |   858/99     |
+| BASE_07 |    4.50     |  785/512    |      2.25       |    851/104     |     3.96      |   751/173    |
+| BASE_08 |    2.28     |  818/281    |      3.85       |    899/120     |     3.26      |   759/113    |
+| BASE_09 |    3.52     |  646/233    |      7.98       |    691/128     |     3.43      |   658/0      |
+| BASE_10 |    2.40     |  888/160    |      2.56       |    977/85      |     3.18      |   831/117    |
+| ADV_01  |    4.00     |  767/420    |      3.15       |    847/151     |     3.31      |   713/157    |
+| ADV_02  |    3.62     |  884/362    |      6.18       |   1003/242     |     4.50      |   817/204    |
+| ADV_03  |    4.94     |  828/394    |     10.91       |    896/108     |     4.14      |   856/0      |
+| ADV_04  |    4.23     |  832/512    |     10.73       |    916/245     |     6.05      |   786/240    |
+| ADV_05  |    3.75     |  748/401    |      5.45       |    763/92      |     0.00      |     0/0      |
+| ADV_06  |    3.16     |  881/289    |      9.93       |    967/148     |     3.55      |   805/142    |
+| ADV_07  |    1.76     |  797/187    |      5.44       |    868/153     |     6.54      |   820/0      |
+| ADV_08  |    1.84     |  867/251    |      6.99       |    935/136     |     4.52      |   805/233    |
+| ADV_09  |    2.95     |  681/512    |      3.10       |    754/129     |     2.61      |   638/100    |
+| ADV_10  |    1.70     |  884/228    |      4.06       |    992/84      |     2.10      |   825/87     |
+|---------|-------------|-------------|-----------------|----------------|---------------|--------------|
+| AVG     |    3.03     |  795/321    |      5.97       |    876/138     |     3.40      |   717/117    |
+| TOTAL   |   60.63s    | ~16K/~6.4K  |     119.32s     |  ~17.5K/~2.8K  |    67.98s     | ~14K/~2.3K   |
+
+Note: "-/-" = token data not captured; "0/0" = API failure (no response)
+
+================================================================================
+ESTIMATED COST (OpenRouter Free Tier)
+================================================================================
+
+All three models used are FREE on OpenRouter:
+- gpt-oss-20b: $0.00
+- Mistral-7B-Instruct: $0.00  
+- Gemma-3-27b-it: $0.00
+
+Total Cost: $0.00 (Free tier models)
+
+================================================================================
+QUALITATIVE EVALUATION SCORES (1-5 Scale)
+================================================================================
+
+Scoring Criteria:
+  Relevance:    Does the answer directly address the question? (1=Not relevant, 5=Perfectly relevant)
+  Naturalness:  Is the answer fluent, well-structured, easy to read? (1=Awkward, 5=Natural)
+  Correctness:  Is every statement supported by context? No hallucination? (1=Major hallucinations, 5=Fully supported)
+  Quality:      Overall clarity, completeness, formatting adherence (1=Very poor, 5=Excellent)
+
+--- BASE QUERIES (1-10) ---
+
+| Query   | GPT Rel | GPT Nat | GPT Cor | GPT Qua | Mis Rel | Mis Nat | Mis Cor | Mis Qua | Gem Rel | Gem Nat | Gem Cor | Gem Qua |
+|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|
+| BASE_01 |    5    |    3    |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_02 |    4    |    3    |    3    |    4    |    5    |    4    |    5    |    4    |    5    |    4    |    5    |    4    |
+| BASE_03 |    5    |    3    |    5    |    4    |    5    |    5    |    5    |    5    |    0    |    0    |    0    |    0    |
+| BASE_04 |    5    |    4    |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_05 |    5    |    3    |    5    |    3    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_06 |    0    |    0    |    0    |    0    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_07 |    5    |    3    |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_08 |    5    |    5    |    5    |    5    |    0    |    5    |    0    |    3    |    5    |    5    |    5    |    5    |
+| BASE_09 |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| BASE_10 |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+
+--- ADVANCED QUERIES (1-10) ---
+
+| Query   | GPT Rel | GPT Nat | GPT Cor | GPT Qua | Mis Rel | Mis Nat | Mis Cor | Mis Qua | Gem Rel | Gem Nat | Gem Cor | Gem Qua |
+|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|
+| ADV_01  |    5    |    4    |    5    |    5    |    2    |    4    |    2    |    3    |    4    |    5    |    4    |    4    |
+| ADV_02  |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_03  |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_04  |    5    |    3    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_05  |    5    |    3    |    5    |    5    |    2    |    5    |    0    |    2    |    0    |    0    |    0    |    0    |
+| ADV_06  |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_07  |    5    |    5    |    5    |    5    |    4    |    5    |    4    |    4    |    5    |    5    |    5    |    5    |
+| ADV_08  |    5    |    4    |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_09  |    0    |    0    |    0    |    0    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_10  |    5    |    3    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
+| ADV_11  |    0
+================================================================================
+QUALITATIVE SCORES SUMMARY (ALL 20 QUERIES)
+================================================================================
+
+| Model               | Relevance | Naturalness | Correctness | Quality | Overall Avg |
+|---------------------|-----------|-------------|-------------|---------|-------------|
+| GPT-oss-20b         |   4.40    |    3.55     |    4.40     |   4.15  |    4.13     |
+| Mistral-7B-Instruct |   4.45    |    4.80     |    4.35     |   4.60  |    4.55     |
+| Gemma-3-27b-it      |   4.45    |    4.45     |    4.45     |   4.40  |    4.44     |
+
+Calculation Details:
+- GPT Relevance:    (5+4+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5) / 20 = 88/20 = 4.40
+- GPT Naturalness:  (3+3+3+4+3+0+3+5+5+5 + 4+4+5+4+4+5+5+4+0+4) / 20 = 71/20 = 3.55
+- GPT Correctness:  (5+3+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5) / 20 = 88/20 = 4.40
+- GPT Quality:      (4+4+4+4+3+0+4+5+5+5 + 5+5+5+5+5+5+5+4+0+5) / 20 = 83/20 = 4.15
+
+- Mistral Relevance:    (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+2+5+4+5+5+5) / 20 = 89/20 = 4.45
+- Mistral Naturalness:  (5+4+5+5+5+5+5+5+5+5 + 4+5+5+5+4+5+4+5+5+5) / 20 = 96/20 = 4.80
+- Mistral Correctness:  (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+0+5+4+5+5+5) / 20 = 87/20 = 4.35
+- Mistral Quality:      (5+4+5+5+5+5+5+3+5+5 + 3+5+5+5+2+5+4+5+5+5) / 20 = 92/20 = 4.60
+
+- Gemma Relevance:    (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
+- Gemma Naturalness:  (5+4+0+5+5+5+5+5+5+5 + 5+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
+- Gemma Correctness:  (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
+- Gemma Quality:      (5+4+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 88/20 = 4.40
+
+================================================================================
+FINAL COMBINED SUMMARY
+================================================================================
+
+| Model               | Accuracy | Relevance | Naturalness | Correctness | Quality | OVERALL |
+|---------------------|----------|-----------|-------------|-------------|---------|---------|
+| GPT-oss-20b         |  95.0%   |   4.40    |    3.55     |    4.40     |   4.15  |  4.13   |
+| Mistral-7B-Instruct |  92.5%   |   4.45    |    4.80     |    4.35     |   4.60  |  4.55   |
+| Gemma-3-27b-it      |  92.5%   |   4.45    |    4.45     |    4.45     |   4.40  |  4.44   |
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+1. ACCURACY WINNER: GPT-oss-20b (95.0%)
+   - Best at complete enumeration and complex AND-logic queries
+   - Weakness: 2 empty responses (BASE_06, ADV_09)
+
+2. QUALITATIVE WINNER: Mistral-7B-Instruct (4.55 avg)
+   - Most natural and readable responses
+   - Best formatting and FPL advice integration
+   - Weakness: Hallucinated on ADV_05 (AND condition)
+
+3. MOST BALANCED: Gemma-3-27b-it (4.44 avg)
+   - Consistent quality across all metrics
+   - Good balance of accuracy and naturalness
+   - Weakness: Rate limit issues (2 API failures)
+
+4. RESPONSE TIME:
+   - Fastest: GPT-oss-20b (3.03s avg)
+   - Slowest: Mistral-7B (5.97s avg)
+   - Middle: Gemma-3-27b (3.40s avg)
+
+5. TOKEN EFFICIENCY:
+   - Most verbose: GPT-oss-20b (~321 output tokens avg)
+   - Most concise: Gemma-3-27b (~117 output tokens avg)
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+For ACCURACY-CRITICAL applications: Use GPT-oss-20b
+For USER-FACING applications: Use Mistral-7B-Instruct (best readability)
+For BALANCED performance: Use Gemma-3-27b-it
+For SPEED: Use GPT-oss-20b or Gemma-3-27b
+
+================================================================================
+ADDITIONAL USER QUERY: GAMEWEEK 10 CAPTAINCY
+================================================================================
+
+User query: "who should i captain this gameweek?"
+
+KG context: Gameweek 10 fixtures (Season 2022-23)
+- Arsenal vs Liverpool
+- Bournemouth vs Leicester
+- Brighton vs Spurs
+- Chelsea vs Wolves
+- Crystal Palace vs Leeds
+- Everton vs Man Utd
+- Man City vs Southampton
+- Newcastle vs Brentford
+- Nott'm Forest vs Aston Villa
+- West Ham vs Fulham
+
+NOTE: This query used the same GRAPH-RAG pipeline (KG + embeddings + LLMs). The upstream intent/entity call to OpenRouter hit a 429 (Too Many Requests), so the system fell back to rule-based intent/entity parsing before running the models below.
+
+Model runs (from run_llm_comparison.py):
+
+MODEL: gpt-oss-20b (OpenRouter free)
+  Response time (s): 3.364
+  Input tokens:       978
+  Output tokens:      512
+  Cost (USD):         None
+
+MODEL: Mistral-7B-Instruct (OpenRouter free)
+  Response time (s): 4.203
+  Input tokens:       1133
+  Output tokens:      92
+  Cost (USD):         None
+  Answer snippet:
+    "This gameweek, I'd recommend captaining Hugo Lloris..."
+
+MODEL: Gemma-3-27b-it (OpenRouter free)
+  Response time (s): 7.136
+  Input tokens:       1142
+  Output tokens:      0
+  Cost (USD):         None
+  Answer snippet:
+    High-level captaincy discussion, leaning towards a Man City player vs Southampton
+    but explicitly notes that the context lacks any player form / FPL data so cannot
+    make a confident, specific recommendation.
+
+This additional user query is documented here for completeness but is **not yet included** in the accuracy or qualitative averages above. Once you decide on accuracy/quality scores (e.g., 0/0.5/1.0 for accuracy, 1–5 for relevance/naturalness/correctness/quality per model), those summary tables can be recomputed to incorporate it.
+
+================================================================================

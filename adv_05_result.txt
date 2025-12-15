@@ -1,0 +1,111 @@
+{
+  "query_id": "ADV_05",
+  "query_text": "Which forwards had more than 10 goals AND more than 5 assists in the 2022-23 season?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Which forwards had more than 10 goals AND more than 5 assists in the 2022-23 season?",
+    "intent": "COMPARISON",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [
+        "FWD"
+      ],
+      "Statistic": [
+        "goals_scored",
+        "assists"
+      ],
+      "Season": [
+        "2022-23"
+      ],
+      "Gameweek": []
+    },
+    "baseline_description": "Baseline KG results for intent='COMPARISON', entities={\"Player\": [], \"Team\": [], \"Position\": [\"FWD\"], \"Statistic\": [\"goals_scored\", \"assists\"], \"Season\": [\"2022-23\"], \"Gameweek\": []}, ranking=None, threshold={'stat': 'goals_scored', 'operator': 'GT', 'value': 10}",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Erling Haaland",
+        "position": "FWD",
+        "total_goals_scored": 36,
+        "total_assists": 9
+      },
+      {
+        "player_name": "Harry Kane",
+        "position": "FWD",
+        "total_goals_scored": 30,
+        "total_assists": 9
+      },
+      {
+        "player_name": "Ivan Toney",
+        "position": "FWD",
+        "total_goals_scored": 20,
+        "total_assists": 4
+      },
+      {
+        "player_name": "Callum Wilson",
+        "position": "FWD",
+        "total_goals_scored": 18,
+        "total_assists": 6
+      },
+      {
+        "player_name": "Ollie Watkins",
+        "position": "FWD",
+        "total_goals_scored": 15,
+        "total_assists": 8
+      },
+      {
+        "player_name": "Aleksandar Mitrović",
+        "position": "FWD",
+        "total_goals_scored": 14,
+        "total_assists": 2
+      },
+      {
+        "player_name": "Gabriel Fernando de Jesus",
+        "position": "FWD",
+        "total_goals_scored": 11,
+        "total_assists": 7
+      },
+      {
+        "player_name": "Roberto Firmino",
+        "position": "FWD",
+        "total_goals_scored": 11,
+        "total_assists": 4
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7278710603713989
+      },
+      {
+        "player": "Alexander Isak",
+        "position": "FWD",
+        "score": 0.7218880653381348
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "The forwards who finished the 2022‑23 season with **more than 10 goals and more than 5 assists** are:\n\n- **Erling Haaland** – 36 goals, 9 assists  \n- **Harry Kane** – 30 goals, 9 assists  \n- **Callum Wilson** – 18 goals, 6 assists  \n- **Ollie Watkins** – 15 goals, 8 assists  \n- **Gabriel Fernando de Jesus** – 11 goals, 7 assists  \n\nThese players are the only ones in the list that meet both thresholds. If you’re looking for the top performer in both categories, Haaland tops the group with the highest goal–assist return.",
+      "response_time_sec": 3.75,
+      "input_tokens": 748,
+      "output_tokens": 401,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " Based on the data, no forwards had more than 10 goals AND more than 5 assists in the 2022-23 season. Erling Haaland and Harry Kane had over 10 goals but only 9 assists, while Gabriel Jesus had 11 goals and 7 assists. The closest was Ollie Watkins with 15 goals and 8 assists, but he didn't quite reach 10 goals.",
+      "response_time_sec": 5.45,
+      "input_tokens": 763,
+      "output_tokens": 92,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": null,
+      "response_time_sec": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "error": "429 from OpenRouter"
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "query_id": "ADV_04",
+  "query_text": "Which players got the most FPL points in Gameweek 38 of the 2021-22 season?",
+  "difficulty": "hard",
+  "context_data": {
+    "user_query": "Which players got the most FPL points in Gameweek 38 of the 2021-22 season?",
+    "intent": "FIXTURE-RELATED",
+    "entities": {
+      "Player": [],
+      "Team": [],
+      "Position": [],
+      "Statistic": [
+        "total_points"
+      ],
+      "Season": [
+        "2021-22"
+      ],
+      "Gameweek": [
+        38
+      ]
+    },
+    "baseline_description": "Baseline KG results for intent='FIXTURE-RELATED', entities={\"Player\": [], \"Team\": [], \"Position\": [], \"Statistic\": [\"total_points\"], \"Season\": [\"2021-22\"], \"Gameweek\": [38]}, ranking=best, threshold=None",
+    "baseline_is_fallback": false,
+    "baseline_results": [
+      {
+        "player_name": "Dejan Kulusevski",
+        "position": "MID",
+        "total_total_points": 16
+      },
+      {
+        "player_name": "Cédric Soares",
+        "position": "DEF",
+        "total_total_points": 14
+      },
+      {
+        "player_name": "Ilkay Gündogan",
+        "position": "MID",
+        "total_total_points": 14
+      },
+      {
+        "player_name": "Callum Wilson",
+        "position": "FWD",
+        "total_total_points": 13
+      },
+      {
+        "player_name": "Pascal Groß",
+        "position": "MID",
+        "total_total_points": 13
+      },
+      {
+        "player_name": "James Maddison",
+        "position": "MID",
+        "total_total_points": 13
+      },
+      {
+        "player_name": "Ayoze Pérez",
+        "position": "MID",
+        "total_total_points": 13
+      },
+      {
+        "player_name": "Gabriel Teodoro Martinelli Silva",
+        "position": "MID",
+        "total_total_points": 12
+      },
+      {
+        "player_name": "Heung-Min Son",
+        "position": "MID",
+        "total_total_points": 12
+      },
+      {
+        "player_name": "Rodrigo Bentancur",
+        "position": "MID",
+        "total_total_points": 11
+      }
+    ],
+    "embedding_results": [
+      {
+        "player": "Erling Haaland",
+        "position": "FWD",
+        "score": 0.7582476139068604
+      },
+      {
+        "player": "Teemu Pukki",
+        "position": "FWD",
+        "score": 0.7562729120254517
+      },
+      {
+        "player": "Divock Origi",
+        "position": "FWD",
+        "score": 0.7532989382743835
+      },
+      {
+        "player": "Danny Welbeck",
+        "position": "FWD",
+        "score": 0.7530023455619812
+      },
+      {
+        "player": "Harry Kane",
+        "position": "FWD",
+        "score": 0.7527331709861755
+      },
+      {
+        "player": "Ollie Watkins",
+        "position": "FWD",
+        "score": 0.7518005967140198
+      },
+      {
+        "player": "Andreas Hoelgebaum Pereira",
+        "position": "MID",
+        "score": 0.7508013248443604
+      },
+      {
+        "player": "Bruno Borges Fernandes",
+        "position": "MID",
+        "score": 0.7506481409072876
+      }
+    ]
+  },
+  "llm_responses": {
+    "gpt-oss-20b (OpenRouter free)": {
+      "response": "**Gameweek 38, 2021‑22 – Top FPL point‑scorers**\n\n| Player | Position | Total Points |\n|--------|----------|--------------|\n| **Dejan Kulusevski** | Mid | **16** |\n| **Cédric Soares** | Def | **14** |\n| **Ilkay Gündogan** | Mid | **14** |\n| **Callum Wilson** | FWD | 13 |\n| **Pascal Groß** | Mid | 13 |\n| **James Maddison** | Mid | 13 |\n| **Ayoze Pérez** | Mid | 13 |\n| **Gabriel Teodoro Martinelli Silva** (Martinelli) | Mid | 12 |\n| **Heung‑Min Son** | Mid | 12 |\n| **Rodrigo Bentancur** | Mid | 11 |\n\nThese are the players ranked highest in the structured‑graph data for that week.  \n(Embeddings only showed similarity scores and didn’t provide the actual point tallies.)  \n\n**Takeaway for managers**  \n- Dejan Kuluse",
+      "response_time_sec": 4.23,
+      "input_tokens": 832,
+      "output_tokens": 512,
+      "error": null
+    },
+    "Mistral-7B-Instruct (OpenRouter free)": {
+      "response": " In Gameweek 38 of the 2021-22 season, the top-performing FPL players were:\n\n1. **Dejan Kulusevski (MID)** - 16 points\n2. **Cédric Soares (DEF)** - 14 points\n3. **Ilkay Gündogan (MID)** - 14 points\n4. **Callum Wilson (FWD)** - 13 points\n5. **Pascal Groß (MID)** - 13 points\n6. **James Maddison (MID)** - 13 points\n7. **Ayoze Pérez (MID)** - 13 points\n8. **Gabriel Martinelli (MID)** - 12 points\n9. **Heung-Min Son (MID)** - 12 points\n10. **Rodrigo Bentancur (MID)** - 11 points\n\nThese players had standout performances in the final gameweek, with Kulusevski leading the way. If you're looking for inspiration for future seasons, midfielders and forwards were particularly productive in this gameweek.",
+      "response_time_sec": 10.73,
+      "input_tokens": 916,
+      "output_tokens": 245,
+      "error": null
+    },
+    "Gemma-3-27b-it (OpenRouter free)": {
+      "response": "\n\nOkay, here's who topped the FPL points charts in Gameweek 38 of the 2021-22 season, according to the data I have:\n\n1. **Dejan Kulusevski** (MID) – 16 points\n2. **Cédric Soares** (DEF) – 14 points\n3. **Ilkay Gündogan** (MID) – 14 points\n4. **Callum Wilson** (FWD) – 13 points\n5. **Pascal Groß** (MID) – 13 points\n6. **James Maddison** (MID) – 13 points\n7. **Ayoze Pérez** (MID) – 13 points\n\nSeveral midfielders had a strong week, with Kulusevski clearly leading the pack. It's interesting to see a defender in Cédric Soares up there with 14 points too – likely a goal or assist combined with a clean sheet!\n\nThe embedding results *do* show some other popular players like Harry Kane and Son, but their points aren't listed in the Gameweek 38 data, so I can't confirm how well they did that week. I'm sticking with the specific numbers provided for Gameweek 38.\n\n\n\n",
+      "response_time_sec": 6.05,
+      "input_tokens": 786,
+      "output_tokens": 240,
+      "error": null
+    }
+  }
+}
