@@ -1,0 +1,265 @@
+{
+  "timestamp": "2025-12-15T19:43:30.485231",
+  "k": 5,
+  "ground_truth": {
+    "elite premium top-tier season-defining asset FWD": {
+      "description": "Top forwards by total points (elite tier p90+)",
+      "position_filter": "FWD",
+      "relevant_players": [
+        "Ollie Watkins",
+        "Erling Haaland",
+        "Harry Kane",
+        "Harry Kane",
+        "Ivan Toney",
+        "Cristiano Ronaldo dos Santos Aveiro",
+        "Callum Wilson",
+        "Bryan Mbeumo",
+        "Teemu Pukki",
+        "Michail Antonio"
+      ],
+      "top_5_expected": [
+        "Ollie Watkins",
+        "Erling Haaland",
+        "Harry Kane",
+        "Harry Kane",
+        "Ivan Toney"
+      ]
+    },
+    "elite goalkeeper with elite clean sheet potential and top-tier defensive returns": {
+      "description": "Goalkeepers with most clean sheets (elite tier)",
+      "position_filter": "GK",
+      "relevant_players": [
+        "Alisson Ramses Becker",
+        "Ederson Santana de Moraes",
+        "David De Gea Quintana",
+        "Hugo Lloris",
+        "Edouard Mendy",
+        "Nick Pope",
+        "Alisson Ramses Becker",
+        "Aaron Ramsdale",
+        "Aaron Ramsdale",
+        "David Raya Martin"
+      ],
+      "top_5_expected": [
+        "Alisson Ramses Becker",
+        "Ederson Santana de Moraes",
+        "David De Gea Quintana",
+        "Hugo Lloris",
+        "Edouard Mendy"
+      ]
+    },
+    "elite defensive asset with top-tier clean sheets defender": {
+      "description": "Defenders with most clean sheets (elite tier)",
+      "position_filter": "DEF",
+      "relevant_players": [
+        "Virgil van Dijk",
+        "Jo\u00e3o Pedro Cavaco Cancelo",
+        "Aymeric Laporte",
+        "Trent Alexander-Arnold",
+        "Andrew Robertson",
+        "Joel Matip",
+        "Eric Dier",
+        "Kieran Trippier",
+        "Benjamin White",
+        "Antonio R\u00fcdiger"
+      ],
+      "top_5_expected": [
+        "Virgil van Dijk",
+        "Jo\u00e3o Pedro Cavaco Cancelo",
+        "Aymeric Laporte",
+        "Trent Alexander-Arnold",
+        "Andrew Robertson"
+      ]
+    },
+    "goal-scoring midfielder and creative playmaker with elite goals": {
+      "description": "Midfielders with most goals (elite tier)",
+      "position_filter": "MID",
+      "relevant_players": [
+        "Mohamed Salah",
+        "Heung-Min Son",
+        "Mohamed Salah",
+        "Marcus Rashford",
+        "Sadio Man\u00e9",
+        "Kevin De Bruyne",
+        "Martin \u00d8degaard",
+        "Gabriel Martinelli Silva",
+        "Diogo Jota",
+        "Bukayo Saka"
+      ],
+      "top_5_expected": [
+        "Mohamed Salah",
+        "Heung-Min Son",
+        "Mohamed Salah",
+        "Marcus Rashford",
+        "Sadio Man\u00e9"
+      ]
+    },
+    "rarely plays very low minutes rotation or bench player": {
+      "description": "Players with minimal minutes (low tier)",
+      "position_filter": null,
+      "relevant_players": [
+        "Tyrese Francois",
+        "Nathan Redmond",
+        "Jack Hinshelwood",
+        "Marcus Oliveira Alencar",
+        "George Abbott",
+        "Ethan Nwaneri",
+        "Moise Kean",
+        "Emil Krafth",
+        "David Ozoh",
+        "Wesley Moraes",
+        "Daniel Chesters",
+        "Connor Ronan",
+        "Conor Coventry",
+        "Alex Kral",
+        "Kasey McAteer"
+      ],
+      "top_5_expected": [
+        "Tyrese Francois",
+        "Nathan Redmond",
+        "Jack Hinshelwood",
+        "Marcus Oliveira Alencar",
+        "George Abbott"
+      ]
+    }
+  },
+  "minilm_results": {
+    "elite premium top-tier season-defining asset FWD": {
+      "retrieved": [
+        "Joe Gelhardt",
+        "Alexander Isak",
+        "Sam Greenwood",
+        "Sam Surridge",
+        "Ashley Barnes"
+      ],
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "overlap": 0.0
+    },
+    "elite goalkeeper with elite clean sheet potential and top-tier defensive returns": {
+      "retrieved": [
+        "Eldin Jakupovic",
+        "Cameron Plain",
+        "Andreas S\u00f6ndergaard",
+        "Ellery Balcombe",
+        "Daniel Bachmann"
+      ],
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "overlap": 0.0
+    },
+    "elite defensive asset with top-tier clean sheets defender": {
+      "retrieved": [
+        "Trent Alexander-Arnold",
+        "Timothy Castagne",
+        "Aaron Wan-Bissaka",
+        "Takehiro Tomiyasu",
+        "Fabian Sch\u00e4r"
+      ],
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.1,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.3391602052736161,
+      "overlap": 0.2
+    },
+    "goal-scoring midfielder and creative playmaker with elite goals": {
+      "retrieved": [
+        "Andreas Hoelgebaum Pereira",
+        "Christian Eriksen",
+        "Alejandro Garnacho",
+        "Christian N\u00f8rgaard",
+        "Paul Pogba"
+      ],
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "overlap": 0.0
+    },
+    "rarely plays very low minutes rotation or bench player": {
+      "retrieved": [
+        "Josh Onomah",
+        "Phil Bardsley",
+        "Ryan Bertrand",
+        "Rhys Williams"
+      ],
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "overlap": 0.0
+    }
+  },
+  "bge_results": {
+    "elite premium top-tier season-defining asset FWD": {
+      "retrieved": [
+        "Erling Haaland",
+        "Harry Kane",
+        "Ollie Watkins",
+        "Teemu Pukki",
+        "Taiwo Awoniyi"
+      ],
+      "precision_at_k": 0.8,
+      "recall_at_k": 0.4444444444444444,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.8687949224876582,
+      "overlap": 0.75
+    },
+    "elite goalkeeper with elite clean sheet potential and top-tier defensive returns": {
+      "retrieved": [
+        "Daniel Bachmann",
+        "David De Gea Quintana",
+        "Alisson Ramses Becker"
+      ],
+      "precision_at_k": 0.4,
+      "recall_at_k": 0.25,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.38356636737133565,
+      "overlap": 0.4
+    },
+    "elite defensive asset with top-tier clean sheets defender": {
+      "retrieved": [
+        "Benjamin White",
+        "Ivan Peri\u0161i\u0107",
+        "Ben Chilwell",
+        "Matthew Cash",
+        "Pervis Estupi\u00f1\u00e1n"
+      ],
+      "precision_at_k": 0.2,
+      "recall_at_k": 0.1,
+      "mrr": 1.0,
+      "ndcg_at_k": 0.3391602052736161,
+      "overlap": 0.0
+    },
+    "goal-scoring midfielder and creative playmaker with elite goals": {
+      "retrieved": [
+        "Harvey Barnes",
+        "Kevin De Bruyne",
+        "James Maddison",
+        "Mohamed Salah",
+        "Ilkay G\u00fcndogan"
+      ],
+      "precision_at_k": 0.4,
+      "recall_at_k": 0.2222222222222222,
+      "mrr": 0.5,
+      "ndcg_at_k": 0.36005461457723403,
+      "overlap": 0.25
+    },
+    "rarely plays very low minutes rotation or bench player": {
+      "retrieved": [
+        "Christian Benteke",
+        "Bryan Gil Salvatierra",
+        "Alex Robertson"
+      ],
+      "precision_at_k": 0.0,
+      "recall_at_k": 0.0,
+      "mrr": 0.0,
+      "ndcg_at_k": 0.0,
+      "overlap": 0.0
+    }
+  }
+}
