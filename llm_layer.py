@@ -202,20 +202,14 @@ def build_structured_prompt(context: RetrievalContext) -> str:
         "player roles, form, fixtures, and typical manager strategies."
     )
 
-    # If baseline is fallback, emphasise embedding results
-    if context.baseline_is_fallback:
-        priority_note = (
-            "The baseline graph results were produced by a generic fallback "
-            "query and may be loosely related to the user question. "
-            "Prioritise the semantic embedding results when forming "
-            "your answer."
-        )
-    else:
-        priority_note = (
-            "Use both the structured graph results and the embedding-based "
-            "semantic matches. If they conflict, trust the structured graph "
-            "data first, but you may use embeddings to add nuance."
-        )
+    # Always prioritize baseline/structured graph data over embeddings
+    priority_note = (
+        "IMPORTANT: Always trust the BASELINE GRAPH RESULTS as your primary source of truth. "
+        "The structured graph data contains accurate FPL statistics from the knowledge graph. "
+        "Use the embedding results only as supplementary context if the baseline data is insufficient. "
+        "If the baseline results are empty or do not contain the requested information, "
+        "clearly state that the data is not available rather than guessing."
+    )
 
     task_block = (
         "TASK: Using ONLY the information in the context above, "

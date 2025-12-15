@@ -1,0 +1,479 @@
+================================================================================
+FPL RAG SYSTEM - ERROR ANALYSIS REPORT
+================================================================================
+Generated: December 15, 2025
+Total Edge Case Queries Tested: 15
+
+================================================================================
+ERROR TYPE DEFINITIONS
+================================================================================
+
+1. RETRIEVAL FAILURE
+   - Definition: The Knowledge Graph query returns no nodes, wrong nodes, or 
+     falls back to a generic query that doesn't address the user's question.
+   - Symptoms: Empty baseline results, mismatched entities, fallback query used
+   - Root causes: Entity resolution failure, missing data in KG, unsupported query type
+   
+2. CONTEXT OVERLOAD/NOISE
+   - Definition: Too much irrelevant context is provided to the LLM, diluting 
+     the signal and making it hard to extract the relevant answer.
+   - Symptoms: Large result sets, low relevance scores, mixed/unrelated players
+   - Root causes: Overly broad queries, ambiguous criteria, no filtering
+
+3. LLM HALLUCINATION
+   - Definition: The LLM's answer contains information NOT supported by the 
+     retrieved context, invented from its parametric knowledge.
+   - Symptoms: Facts not in context, confident wrong answers, out-of-scope claims
+   - Root causes: LLM ignoring grounding instructions, filling gaps with training data
+
+4. POOR SYNTHESIS
+   - Definition: The retrieved facts are correct, but the LLM fails to properly 
+     combine, calculate, or reason over them to produce a coherent answer.
+   - Symptoms: Wrong calculations, incomplete comparisons, missed logical connections
+   - Root causes: Complex multi-step reasoning, numerical aggregation errors
+
+================================================================================
+DETAILED ANALYSIS BY QUERY
+================================================================================
+
+--------------------------------------------------------------------------------
+ERR_01: "What was Erling Haaland's salary in 2022-23?"
+Category: out_of_scope | Expected Error: RETRIEVAL FAILURE
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Player=["Haaland"], Season=["2022-23"]
+  - Baseline results: 1 row (Haaland's FPL stats returned)
+  - Embedding results: 6 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL FAILURE (Partial)
+  - The system returned FPL stats instead of salary data (which doesn't exist)
+  - Baseline returned related but WRONG data for the question
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated salary data not available in context
+  ✓ Mistral: Correctly stated salary data not in context, offered FPL stats instead
+  ✓ Gemma: Correctly identified missing salary data
+
+VERDICT: LLMs handled gracefully - no hallucination. System correctly identified
+player but returned wrong attribute type. This is a RETRIEVAL SCOPE issue.
+
+--------------------------------------------------------------------------------
+ERR_02: "How many goals did Hallend score in 2022-23?"
+Category: misspelling | Expected Error: RETRIEVAL FAILURE
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: FIXTURE-RELATED
+  - Entities: Player=[], Statistic=["goals_scored"], Season=["2022-23"]
+  - Baseline results: 10 rows (top scorers returned)
+  - Embedding results: 8+ rows (Haaland ranked high)
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: PARTIAL RETRIEVAL FAILURE
+  - "Hallend" NOT recognized as entity → Player list empty
+  - System fell back to general "goals_scored" query
+  - Haaland appeared in results by coincidence (top scorer)
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated "Hallend" not found, suggested typo
+  ✓ Mistral: Suggested it might mean Haaland, gave correct answer
+  ✓ Gemma: Assumed Haaland, gave correct answer (36 goals)
+
+VERDICT: Entity resolution FAILED for misspelled name. LLMs compensated by
+inferring correct player from context. This is a PREPROCESSING weakness.
+
+--------------------------------------------------------------------------------
+ERR_03: "What was CR7's performance in 2021-22?"
+Category: nickname | Expected Error: RETRIEVAL FAILURE
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Player=["Ronaldo"], Season=["2021-22"]
+  - Baseline results: 1 row (Cristiano Ronaldo's stats)
+  - Embedding results: 6 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: NO ERROR - SUCCESSFULLY RESOLVED
+  - "CR7" was correctly mapped to "Ronaldo" by preprocessing
+  - Baseline found "Cristiano Ronaldo dos Santos Aveiro"
+
+LLM BEHAVIOR:
+  ✓ All 3 LLMs correctly reported CR7/Ronaldo's 2021-22 stats
+  ✓ 159 points, 18 goals, 3 assists, 35 matches
+
+VERDICT: SUCCESS! Nickname resolution worked. System handled alias correctly.
+
+--------------------------------------------------------------------------------
+ERR_04: "Who scored the most goals in December 2022?"
+Category: temporal | Expected Error: RETRIEVAL FAILURE
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Statistic=["goals_scored"], Season=["2022-23"]
+  - Baseline results: 10 rows (season totals, NOT December)
+  - Embedding results: 6 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL FAILURE
+  - "December 2022" not captured - no monthly granularity in KG
+  - System returned FULL SEASON totals instead
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated monthly breakdown not available
+  ✗ Mistral: HALLUCINATED - claimed Haaland scored 36 in December (wrong!)
+  ✓ Gemma: Acknowledged data is season-total, not December-specific
+
+VERDICT: Retrieval failed to filter by month (unsupported). Mistral hallucinated
+by treating season total as December total. This is both RETRIEVAL FAILURE and
+HALLUCINATION (Mistral).
+
+--------------------------------------------------------------------------------
+ERR_05: "List every single player appearance in 2022-23 with all stats."
+Category: scale | Expected Error: CONTEXT OVERLOAD
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Many statistics detected, Season=["2022-23"]
+  - Baseline results: 10 rows (limited by query)
+  - Embedding results: 7 rows
+  - Fallback used: Yes (dynamic fallback query)
+
+ACTUAL ERROR TYPE: CONTEXT OVERLOAD (Mitigated)
+  - System limited results to 10 rows (by design)
+  - Full dataset would be 500+ players
+
+LLM BEHAVIOR:
+  ✓ All LLMs acknowledged they could only show partial data
+  ✓ Provided top 10 players with available stats
+
+VERDICT: System's LIMIT 10 constraint prevented true overload. LLMs correctly
+noted incompleteness. This is a DESIGN TRADE-OFF that worked.
+
+--------------------------------------------------------------------------------
+ERR_06: "Tell me about all the midfielders in the Premier League."
+Category: broad_query | Expected Error: CONTEXT OVERLOAD
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Position=["MID"]
+  - Baseline results: 10 rows (top midfielders by points)
+  - Embedding results: 10 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: CONTEXT OVERLOAD (Mitigated)
+  - Query too broad but system limited to top 10
+
+LLM BEHAVIOR:
+  ✓ All LLMs provided summary of top 10 midfielders
+  ✓ Focused on most relevant (highest point) players
+
+VERDICT: System handled broad query by returning TOP performers. Reasonable
+behavior but loses long-tail players.
+
+--------------------------------------------------------------------------------
+ERR_07: "Who is the best player?"
+Category: ambiguous | Expected Error: CONTEXT OVERLOAD
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: RECOMMENDATION
+  - Entities: Empty (no specific criteria)
+  - Baseline results: 10 rows (top by total_points)
+  - Embedding results: 7 rows
+  - Fallback used: Yes
+
+ACTUAL ERROR TYPE: AMBIGUITY HANDLED WELL
+  - System defaulted to "total_points" as "best" metric
+  - Reasonable interpretation
+
+LLM BEHAVIOR:
+  ✓ All LLMs chose Haaland (272 pts) as "best"
+  ✓ Acknowledged "best" is subjective, explained rationale
+
+VERDICT: SUCCESS! System made reasonable assumption (points = best).
+LLMs provided nuanced answer acknowledging subjectivity.
+
+--------------------------------------------------------------------------------
+ERR_08: "Who will be the top scorer in the 2024-25 season?"
+Category: future_prediction | Expected Error: HALLUCINATION
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: RECOMMENDATION
+  - Entities: Player=["will"], Season=["2024-25"]
+  - Baseline results: 0 rows (no 2024-25 data)
+  - Embedding results: 8 rows (irrelevant)
+  - Fallback used: Yes
+
+ACTUAL ERROR TYPE: RETRIEVAL FAILURE + HALLUCINATION RISK
+  - No data for 2024-25 (future season)
+  - "will" incorrectly parsed as player name
+  - Only embedding results available (historical)
+
+LLM BEHAVIOR:
+  ✗ GPT-OSS: Speculated based on embeddings (Salah, Haaland)
+  ✗ Mistral: Made prediction based on past data
+  ✗ Gemma: Predicted Salah as likely top scorer
+
+VERDICT: HALLUCINATION! All LLMs made predictions without stating they lack
+future data. Should have said "cannot predict future seasons."
+
+--------------------------------------------------------------------------------
+ERR_09: "How many Champions League goals did Liverpool score?"
+Category: out_of_scope | Expected Error: HALLUCINATION
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: TEAM-RELATED
+  - Entities: Team=["Liverpool"], Statistic=["goals_scored"]
+  - Baseline results: 10 rows (Liverpool PREMIER LEAGUE goals)
+  - Embedding results: 7 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL SCOPE MISMATCH + HALLUCINATION
+  - System returned PL goals, not Champions League
+  - KG only contains Premier League FPL data
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated CL data not available
+  ✗ Mistral: HALLUCINATED - claimed 67 CL goals (summed PL goals!)
+  ✓ Gemma: Correctly noted data is "total goals" not CL-specific
+
+VERDICT: HALLUCINATION by Mistral. GPT and Gemma correctly identified scope
+limitation. This is a critical out-of-scope query handling issue.
+
+--------------------------------------------------------------------------------
+ERR_10: "What is Harry Kane's nationality and birth date?"
+Category: missing_attributes | Expected Error: HALLUCINATION
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Player=["Harry Kane"]
+  - Baseline results: 1 row (Kane's FPL stats only)
+  - Embedding results: 7 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL SCOPE LIMITATION
+  - Nationality/birthdate not in FPL KG schema
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated nationality/birthdate not in context
+  ✗ Mistral: HALLUCINATED - claimed "English, born July 28, 1993"
+  ✓ Gemma: Correctly stated this info not available
+
+VERDICT: HALLUCINATION by Mistral (used parametric knowledge).
+GPT and Gemma correctly refused to answer. This shows Mistral's
+weaker grounding adherence.
+
+--------------------------------------------------------------------------------
+ERR_11: "Who scored more, Kane or the Egyptian?"
+Category: indirect_reference | Expected Error: HALLUCINATION
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: COMPARISON
+  - Entities: Player=["Kane", "Salah"], Statistic=["goals_scored"]
+  - Baseline results: 3 rows (Kane, Salah, Salah-Eddine)
+  - Embedding results: 7 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: NO ERROR - ENTITY RESOLUTION SUCCESS
+  - "Egyptian" correctly mapped to "Salah"
+  - Both players found in baseline
+
+LLM BEHAVIOR:
+  ✓ All LLMs correctly identified Kane (47) > Salah (42)
+  ✓ Understood "the Egyptian" = Mohamed Salah
+
+VERDICT: SUCCESS! Impressive entity resolution for indirect reference.
+All LLMs answered correctly from context.
+
+--------------------------------------------------------------------------------
+ERR_12: "Which player improved the most between 2021-22 and 2022-23?"
+Category: complex_reasoning | Expected Error: POOR SYNTHESIS
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: COMPARISON
+  - Entities: Statistic=["total_points"], Season=["2021-22", "2022-23"]
+  - Baseline results: 10 rows (COMBINED totals, not per-season)
+  - Embedding results: 6 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL STRUCTURE + POOR SYNTHESIS
+  - System returned combined 2-season totals, not season-by-season
+  - Cannot calculate improvement delta without per-season breakdown
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated per-season breakdown missing
+  ✗ Mistral: POOR SYNTHESIS - claimed Salah improved most (wrong logic)
+  ✗ Gemma: POOR SYNTHESIS - listed combined total as "improvement"
+
+VERDICT: POOR SYNTHESIS by 2/3 LLMs. Retrieval returned wrong format
+(combined vs per-season). GPT correctly identified the limitation.
+
+--------------------------------------------------------------------------------
+ERR_13: "Combined points for Haaland, Salah, De Bruyne in 2022-23?"
+Category: hypothetical | Expected Error: POOR SYNTHESIS
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Player=["Haaland", "Salah", "De Bruyne"], Season=["2022-23"]
+  - Baseline results: 3 rows (each player's points)
+  - Embedding results: 7 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: NO ERROR - SYNTHESIS SUCCESS
+  - All 3 players found with correct points
+  - Math: 272 + 239 + 183 = 694
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correct answer (694 points)
+  ✗ Mistral: WRONG answer (704 points - arithmetic error!)
+  ✓ Gemma: Correct answer (694 points)
+
+VERDICT: POOR SYNTHESIS by Mistral (arithmetic error). GPT and Gemma
+correctly summed the values. Simple math but Mistral failed.
+
+--------------------------------------------------------------------------------
+ERR_14: "Compare total goals by defenders vs midfielders in 2022-23"
+Category: group_comparison | Expected Error: POOR SYNTHESIS
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: COMPARISON
+  - Entities: Position=["DEF", "MID"], Statistic=["goals_scored"]
+  - Baseline results: 10 rows (ALL MIDFIELDERS - no defenders!)
+  - Embedding results: 6 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL FAILURE + POOR SYNTHESIS
+  - Query returned only top scorers who happened to be midfielders
+  - No defender goals in baseline (defenders score fewer)
+  - Cannot make comparison without both groups
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated defender data missing
+  ✗ Mistral: Made up comparison without defender data
+  ✓ Gemma: Acknowledged only midfielder data available
+
+VERDICT: RETRIEVAL FAILURE - query should have returned grouped totals
+by position, not individual top scorers. GPT/Gemma handled gracefully.
+
+--------------------------------------------------------------------------------
+ERR_15: "Average PPG for forwards with 10+ goals in 2022-23?"
+Category: conditional_aggregation | Expected Error: POOR SYNTHESIS
+--------------------------------------------------------------------------------
+
+RETRIEVAL ANALYSIS:
+  - Intent detected: PLAYER-RELATED
+  - Entities: Position=["FWD"], Statistic=["total_points", "goals_scored"]
+  - Baseline results: 10 rows (forwards with 10+ goals)
+  - Embedding results: 4 rows
+  - Fallback used: No
+
+ACTUAL ERROR TYPE: RETRIEVAL MISSING DATA + POOR SYNTHESIS
+  - Baseline has total_points but NOT matches_played
+  - Cannot calculate PPG without games count
+
+LLM BEHAVIOR:
+  ✓ GPT-OSS: Correctly stated games played missing, cannot calculate PPG
+  ~ Mistral: Attempted calculation but made assumptions
+  ~ Gemma: Attempted calculation but noted missing data
+
+VERDICT: RETRIEVAL incomplete (missing matches_played for PPG).
+GPT correctly refused. Others attempted with caveats.
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+QUERIES BY EXPECTED ERROR TYPE:
+  - Retrieval Failure: 4 queries (ERR_01, ERR_02, ERR_03, ERR_04)
+  - Context Overload: 3 queries (ERR_05, ERR_06, ERR_07)
+  - Hallucination: 4 queries (ERR_08, ERR_09, ERR_10, ERR_11)
+  - Poor Synthesis: 4 queries (ERR_12, ERR_13, ERR_14, ERR_15)
+
+ACTUAL ERROR DISTRIBUTION:
+  - Retrieval Failure: 7/15 (47%) - includes partial failures
+  - Hallucination: 5/15 (33%) - mainly Mistral
+  - Poor Synthesis: 4/15 (27%) - calculation/reasoning errors
+  - Context Overload: 0/15 (0%) - mitigated by LIMIT clauses
+
+LLM PERFORMANCE COMPARISON:
+                      | Correct | Hallucinated | Poor Synthesis | Graceful Fail |
+  GPT-OSS-20B         |    10   |      1       |       0        |      4        |
+  Mistral-7B          |     7   |      5       |       2        |      1        |
+  Gemma-3-27B         |    10   |      1       |       1        |      3        |
+
+  Best performer: GPT-OSS (most accurate, best grounding)
+  Worst performer: Mistral (most hallucinations, arithmetic errors)
+
+================================================================================
+RECOMMENDATIONS FOR IMPROVEMENT
+================================================================================
+
+1. RETRIEVAL FAILURE MITIGATION:
+   - Implement fuzzy matching for player names (Levenshtein distance)
+   - Add nickname/alias lookup table (already working for CR7)
+   - Return explicit "data not found" signal for missing attributes
+   - Add per-season breakdown queries for comparison requests
+   - Add monthly/gameweek date filtering support
+
+2. CONTEXT OVERLOAD MITIGATION:
+   - Current LIMIT 10 constraint is working well
+   - Consider dynamic limits based on query complexity
+   - Add query decomposition for multi-part questions
+
+3. HALLUCINATION MITIGATION:
+   - Strengthen grounding in prompts (DONE - updated priority_note)
+   - Add explicit "only use provided context" constraints
+   - Consider post-generation fact verification
+   - Flag out-of-scope queries before LLM processing
+   - Consider switching from Mistral (high hallucination rate)
+
+4. POOR SYNTHESIS MITIGATION:
+   - Pre-compute aggregations in KG layer (grouped totals)
+   - Add chain-of-thought prompting for calculations
+   - Return data in formats that support requested operations
+   - Include matches_played whenever total_points is returned
+
+5. PREPROCESSING IMPROVEMENTS:
+   - Better handling of misspellings (fuzzy entity matching)
+   - Detect temporal granularity requests (month, week)
+   - Identify out-of-scope attributes (salary, nationality, etc.)
+   - Parse "improvement" queries to return per-period data
+
+================================================================================
+CONCLUSION
+================================================================================
+
+The FPL RAG system performs well on straightforward queries but struggles with:
+1. Out-of-scope attributes (salary, CL goals, nationality)
+2. Temporal granularity beyond seasons/gameweeks
+3. Cross-season improvement calculations (needs per-season data)
+4. Entity resolution for misspellings (but handles nicknames well)
+
+The LLM layer shows significant variation:
+- GPT-OSS and Gemma exhibit strong grounding behavior
+- Mistral frequently hallucinates and makes arithmetic errors
+- All LLMs benefit from the updated prompt emphasizing baseline data
+
+Key insight: Most "hallucinations" stem from retrieval returning WRONG data
+(e.g., PL goals when CL asked) rather than LLMs inventing facts. Improving
+retrieval precision and adding scope detection would prevent most errors.
+
+
+limitation from kg
+team winnings
+fixture scores
+no straight forward score, for future we could calculate it from goals conceded

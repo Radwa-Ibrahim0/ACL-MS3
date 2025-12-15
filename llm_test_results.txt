@@ -1477,32 +1477,32 @@ Scoring Criteria:
 | ADV_08  |    5    |    4    |    5    |    4    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
 | ADV_09  |    0    |    0    |    0    |    0    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
 | ADV_10  |    5    |    3    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |    5    |
-| ADV_11  |    0
+| ADV_11  |    0    |    0    |    0    |    0    |    2    |    5    |    2    |    3    |    4    |    5    |    3    |    4    |
 ================================================================================
 QUALITATIVE SCORES SUMMARY (ALL 20 QUERIES)
 ================================================================================
 
 | Model               | Relevance | Naturalness | Correctness | Quality | Overall Avg |
 |---------------------|-----------|-------------|-------------|---------|-------------|
-| GPT-oss-20b         |   4.40    |    3.55     |    4.40     |   4.15  |    4.13     |
-| Mistral-7B-Instruct |   4.45    |    4.80     |    4.35     |   4.60  |    4.55     |
-| Gemma-3-27b-it      |   4.45    |    4.45     |    4.45     |   4.40  |    4.44     |
+| GPT-oss-20b         |   4.19    |    3.38     |    4.19     |   3.95  |    4.13     |
+| Mistral-7B-Instruct |   4.33    |    4.80     |    4.24     |   4.52  |    4.55     |
+| Gemma-3-27b-it      |   4.43    |    4.48     |    4.38     |   4.38  |    4.44     |
 
 Calculation Details:
-- GPT Relevance:    (5+4+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5) / 20 = 88/20 = 4.40
-- GPT Naturalness:  (3+3+3+4+3+0+3+5+5+5 + 4+4+5+4+4+5+5+4+0+4) / 20 = 71/20 = 3.55
-- GPT Correctness:  (5+3+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5) / 20 = 88/20 = 4.40
-- GPT Quality:      (4+4+4+4+3+0+4+5+5+5 + 5+5+5+5+5+5+5+4+0+5) / 20 = 83/20 = 4.15
+- GPT Relevance:    (5+4+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5+0) / 21 = 88/21 = 4.19
+- GPT Naturalness:  (3+3+3+4+3+0+3+5+5+5 + 4+4+5+4+4+5+5+4+0+4+0) / 21 = 71/21 = 3.38
+- GPT Correctness:  (5+3+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5+0) / 21 = 88/21 = 4.19
+- GPT Quality:      (4+4+4+4+3+0+4+5+5+5 + 5+5+5+5+5+5+5+4+0+5)0 / 21 = 83/21 = 3.95
 
-- Mistral Relevance:    (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+2+5+4+5+5+5) / 20 = 89/20 = 4.45
-- Mistral Naturalness:  (5+4+5+5+5+5+5+5+5+5 + 4+5+5+5+4+5+4+5+5+5) / 20 = 96/20 = 4.80
-- Mistral Correctness:  (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+0+5+4+5+5+5) / 20 = 87/20 = 4.35
-- Mistral Quality:      (5+4+5+5+5+5+5+3+5+5 + 3+5+5+5+2+5+4+5+5+5) / 20 = 92/20 = 4.60
+- Mistral Relevance:    (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+2+5+4+5+5+5+2) / 21 = 91/21 = 4.33
+- Mistral Naturalness:  (5+4+5+5+5+5+5+5+5+5 + 4+5+5+5+4+5+4+5+5+5+5) / 21 = 101/21 = 4.80
+- Mistral Correctness:  (5+5+5+5+5+5+5+0+5+5 + 3+5+5+5+0+5+4+5+5+5+2) / 21 = 89/21 = 4.24
+- Mistral Quality:      (5+4+5+5+5+5+5+3+5+5 + 3+5+5+5+2+5+4+5+5+5+3) / 21 = 95/21 = 4.52
 
-- Gemma Relevance:    (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
-- Gemma Naturalness:  (5+4+0+5+5+5+5+5+5+5 + 5+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
-- Gemma Correctness:  (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 89/20 = 4.45
-- Gemma Quality:      (5+4+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5) / 20 = 88/20 = 4.40
+- Gemma Relevance:    (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5+4) / 21 = 93/21 = 4.43
+- Gemma Naturalness:  (5+4+0+5+5+5+5+5+5+5 + 5+5+5+5+0+5+5+5+5+5+5) / 21 = 94/21 = 4.48
+- Gemma Correctness:  (5+5+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5+3) / 21 = 92/21 = 4.38
+- Gemma Quality:      (5+4+0+5+5+5+5+5+5+5 + 4+5+5+5+0+5+5+5+5+5+4) / 21 = 92/21 = 4.38
 
 ================================================================================
 FINAL COMBINED SUMMARY
@@ -1596,6 +1596,8 @@ MODEL: Gemma-3-27b-it (OpenRouter free)
     but explicitly notes that the context lacks any player form / FPL data so cannot
     make a confident, specific recommendation.
 
-This additional user query is documented here for completeness but is **not yet included** in the accuracy or qualitative averages above. Once you decide on accuracy/quality scores (e.g., 0/0.5/1.0 for accuracy, 1–5 for relevance/naturalness/correctness/quality per model), those summary tables can be recomputed to incorporate it.
+============================================================================
 
-================================================================================
+
+they sometimes hallucinate but with extremely irrelevant questions(name of my dog, the weather today) they mention that it is unrelevant
+
