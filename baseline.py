@@ -926,25 +926,66 @@ class BaselineQueryBuilder:
         config = load_config()
         current_season = config.get("CURRENT_SEASON", "2022-23")
         
-        # Decide which season to use
-        if seasons:
-            season_to_use = seasons[0]  # Use the first specified season
+        # Determine season filtering mode:
+        # - "all" or "ALL" in seasons list means query all seasons
+        # - Multiple seasons means filter by those specific seasons
+        # - Single season means filter by that season
+        # - No season + specific player = all seasons (for historical stats)
+        # - No season + no player = current season only
+        
+        use_all_seasons = False
+        seasons_to_use = []
+        
+        # Check for "all" marker in seasons
+        if any(s.lower() == "all" for s in seasons):
+            use_all_seasons = True
+        elif len(seasons) > 1:
+            # Multiple specific seasons
+            seasons_to_use = seasons
+        elif len(seasons) == 1:
+            # Single specific season
+            seasons_to_use = [seasons[0]]
+        elif players and not gameweeks:
+            # No season specified but querying specific player(s) without gameweek
+            # = aggregate across all seasons for historical stats
+            use_all_seasons = True
         else:
-            season_to_use = current_season
+            # Default to current season
+            seasons_to_use = [current_season]
         
         # Build parameters dictionary
-        params = {"season": season_to_use}
+        params = {}
         
         # If team filtering is needed, use a different query structure
         # that infers the player's team from their fixtures
         if teams:
+            # Pass season info to team filter method
             return self._query_dynamic_with_team_filter(
-                entities, season_to_use, teams, gameweeks, players, positions, 
-                statistics, ranking, threshold, limit
+                entities, seasons_to_use[0] if seasons_to_use else None, teams, gameweeks, players, positions, 
+                statistics, ranking, threshold, limit, use_all_seasons, seasons_to_use
             )
         
         # Start building the Cypher query (no team filter)
-        cypher = """
+        if use_all_seasons:
+            # Query across ALL seasons
+            cypher = """
+        MATCH (s:Season)-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        MATCH (p:Player)-[r:PLAYED_IN]->(f)
+        MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        """
+        elif len(seasons_to_use) > 1:
+            # Query across MULTIPLE specific seasons
+            params["seasons"] = seasons_to_use
+            cypher = """
+        MATCH (s:Season)-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        WHERE s.season_name IN $seasons
+        MATCH (p:Player)-[r:PLAYED_IN]->(f)
+        MATCH (p)-[:PLAYS_AS]->(pos:Position)
+        """
+        else:
+            # Query single season
+            params["season"] = seasons_to_use[0]
+            cypher = """
         MATCH (s:Season {season_name: $season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (p:Player)-[r:PLAYED_IN]->(f)
         MATCH (p)-[:PLAYS_AS]->(pos:Position)
@@ -988,7 +1029,13 @@ class BaselineQueryBuilder:
             # Build the RETURN clause using the aliases from WITH
             stats_return = ", ".join([f"total_{stat}" for stat in statistics])
             
-            cypher += f"""
+            # When querying all seasons, aggregate by player_name to combine across seasons
+            if use_all_seasons or len(seasons_to_use) > 1:
+                cypher += f"""
+        WITH p.player_name AS player_name, pos.name AS position, {stats_with}
+        """
+            else:
+                cypher += f"""
         WITH p, pos, {stats_with}
         """
             
@@ -1015,14 +1062,33 @@ class BaselineQueryBuilder:
             # Use the limit parameter passed in (defaults to 10)
             limit_val = limit
             
-            cypher += f"""
+            # Return clause depends on whether we're aggregating by player name or node
+            if use_all_seasons or len(seasons_to_use) > 1:
+                cypher += f"""
+        RETURN player_name, position, {stats_return}
+        ORDER BY {order_by_clauses}
+        LIMIT {limit_val}
+        """
+            else:
+                cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, {stats_return}
         ORDER BY {order_by_clauses}
         LIMIT {limit_val}
         """
         else:
             # Default: return common stats
-            cypher += """
+            # When querying all seasons, aggregate by player_name to combine across seasons
+            if use_all_seasons or len(seasons_to_use) > 1:
+                cypher += """
+        WITH p.player_name AS player_name, pos.name AS position, 
+             SUM(r.total_points) AS total_points,
+             SUM(r.goals_scored) AS goals_scored,
+             SUM(r.assists) AS assists,
+             SUM(r.minutes) AS minutes,
+             COUNT(r) AS matches_played
+        """
+            else:
+                cypher += """
         WITH p, pos, 
              SUM(r.total_points) AS total_points,
              SUM(r.goals_scored) AS goals_scored,
@@ -1055,7 +1121,16 @@ class BaselineQueryBuilder:
             # Use the limit parameter passed in (defaults to 10)
             limit_val = limit
             
-            cypher += f"""
+            # Return clause depends on whether we're aggregating by player name or node
+            if use_all_seasons or len(seasons_to_use) > 1:
+                cypher += f"""
+        RETURN player_name, position, 
+               total_points, goals_scored, assists, minutes, matches_played
+        ORDER BY total_points {order_dir}
+        LIMIT {limit_val}
+        """
+            else:
+                cypher += f"""
         RETURN p.player_name AS player_name, pos.name AS position, 
                total_points, goals_scored, assists, minutes, matches_played
         ORDER BY total_points {order_dir}
@@ -1081,9 +1156,17 @@ class BaselineQueryBuilder:
         
         desc = " | ".join(desc_parts) if desc_parts else "all players"
         
+        # Determine season description for logging
+        if use_all_seasons:
+            season_desc = "ALL SEASONS"
+        elif len(seasons_to_use) > 1:
+            season_desc = f"Seasons: {', '.join(seasons_to_use)}"
+        else:
+            season_desc = f"Season: {seasons_to_use[0]}"
+        
         print(f"\n📊 Executing Query 11 (Fallback): Dynamic query")
         print(f"   Filters: {desc}")
-        print(f"   Season: {season_to_use}")
+        print(f"   {season_desc}")
         print(f"Cypher Query:\n{cypher}")
         print(f"Parameters: {params}")
         
@@ -1114,7 +1197,7 @@ class BaselineQueryBuilder:
     def _query_dynamic_with_team_filter(
         self,
         entities: Dict[str, List],
-        season_to_use: str,
+        season_to_use: Optional[str],
         teams: List[str],
         gameweeks: List[str],
         players_filter: List[str],
@@ -1122,7 +1205,9 @@ class BaselineQueryBuilder:
         statistics: List[str],
         ranking: Optional[str],
         threshold: Optional[Dict],
-        limit: int
+        limit: int,
+        use_all_seasons: bool = False,
+        seasons_to_use: List[str] = None
     ) -> List[Dict]:
         """
         Helper method for query_dynamic_fallback when team filtering is needed.
@@ -1134,7 +1219,10 @@ class BaselineQueryBuilder:
         Note: When filtering by gameweek, we show ALL players in that fixture.
         """
         
-        params = {"season": season_to_use, "teams": teams}
+        if seasons_to_use is None:
+            seasons_to_use = []
+        
+        params = {"teams": teams}
         
         # For gameweek filtering, we need a different approach - show fixture details
         if gameweeks:
@@ -1144,13 +1232,36 @@ class BaselineQueryBuilder:
             )
         
         # For full season team queries, use match count to identify team players
-        cypher = """
+        # Build season filtering
+        if use_all_seasons:
+            cypher = """
+        // Find fixtures involving target team(s) - ALL SEASONS
+        MATCH (s:Season)-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+        MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+        WHERE home.name IN $teams OR away.name IN $teams
+        """
+        elif len(seasons_to_use) > 1:
+            params["seasons"] = seasons_to_use
+            cypher = """
+        // Find fixtures involving target team(s) - MULTIPLE SEASONS
+        MATCH (s:Season)-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
+        WHERE s.season_name IN $seasons
+        MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
+        MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
+        WHERE home.name IN $teams OR away.name IN $teams
+        """
+        else:
+            params["season"] = season_to_use
+            cypher = """
         // Find fixtures involving target team(s)
         MATCH (s:Season {season_name: $season})-[:HAS_GW]->(gw:Gameweek)-[:HAS_FIXTURE]->(f:Fixture)
         MATCH (f)-[:HAS_HOME_TEAM]->(home:Team)
         MATCH (f)-[:HAS_AWAY_TEAM]->(away:Team)
         WHERE home.name IN $teams OR away.name IN $teams
+        """
         
+        cypher += """
         // Find players who played in these fixtures
         MATCH (p:Player)-[r:PLAYED_IN]->(f)
         MATCH (p)-[:PLAYS_AS]->(pos:Position)
@@ -1282,9 +1393,17 @@ class BaselineQueryBuilder:
         if ranking:
             desc_parts.append(f"ranking: {ranking}")
         
+        # Determine season description for logging
+        if use_all_seasons:
+            season_desc = "ALL SEASONS"
+        elif len(seasons_to_use) > 1:
+            season_desc = f"Seasons: {', '.join(seasons_to_use)}"
+        else:
+            season_desc = f"Season: {season_to_use}"
+        
         print(f"\n📊 Executing Query 11 (Fallback): Dynamic query with team filter")
         print(f"   Filters: {' | '.join(desc_parts)}")
-        print(f"   Season: {season_to_use}")
+        print(f"   {season_desc}")
         print(f"   Note: Shows players who played frequently in {', '.join(teams)} fixtures")
         print(f"Cypher Query:\n{cypher}")
         print(f"Parameters: {params}")
