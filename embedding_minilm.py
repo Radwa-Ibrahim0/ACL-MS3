@@ -137,17 +137,101 @@ class MiniLMEmbedder:
 
 
 # ============================================================
-# 3. PLAYER FEATURE VECTOR GENERATION
+# 3. POSITION-SPECIFIC THRESHOLDS (Empirical Percentiles)
+# ============================================================
+
+# Thresholds derived from fpl_two_seasons.csv percentile analysis
+# Structure: {position: {metric: {p25, p50, p75, p90}}}
+POSITION_THRESHOLDS = {
+    "GK": {
+        "total_points": {"p25": 0, "p50": 0, "p75": 48, "p90": 164.5},
+        "minutes": {"p25": 0, "p50": 0, "p75": 1462.5, "p90": 4032},
+        "goals_per90": {"p25": 0, "p50": 0, "p75": 0, "p90": 0},
+        "assists_per90": {"p25": 0, "p50": 0, "p75": 0, "p90": 0.01},
+        "form": {"p25": 0, "p50": 0, "p75": 0.08, "p90": 0.31},
+        "clean_sheets": {"p25": 0, "p50": 0, "p75": 3.25, "p90": 15},
+        "saves": {"p25": 0, "p50": 0, "p75": 49.5, "p90": 132.8},
+        "bonus": {"p25": 0, "p50": 0, "p75": 5, "p90": 16},
+    },
+    "DEF": {
+        "total_points": {"p25": 0, "p50": 29.5, "p75": 90, "p90": 151},
+        "minutes": {"p25": 0, "p50": 1103.5, "p75": 2485.25, "p90": 4054.5},
+        "goals_per90": {"p25": 0, "p50": 0, "p75": 0.06, "p90": 0.10},
+        "assists_per90": {"p25": 0, "p50": 0.03, "p75": 0.09, "p90": 0.19},
+        "form": {"p25": 0, "p50": 0.06, "p75": 0.17, "p90": 0.25},
+        "clean_sheets": {"p25": 0, "p50": 2, "p75": 7, "p90": 14},
+        "saves": {"p25": 0, "p50": 0, "p75": 0, "p90": 0},
+        "bonus": {"p25": 0, "p50": 1, "p75": 6, "p90": 12},
+    },
+    "MID": {
+        "total_points": {"p25": 1, "p50": 27, "p75": 83, "p90": 175},
+        "minutes": {"p25": 3, "p50": 653, "p75": 2196, "p90": 3858.6},
+        "goals_per90": {"p25": 0, "p50": 0.06, "p75": 0.18, "p90": 0.35},
+        "assists_per90": {"p25": 0, "p50": 0.09, "p75": 0.18, "p90": 0.30},
+        "form": {"p25": 0, "p50": 0.06, "p75": 0.18, "p90": 0.29},
+        "clean_sheets": {"p25": 0, "p50": 1, "p75": 7, "p90": 14},
+        "saves": {"p25": 0, "p50": 0, "p75": 0, "p90": 0},
+        "bonus": {"p25": 0, "p50": 0, "p75": 5, "p90": 14},
+    },
+    "FWD": {
+        "total_points": {"p25": 0, "p50": 31, "p75": 87, "p90": 166.3},
+        "minutes": {"p25": 0, "p50": 588, "p75": 1867.25, "p90": 3259.2},
+        "goals_per90": {"p25": 0, "p50": 0.24, "p75": 0.35, "p90": 0.56},
+        "assists_per90": {"p25": 0, "p50": 0.11, "p75": 0.24, "p90": 0.34},
+        "form": {"p25": 0, "p50": 0.07, "p75": 0.19, "p90": 0.27},
+        "clean_sheets": {"p25": 0, "p50": 0, "p75": 6, "p90": 10},
+        "saves": {"p25": 0, "p50": 0, "p75": 0, "p90": 0},
+        "bonus": {"p25": 0, "p50": 1, "p75": 9.75, "p90": 18.1},
+    },
+}
+
+# Fallback thresholds for unknown positions (overall percentiles)
+DEFAULT_THRESHOLDS = {
+    "total_points": {"p25": 0, "p50": 25, "p75": 85, "p90": 166},
+    "minutes": {"p25": 0, "p50": 649, "p75": 2254, "p90": 3754.6},
+    "goals_per90": {"p25": 0, "p50": 0.03, "p75": 0.14, "p90": 0.31},
+    "assists_per90": {"p25": 0, "p50": 0.05, "p75": 0.15, "p90": 0.27},
+    "form": {"p25": 0, "p50": 0.06, "p75": 0.18, "p90": 0.27},
+    "clean_sheets": {"p25": 0, "p50": 1, "p75": 7, "p90": 13},
+    "saves": {"p25": 0, "p50": 0, "p75": 0, "p90": 0},
+    "bonus": {"p25": 0, "p50": 0, "p75": 6, "p90": 14},
+}
+
+
+def get_tier_label(value: float, thresholds: Dict[str, float]) -> str:
+    """
+    Classify a value into a tier based on percentile thresholds.
+    
+    Returns: 'elite' (>=p90), 'strong' (p75-p90), 'average' (p50-p75), 
+             'below_average' (p25-p50), or 'low' (<p25)
+    """
+    if value >= thresholds["p90"]:
+        return "elite"
+    elif value >= thresholds["p75"]:
+        return "strong"
+    elif value >= thresholds["p50"]:
+        return "average"
+    elif value >= thresholds["p25"]:
+        return "below_average"
+    else:
+        return "low"
+
+
+# ============================================================
+# 4. PLAYER FEATURE VECTOR GENERATION
 # ============================================================
 
 def create_player_description(player_data: Dict[str, Any]) -> str:
     """
     Create a rich, discriminative text description of a player for embedding.
-
-    The goal is to:
-      - Separate elite, good, average, and weak options
-      - Capture role-specific strengths (goals, assists, clean sheets, saves)
-      - Encode form, minutes (nailed vs rotation risk), and style hints
+    
+    Uses position-specific percentile thresholds derived from empirical data
+    (fpl_two_seasons.csv) to classify players into tiers:
+      - elite (≥p90): Top 10% performers
+      - strong (p75-p90): Above average performers  
+      - average (p50-p75): Middle tier
+      - below_average (p25-p50): Below median
+      - low (<p25): Bottom quartile
     """
     name = player_data.get("name", "Unknown")
     position = player_data.get("position", "Unknown")
@@ -168,85 +252,96 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
     assists_per90 = (assists / games_90) if games_90 > 0 else 0.0
     points_per90 = (total_points / games_90) if games_90 > 0 else 0.0
 
-    # --- Performance tier based on total points ---
-    if total_points >= 220:
-        tier = "elite premium top tier, season-defining asset"
-    elif total_points >= 170:
-        tier = "high-performing premium option, very strong pick"
-    elif total_points >= 120:
-        tier = "reliable starter, strong mid-tier option"
-    elif total_points >= 60:
-        tier = "decent budget or rotation option"
-    else:
-        tier = "low-impact budget option, fringe or bench player"
+    # Get position-specific thresholds (fallback to default if unknown position)
+    thresholds = POSITION_THRESHOLDS.get(position, DEFAULT_THRESHOLDS)
 
-    # --- Minutes / nailedness description ---
-    if minutes >= 2800:
-        minutes_desc = "nailed-on regular starter who plays almost every match"
-    elif minutes >= 2000:
-        minutes_desc = "mostly regular starter with good minutes"
-    elif minutes >= 1200:
-        minutes_desc = "rotation risk but with a fair amount of minutes"
-    elif minutes >= 500:
-        minutes_desc = "rotation / bench player with limited minutes"
-    else:
-        minutes_desc = "rarely plays, very low minutes"
+    # --- Performance tier based on total points (position-specific) ---
+    points_tier = get_tier_label(total_points, thresholds["total_points"])
+    tier_descriptions = {
+        "elite": "elite premium top-tier, season-defining asset",
+        "strong": "high-performing premium option, very strong pick",
+        "average": "reliable starter, solid mid-tier option",
+        "below_average": "decent budget or rotation option",
+        "low": "low-impact budget option, fringe or bench player"
+    }
+    tier = tier_descriptions[points_tier]
 
-    # --- Scoring ability ---
-    if goals_per90 >= 0.7:
-        scoring = "explosive goal threat with extremely high goals per 90 minutes"
-    elif goals_per90 >= 0.4:
-        scoring = "strong and consistent goal threat"
-    elif goals_per90 >= 0.2:
-        scoring = "moderate goal threat, scores occasionally"
-    elif goals > 0:
-        scoring = "light goal threat, scores rarely"
-    else:
-        scoring = "almost no goal threat"
+    # --- Minutes / nailedness description (position-specific) ---
+    minutes_tier = get_tier_label(minutes, thresholds["minutes"])
+    minutes_descriptions = {
+        "elite": "nailed-on regular starter who plays almost every match",
+        "strong": "mostly regular starter with good minutes",
+        "average": "rotation risk but with a fair amount of minutes",
+        "below_average": "rotation or bench player with limited minutes",
+        "low": "rarely plays, very low minutes"
+    }
+    minutes_desc = minutes_descriptions[minutes_tier]
 
-    # --- Assist / creativity ability ---
-    if assists_per90 >= 0.4:
-        creativity = "elite creative playmaker with many assists per 90 minutes"
-    elif assists_per90 >= 0.25:
-        creativity = "very good creative player with regular assists"
-    elif assists_per90 >= 0.1:
-        creativity = "some creative output with occasional assists"
-    elif assists > 0:
-        creativity = "limited creativity, few assists"
-    else:
-        creativity = "offers almost no assist potential"
+    # --- Scoring ability (position-specific) ---
+    goals_tier = get_tier_label(goals_per90, thresholds["goals_per90"])
+    scoring_descriptions = {
+        "elite": "explosive goal threat with elite goals per 90 minutes for the position",
+        "strong": "strong and consistent goal threat above average for the position",
+        "average": "moderate goal threat, scores at an average rate for the position",
+        "below_average": "light goal threat, scores below average for the position",
+        "low": "minimal goal threat, rarely scores"
+    }
+    scoring = scoring_descriptions[goals_tier]
 
-    # --- Form description (you can adjust thresholds to your data) ---
-    if form >= 7.0:
-        form_desc = "currently in outstanding form and on a hot streak"
-    elif form >= 5.0:
-        form_desc = "currently in good and reliable form"
-    elif form >= 3.0:
-        form_desc = "currently in average, mixed form"
-    elif form > 0:
-        form_desc = "currently in poor form and underperforming"
-    else:
-        form_desc = "no recent form data or not playing recently"
+    # --- Assist / creativity ability (position-specific) ---
+    assists_tier = get_tier_label(assists_per90, thresholds["assists_per90"])
+    creativity_descriptions = {
+        "elite": "elite creative playmaker with top-tier assists per 90 for the position",
+        "strong": "very good creative player with above-average assist output",
+        "average": "some creative output with average assists for the position",
+        "below_average": "limited creativity, below-average assist potential",
+        "low": "offers almost no assist potential"
+    }
+    creativity = creativity_descriptions[assists_tier]
+
+    # --- Form description (position-specific) ---
+    form_tier = get_tier_label(form, thresholds["form"])
+    form_descriptions = {
+        "elite": "currently in outstanding form and on a hot streak",
+        "strong": "currently in good and reliable form",
+        "average": "currently in average, steady form",
+        "below_average": "currently in below-average form",
+        "low": "no recent form data or not playing recently"
+    }
+    form_desc = form_descriptions[form_tier]
+
+    # --- Bonus points tier (position-specific) ---
+    bonus_tier = get_tier_label(bonus, thresholds["bonus"])
+    bonus_descriptions = {
+        "elite": "elite bonus point magnet, consistently earns extra points",
+        "strong": "strong bonus point earner",
+        "average": "average bonus point accumulation",
+        "below_average": "below-average bonus points",
+        "low": "rarely earns bonus points"
+    }
+    bonus_desc = bonus_descriptions[bonus_tier]
 
     # --- Position-specific description ---
     if position == "GK":
-        if clean_sheets >= 14:
-            cs_desc = "elite clean sheet potential"
-        elif clean_sheets >= 9:
-            cs_desc = "good clean sheet potential"
-        elif clean_sheets >= 4:
-            cs_desc = "some clean sheet potential"
-        else:
-            cs_desc = "very low clean sheet potential"
+        cs_tier = get_tier_label(clean_sheets, thresholds["clean_sheets"])
+        cs_descriptions = {
+            "elite": "elite clean sheet potential, top-tier defensive returns",
+            "strong": "good clean sheet potential, above average for goalkeepers",
+            "average": "average clean sheet potential",
+            "below_average": "below-average clean sheet numbers",
+            "low": "very low clean sheet potential"
+        }
+        cs_desc = cs_descriptions[cs_tier]
 
-        if saves >= 120:
-            save_desc = "high-volume shot stopper with many saves"
-        elif saves >= 80:
-            save_desc = "good shot stopper with a solid number of saves"
-        elif saves >= 40:
-            save_desc = "average number of saves"
-        else:
-            save_desc = "low save volume"
+        saves_tier = get_tier_label(saves, thresholds["saves"])
+        saves_descriptions = {
+            "elite": "elite shot stopper with very high save volume",
+            "strong": "good shot stopper with above-average saves",
+            "average": "average save numbers",
+            "below_average": "below-average save volume",
+            "low": "low save volume, limited shot-stopping opportunities"
+        }
+        save_desc = saves_descriptions[saves_tier]
 
         pos_desc = (
             f"goalkeeper combining {cs_desc} and {save_desc}. "
@@ -254,22 +349,26 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
         )
 
     elif position == "DEF":
-        if clean_sheets >= 16:
-            cs_desc = "elite defensive asset with many clean sheets"
-        elif clean_sheets >= 10:
-            cs_desc = "strong defensive asset with good clean sheet numbers"
-        elif clean_sheets >= 5:
-            cs_desc = "decent clean sheet potential"
-        else:
-            cs_desc = "low clean sheet potential"
+        cs_tier = get_tier_label(clean_sheets, thresholds["clean_sheets"])
+        cs_descriptions = {
+            "elite": "elite defensive asset with top-tier clean sheets",
+            "strong": "strong defensive asset with good clean sheet numbers",
+            "average": "average clean sheet potential for a defender",
+            "below_average": "below-average clean sheet numbers",
+            "low": "low clean sheet potential"
+        }
+        cs_desc = cs_descriptions[cs_tier]
 
-        attacking_desc = ""
-        if goals >= 5 and assists >= 5:
-            attacking_desc = "offers very strong attacking threat from defence"
-        elif goals + assists >= 5:
-            attacking_desc = "offers useful attacking contribution from defence"
-        elif goals + assists > 0:
-            attacking_desc = "offers a small bit of attacking threat"
+        # Attacking contribution based on goals + assists tiers
+        attacking_contributions = goals + assists
+        if goals_tier in ["elite", "strong"] and assists_tier in ["elite", "strong"]:
+            attacking_desc = "offers exceptional attacking threat from defence"
+        elif goals_tier in ["elite", "strong"] or assists_tier in ["elite", "strong"]:
+            attacking_desc = "offers strong attacking contribution from defence"
+        elif goals_tier == "average" or assists_tier == "average":
+            attacking_desc = "offers some attacking contribution from defence"
+        elif attacking_contributions > 0:
+            attacking_desc = "offers limited attacking threat from defence"
         else:
             attacking_desc = "mainly offers defensive returns only"
 
@@ -280,12 +379,15 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
 
     elif position == "MID":
         role = []
-        if goals >= 10:
+        if goals_tier in ["elite", "strong"]:
             role.append("goal-scoring midfielder")
-        if assists >= 10:
-            role.append("elite creative playmaker")
+        if assists_tier in ["elite", "strong"]:
+            role.append("creative playmaker")
         if not role:
-            role.append("box-to-box or supporting midfielder")
+            if goals_tier == "average" or assists_tier == "average":
+                role.append("box-to-box midfielder with some attacking output")
+            else:
+                role.append("defensive or supporting midfielder")
 
         role_str = " and ".join(role)
 
@@ -295,16 +397,16 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
         )
 
     elif position == "FWD":
-        if goals >= 20:
-            fwd_desc = "elite prolific striker and primary goal scorer"
-        elif goals >= 12:
-            fwd_desc = "very strong striker with regular goals"
-        elif goals >= 6:
-            fwd_desc = "decent forward with some goals"
-        elif goals > 0:
-            fwd_desc = "low-scoring forward"
+        if goals_tier == "elite":
+            fwd_desc = "elite prolific striker, top-tier goal scorer"
+        elif goals_tier == "strong":
+            fwd_desc = "strong striker with above-average goals"
+        elif goals_tier == "average":
+            fwd_desc = "decent forward with average goal output"
+        elif goals_tier == "below_average":
+            fwd_desc = "below-average goal scorer for a forward"
         else:
-            fwd_desc = "forward with almost no goals"
+            fwd_desc = "low-scoring forward, minimal goal threat"
 
         pos_desc = (
             f"{fwd_desc}, scoring {goals} goals and providing {assists} assists. "
@@ -323,7 +425,7 @@ def create_player_description(player_data: Dict[str, Any]) -> str:
         f"{minutes_desc}. "
         f"{pos_desc} "
         f"{scoring}. {creativity}. "
-        f"Has accumulated {total_points} total FPL points with {bonus} bonus points, "
+        f"Has accumulated {total_points} total FPL points with {bonus} bonus points ({bonus_desc}), "
         f"averaging approximately {points_per90:.2f} points per 90 minutes. "
         f"{form_desc}."
     )
@@ -357,7 +459,7 @@ def create_team_description(team_data: Dict[str, Any]) -> str:
 
 
 # ============================================================
-# 4. NEO4J INTEGRATION - STORE & RETRIEVE EMBEDDINGS
+# 5. NEO4J INTEGRATION - STORE & RETRIEVE EMBEDDINGS
 # ============================================================
 
 class EmbeddingStore:
@@ -588,7 +690,7 @@ class EmbeddingStore:
 
 
 # ============================================================
-# 5. SEMANTIC QUERY SEARCH
+# 6. SEMANTIC QUERY SEARCH
 # ============================================================
 
 class SemanticSearchMiniLM:
@@ -685,7 +787,7 @@ class SemanticSearchMiniLM:
 
 
 # ============================================================
-# 6. MAIN - TESTING
+# 7. MAIN - TESTING
 # ============================================================
 
 if __name__ == "__main__":
