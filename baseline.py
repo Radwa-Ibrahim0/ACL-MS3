@@ -1668,6 +1668,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(positions) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "COMPARISON"
             and threshold is None
         ):
             return builder.query_compare_two_players(entities, ranking, threshold)
@@ -1693,6 +1694,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(statistics) == 0
             and len(positions) == 0
             and len(seasons) == 0
+            and intent == "FIXTURE-RELATED"
             and threshold is None
         ):
             return builder.query_gameweek_fixtures(entities, ranking, threshold)
@@ -1705,6 +1707,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(positions) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "PLAYER-RELATED"
             and threshold is None
         ):
             return builder.query_player_performance(entities, ranking, threshold)
@@ -1717,6 +1720,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(positions) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "FIXTURE-RELATED"
             and threshold is None
         ):
             return builder.query_team_fixtures(entities, ranking, threshold)
@@ -1729,6 +1733,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(teams) == 0
             and len(positions) == 0
             and len(seasons) == 0
+            and intent == "PLAYER-RELATED"
             and ranking == "best"
             and threshold is None
         ):
@@ -1742,6 +1747,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(teams) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "PLAYER-RELATED"
             and ranking == "best"
             and threshold is None
         ):
@@ -1755,6 +1761,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(teams) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "PLAYER-RELATED"
             and ranking == "worst"
             and threshold is None
         ):
@@ -1768,6 +1775,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(positions) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "PLAYER-RELATED"
             and ranking == "best"
             and threshold is None
         ):
@@ -1781,6 +1789,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             and len(positions) == 0
             and len(seasons) == 0
             and len(gameweeks) == 0
+            and intent == "PLAYER-RELATED"
             and ranking == "worst"
             and threshold is None
         ):
