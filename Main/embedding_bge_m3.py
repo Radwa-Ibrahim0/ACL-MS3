@@ -708,7 +708,7 @@ def compare_models(
     
     # Try to import MiniLM search
     try:
-        from embedding_minilm import SemanticSearchMiniLM
+        from Main.embedding_minilm import SemanticSearchMiniLM
         
         print("\n--- MiniLM (384 dimensions) ---")
         minilm_search = SemanticSearchMiniLM(config)

@@ -12,6 +12,10 @@ This script:
 
 import json
 import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import logging
 from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
@@ -351,16 +355,19 @@ def find_matching_player(player: str, ground_truth_list: List[str]) -> Optional[
 # ============================================================
 
 def load_config() -> Dict[str, str]:
-    """Load configuration from config.txt"""
+    """Load configuration from config.txt in project root"""
     config: Dict[str, str] = {}
     try:
-        with open("config.txt", "r") as f:
+        # Look for config.txt in project root (two levels up from this file)
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        config_path = os.path.join(project_root, "config.txt")
+        with open(config_path, "r") as f:
             for line in f:
                 if "=" in line:
                     key, value = line.strip().split("=", 1)
                     config[key] = value
     except FileNotFoundError:
-        logger.error("config.txt not found")
+        logger.error("config.txt not found in project root")
     return config
 
 
@@ -619,7 +626,7 @@ def main():
     # Initialize MiniLM
     print("\n--- Initializing MiniLM Model ---")
     try:
-        from embedding_minilm import SemanticSearchMiniLM
+        from Main.embedding_minilm import SemanticSearchMiniLM
         minilm_search = SemanticSearchMiniLM(config)
         minilm_available = True
         logger.info("✅ MiniLM initialized")
@@ -630,7 +637,7 @@ def main():
     # Initialize BGE-M3
     print("\n--- Initializing BGE-M3 Model ---")
     try:
-        from embedding_bge_m3 import SemanticSearchBGEM3
+        from Main.embedding_bge_m3 import SemanticSearchBGEM3
         bge_m3_search = SemanticSearchBGEM3(config)
         bge_m3_available = True
         logger.info("✅ BGE-M3 initialized")

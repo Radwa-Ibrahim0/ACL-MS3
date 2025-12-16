@@ -10,20 +10,24 @@ A football fantasy themed interface for the Graph-RAG system that allows users t
 - Get player recommendations
 """
 
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 import json
 import time
 import logging
 import base64
-import os
 from typing import Dict, List, Any, Optional, Tuple
 
 # Import the Graph-RAG system components
-from preprocessing import process_user_query
-from baseline import execute_baseline_query, load_config, Neo4jConnection, BaselineQueryBuilder
-from embedding_bge_m3 import SemanticSearchBGEM3, load_config as load_config_embed
-from embedding_minilm import SemanticSearchMiniLM
-from llm_layer import (
+from Main.preprocessing import process_user_query
+from Main.baseline import execute_baseline_query, load_config, Neo4jConnection, BaselineQueryBuilder
+from Main.embedding_bge_m3 import SemanticSearchBGEM3, load_config as load_config_embed
+from Main.embedding_minilm import SemanticSearchMiniLM
+from Main.llm_layer import (
     build_retrieval_context,
     build_structured_prompt,
     OpenRouterAdapter,
@@ -956,7 +960,8 @@ def render_header():
     """Render the FPL-style hero banner with player image"""
     # Get the directory where app.py is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    image_path = os.path.join(script_dir, "player-comp-4-2x-D7jkZCyT.png")
+    # Image folder is in project root (one level up from Main/)
+    image_path = os.path.join(script_dir, "..", "image", "player-comp-4-2x-D7jkZCyT.png")
     
     # Convert image to base64 for HTML embedding
     img_base64 = get_base64_image(image_path)

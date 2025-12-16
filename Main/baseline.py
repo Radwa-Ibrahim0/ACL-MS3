@@ -1808,7 +1808,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
 # ============================================================
 
 if __name__ == "__main__":
-    import preprocessing
+    import Main.preprocessing as preprocessing
     
     print("=" * 70)
     print("BASELINE QUERY TESTING - Including Fallback Query 11")

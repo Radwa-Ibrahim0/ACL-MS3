@@ -7,17 +7,26 @@ queries from truth.txt to evaluate the accuracy of the NLP preprocessing + query
 
 import json
 import re
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from datetime import datetime
 from neo4j import GraphDatabase
 from typing import Dict, List, Any, Set, Tuple
-import preprocessing
-import baseline
+import Main.preprocessing as preprocessing
+import Main.baseline as baseline
+
+# Get project root directory
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 def load_config() -> Dict[str, str]:
-    """Load Neo4j credentials from config.txt"""
+    """Load Neo4j credentials from config.txt in project root"""
     config = {}
-    with open("config.txt", "r") as f:
+    config_path = os.path.join(PROJECT_ROOT, "config.txt")
+    with open(config_path, "r") as f:
         for line in f:
             line = line.strip()
             if line and "=" in line:
@@ -26,10 +35,12 @@ def load_config() -> Dict[str, str]:
     return config
 
 
-def parse_truth_file(filepath="truth.txt") -> List[Dict]:
+def parse_truth_file(filepath=None) -> List[Dict]:
     """
     Parse the truth.txt file to extract questions and their corresponding Cypher queries.
     """
+    if filepath is None:
+        filepath = os.path.join(PROJECT_ROOT, "tests", "truth.txt")
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     

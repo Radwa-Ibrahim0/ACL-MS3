@@ -12,6 +12,11 @@ This script:
 """
 
 import json
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import logging
 from typing import Dict, List, Any, Set
 from datetime import datetime
@@ -107,9 +112,12 @@ EVALUATION_QUERIES = [
 # ============================================================
 
 def load_config():
-    """Load Neo4j configuration from config.txt"""
+    """Load Neo4j configuration from config.txt in project root"""
     config = {}
-    with open("config.txt", "r") as f:
+    # Look for config.txt in project root (two levels up from this file)
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    config_path = os.path.join(project_root, "config.txt")
+    with open(config_path, "r") as f:
         for line in f:
             line = line.strip()
             if "=" in line:
@@ -457,12 +465,12 @@ def main():
     
     # Initialize models
     print("\n--- Initializing MiniLM Model ---")
-    from embedding_minilm import SemanticSearchMiniLM
+    from Main.embedding_minilm import SemanticSearchMiniLM
     minilm_search = SemanticSearchMiniLM(config)
     logger.info("✅ MiniLM initialized")
     
     print("\n--- Initializing BGE-M3 Model ---")
-    from embedding_bge_m3 import SemanticSearchBGEM3
+    from Main.embedding_bge_m3 import SemanticSearchBGEM3
     bge_search = SemanticSearchBGEM3(config)
     logger.info("✅ BGE-M3 initialized")
     

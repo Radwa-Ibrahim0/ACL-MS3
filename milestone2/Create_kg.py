@@ -1,12 +1,17 @@
 import csv
+import os
 from neo4j import GraphDatabase
+
+# Get project root directory (one level up from this file)
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # -----------------------------
 # Load config.txt credentials
 # -----------------------------
 def load_config():
     config = {}
-    with open("config.txt", "r") as f:
+    config_path = os.path.join(PROJECT_ROOT, "config.txt")
+    with open(config_path, "r") as f:
         for line in f:
             line = line.strip()
             if not line or "=" not in line:
@@ -201,7 +206,8 @@ if __name__ == "__main__":
     )
 
     kg.create_constraints()
-    kg.load_csv("milestone2/fpl_two_seasons.csv")
+    csv_path = os.path.join(PROJECT_ROOT, "milestone2", "fpl_two_seasons.csv")
+    kg.load_csv(csv_path)
 
     kg.close()
     print("✔ Knowledge graph created successfully.")

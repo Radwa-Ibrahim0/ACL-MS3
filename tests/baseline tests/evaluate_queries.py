@@ -7,14 +7,22 @@ and saves the results to a JSON file with success/failure status.
 
 import json
 import re
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from datetime import datetime
 from neo4j import GraphDatabase
 
 
 def load_config():
-    """Load Neo4j credentials from config.txt"""
+    """Load Neo4j credentials from config.txt in project root"""
     config = {}
-    with open("config.txt", "r") as f:
+    # Look for config.txt in project root (two levels up from this file)
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    config_path = os.path.join(project_root, "config.txt")
+    with open(config_path, "r") as f:
         for line in f:
             line = line.strip()
             if line and "=" in line:
@@ -22,12 +30,17 @@ def load_config():
                 config[key] = value
     return config
 
+# Get project root directory
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-def parse_truth_file(filepath="truth.txt"):
+
+def parse_truth_file(filepath=None):
     """
     Parse the truth.txt file to extract questions and their corresponding Cypher queries.
     Returns a list of dictionaries with question_id, question_text, and cypher_query.
     """
+    if filepath is None:
+        filepath = os.path.join(PROJECT_ROOT, "tests", "truth.txt")
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     

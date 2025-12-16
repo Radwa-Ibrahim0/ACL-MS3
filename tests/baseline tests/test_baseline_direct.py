@@ -7,7 +7,12 @@ Tests the fixes for:
 4. Position filtering (only MID, FWD, etc. - no unknown positions)
 """
 
-from baseline import execute_baseline_query
+import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from Main.baseline import execute_baseline_query
 
 print("=" * 70)
 print("DIRECT BASELINE TESTING (No LLM API - Simulated Preprocessing)")

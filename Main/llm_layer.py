@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-from baseline import execute_baseline_query
-from embedding_bge_m3 import SemanticSearchBGEM3, load_config
-from preprocessing import process_user_query
+from Main.baseline import execute_baseline_query
+from Main.embedding_bge_m3 import SemanticSearchBGEM3, load_config
+from Main.preprocessing import process_user_query
 
 try:
     import google.generativeai as genai

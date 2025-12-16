@@ -12,6 +12,10 @@ Output is saved to JSON for manual accuracy evaluation.
 import json
 import time
 import sys
+import os
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import logging
 from datetime import datetime
 from typing import Dict, List, Any, Optional
@@ -21,13 +25,13 @@ from dataclasses import dataclass, asdict
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 from llm_test_queries import BASE_QUERIES, EDGE_CASE_QUERIES, TestQuery, EdgeCaseQuery
-from llm_layer import (
+from Main.llm_layer import (
     build_retrieval_context,
     build_structured_prompt,
     build_default_model_adapters,
     RetrievalContext
 )
-from embedding_bge_m3 import load_config
+from Main.embedding_bge_m3 import load_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
