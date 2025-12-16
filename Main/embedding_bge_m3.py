@@ -19,10 +19,15 @@ Comparison with other models:
 """
 
 import sys
+import os
 import logging
 import numpy as np
 from typing import Dict, List, Any, Tuple, Optional
 from neo4j import GraphDatabase
+
+# Add project root to Python path for imports
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, _project_root)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -51,14 +56,25 @@ except ImportError:
 def load_config() -> Dict[str, str]:
     """Load configuration from config.txt"""
     config: Dict[str, str] = {}
-    try:
-        with open("config.txt", "r") as f:
-            for line in f:
-                if "=" in line:
-                    key, value = line.strip().split("=", 1)
-                    config[key] = value
-    except FileNotFoundError:
-        logger.error("config.txt not found")
+    # Try multiple paths for config.txt
+    possible_paths = [
+        os.path.join(_project_root, "config.txt"),
+        "config.txt",
+        os.path.join(os.path.dirname(__file__), "..", "config.txt"),
+    ]
+    
+    for config_path in possible_paths:
+        try:
+            with open(config_path, "r") as f:
+                for line in f:
+                    if "=" in line:
+                        key, value = line.strip().split("=", 1)
+                        config[key] = value
+            return config
+        except FileNotFoundError:
+            continue
+    
+    logger.error("config.txt not found")
     return config
 
 

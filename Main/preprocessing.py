@@ -3,10 +3,15 @@ from spacy.pipeline import EntityRuler
 from neo4j import GraphDatabase
 import requests
 import sys
+import os
 import re
 import time
 import json
 from typing import Dict, List, Any, Tuple, Optional
+
+# Add project root to Python path for imports
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, _project_root)
 
 # Global debug flag for verbose internal logging
 DEBUG = False
@@ -17,17 +22,28 @@ DEBUG = False
 
 def load_config() -> Dict[str, str]:
     config: Dict[str, str] = {}
-    try:
-        with open("config.txt", "r") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    config[k.strip()] = v.strip()
-    except FileNotFoundError:
-        print("⚠ config.txt not found. Using empty config.")
+    # Try multiple paths for config.txt
+    possible_paths = [
+        os.path.join(_project_root, "config.txt"),
+        "config.txt",
+        os.path.join(os.path.dirname(__file__), "..", "config.txt"),
+    ]
+    
+    for config_path in possible_paths:
+        try:
+            with open(config_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        config[k.strip()] = v.strip()
+            return config
+        except FileNotFoundError:
+            continue
+    
+    print("⚠ config.txt not found. Using empty config.")
     return config
 
 

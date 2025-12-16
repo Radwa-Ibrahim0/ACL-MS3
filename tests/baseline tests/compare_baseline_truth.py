@@ -40,7 +40,7 @@ def parse_truth_file(filepath=None) -> List[Dict]:
     Parse the truth.txt file to extract questions and their corresponding Cypher queries.
     """
     if filepath is None:
-        filepath = os.path.join(PROJECT_ROOT, "tests", "truth.txt")
+        filepath = os.path.join(PROJECT_ROOT, "tests", "baseline tests", "truth.txt")
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
     
@@ -204,10 +204,16 @@ def serialize_for_json(obj):
     return str(obj)
 
 
-def run_comparison(truth_file="truth.txt", output_file="comparison_results.json"):
+def run_comparison(truth_file=None, output_file=None):
     """
     Main function to run comparison between ground truth and baseline pipeline.
     """
+    # Set default paths relative to project root
+    if truth_file is None:
+        truth_file = os.path.join(PROJECT_ROOT, "tests", "baseline tests", "truth.txt")
+    if output_file is None:
+        output_file = os.path.join(PROJECT_ROOT, "tests", "baseline tests", "comparison_results.json")
+    
     # Load configuration
     config = load_config()
     uri = config.get("URI", "neo4j://127.0.0.1:7687")
@@ -346,5 +352,5 @@ def run_comparison(truth_file="truth.txt", output_file="comparison_results.json"
 if __name__ == "__main__":
     import sys
     
-    output_file = sys.argv[1] if len(sys.argv) > 1 else "comparison_results.json"
+    output_file = sys.argv[1] if len(sys.argv) > 1 else None
     run_comparison(output_file=output_file)

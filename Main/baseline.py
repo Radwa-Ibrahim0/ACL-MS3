@@ -3,10 +3,15 @@ baseline.py - Baseline Cypher query system for FPL Knowledge Graph
 Connects to Neo4j and executes basic queries based on preprocessing output.
 """
 
+import sys
+import os
 from neo4j import GraphDatabase
 from typing import Dict, List, Any, Optional
 import json
 
+# Add project root to Python path for imports
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, _project_root)
 
 
 # ============================================================
@@ -16,17 +21,28 @@ import json
 def load_config() -> Dict[str, str]:
     """Load Neo4j credentials from config.txt"""
     config: Dict[str, str] = {}
-    try:
-        with open("config.txt", "r") as f:
-            for line in f:
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" in line:
-                    k, v = line.split("=", 1)
-                    config[k.strip()] = v.strip()
-    except FileNotFoundError:
-        print("⚠ config.txt not found. Cannot connect to Neo4j.")
+    # Try multiple paths for config.txt
+    possible_paths = [
+        os.path.join(_project_root, "config.txt"),
+        "config.txt",
+        os.path.join(os.path.dirname(__file__), "..", "config.txt"),
+    ]
+    
+    for config_path in possible_paths:
+        try:
+            with open(config_path, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        config[k.strip()] = v.strip()
+            return config
+        except FileNotFoundError:
+            continue
+    
+    print("⚠ config.txt not found. Cannot connect to Neo4j.")
     return config
 
 
@@ -2048,8 +2064,9 @@ if __name__ == "__main__":
         # # Multiple stats (no position)
         # "Players ranked by goals and assists",
         # "Best players by total points and bonus",
-        "how many points did salah score in gameweek 10",
-        "Top 15 players by ICT index in the 2022-23 season"
+        # "how many points did salah score in gameweek 10",
+        # "Top 15 players by ICT index in the 2022-23 season"
+        "show me liverpool fixtures next gw"
     ]
     
     for i, query in enumerate(test_cases, 1):

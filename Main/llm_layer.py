@@ -1,8 +1,13 @@
 import time
 import json
 import logging
+import sys
+import os
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+
+# Add project root to Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import requests
 

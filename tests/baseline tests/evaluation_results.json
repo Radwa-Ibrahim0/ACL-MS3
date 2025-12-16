@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "evaluation_timestamp": "2025-12-14T14:20:11.121872",
-    "truth_file": "truth.txt",
+    "evaluation_timestamp": "2025-12-16T12:11:44.381437",
+    "truth_file": "C:\\Users\\mansa\\OneDrive\\Desktop\\ACL-MS3\\tests\\baseline tests\\truth.txt",
     "total_queries": 20,
     "successful_queries": 20,
     "failed_queries": 0,
