@@ -158,7 +158,12 @@ class BaselineQueryBuilder:
             position = record.get('position') or 'Unknown position'
             print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Top players by {stat_name} (best) in season {current_season}"
+        }
     
     def query_worst_players_by_statistic(
         self, 
@@ -257,7 +262,12 @@ class BaselineQueryBuilder:
             position = record.get('position') or 'Unknown position'
             print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Worst players by {stat_name} (worst) in season {current_season}"
+        }
     
     def query_top_players_by_stat_and_position(
         self, 
@@ -348,7 +358,12 @@ class BaselineQueryBuilder:
             position = record.get('position') or 'Unknown position'
             print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Top {position} players by {stat_name} in season {current_season}"
+        }
     
     def query_worst_players_by_stat_and_position(
         self, 
@@ -439,7 +454,12 @@ class BaselineQueryBuilder:
             position = record.get('position') or 'Unknown position'
             print(f"{i}. {record['player_name']} ({position}): {record['total_stat']} {stat_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Worst {position} players by {stat_name} (current season)"
+        }
     
     def query_player_performance(
         self, 
@@ -516,7 +536,12 @@ class BaselineQueryBuilder:
         else:
             print(f"\n⚠ No data found for player containing: {player_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Performance stats for players containing '{player_name}'"
+        }
     
     def query_team_fixtures(
         self, 
@@ -581,7 +606,12 @@ class BaselineQueryBuilder:
         for i, record in enumerate(results, 1):
             print(f"{i}. GW{record['gameweek']} ({record['season']}): {record['home_team']} vs {record['away_team']}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Fixtures for {team_name} in season {current_season}"
+        }
     
     def query_gameweek_top_performers(
         self, 
@@ -666,7 +696,12 @@ class BaselineQueryBuilder:
             position = record.get('position') or 'Unknown position'
             print(f"{i}. {record['player_name']} ({position}): {record['stat_value']} {stat_name}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Top players in GW{gameweek} by {stat_name} (season {current_season})"
+        }
     
     def _get_operator_symbol(self, operator: str) -> str:
         """Helper to convert operator text to symbol"""
@@ -756,7 +791,12 @@ class BaselineQueryBuilder:
         else:
             print(f"\n⚠ No data found for comparison")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Comparing {player1} vs {player2} (season {current_season})"
+        }
     
     def query_gameweek_fixtures(
         self, 
@@ -817,7 +857,12 @@ class BaselineQueryBuilder:
         for i, record in enumerate(results, 1):
             print(f"{i}. {record['home_team']} vs {record['away_team']}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Fixtures in Gameweek {gameweek_num} (season {current_season})"
+        }
     
     def query_head_to_head_fixtures(
         self, 
@@ -888,7 +933,12 @@ class BaselineQueryBuilder:
         for i, record in enumerate(results, 1):
             print(f"{i}. GW{record['gameweek']}: {record['home_team']} vs {record['away_team']}")
         
-        return results
+        return {
+            "results": results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"{team1} vs {team2} head-to-head fixtures (season {current_season})"
+        }
 
     def query_dynamic_fallback(
         self, 
@@ -1192,7 +1242,12 @@ class BaselineQueryBuilder:
         if len(filtered_results) > 10:
             print(f"   ... and {len(filtered_results) - 10} more results")
         
-        return filtered_results
+        return {
+            "results": filtered_results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Dynamic query: {desc} ({season_desc})"
+        }
 
     def _query_dynamic_with_team_filter(
         self,
@@ -1430,7 +1485,13 @@ class BaselineQueryBuilder:
         if len(filtered_results) > 10:
             print(f"   ... and {len(filtered_results) - 10} more results")
         
-        return filtered_results
+        desc = " | ".join(desc_parts) if desc_parts else "team filter"
+        return {
+            "results": filtered_results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Dynamic query with team filter: {desc} ({season_desc})"
+        }
 
     def _query_team_gameweek_players(
         self,
@@ -1597,14 +1658,20 @@ class BaselineQueryBuilder:
         if len(filtered_results) > 10:
             print(f"   ... and {len(filtered_results) - 10} more results")
         
-        return filtered_results
+        desc = " | ".join(desc_parts) if desc_parts else "gameweek fixture players"
+        return {
+            "results": filtered_results,
+            "cypher_query": cypher.strip(),
+            "parameters": params,
+            "description": f"Gameweek fixture players: {desc} (Season: {season_to_use})"
+        }
 
 
 # ============================================================
 # 4. MAIN EXECUTION
 # ============================================================
 
-def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
+def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> Dict[str, Any]:
     """
     Execute baseline query based on preprocessing output
     
@@ -1620,7 +1687,11 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
             }
     
     Returns:
-        List of query results
+        Dict containing:
+            - "results": List of query results
+            - "cypher_query": The executed Cypher query string
+            - "parameters": Query parameters used
+            - "description": Human-readable description of query
     """
     
     # Load config and connect to Neo4j

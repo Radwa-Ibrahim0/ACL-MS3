@@ -842,20 +842,19 @@ def run_preprocessing(query: str) -> Dict[str, Any]:
     return process_user_query(query)
 
 
-def run_baseline_retrieval(preprocessing_output: Dict[str, Any]) -> Tuple[List[Dict], str]:
-    """Run baseline Cypher query retrieval"""
-    results = execute_baseline_query(preprocessing_output)
+def run_baseline_retrieval(preprocessing_output: Dict[str, Any]) -> Tuple[List[Dict], str, str]:
+    """Run baseline Cypher query retrieval
     
-    # Build a description of what was queried
-    entities = preprocessing_output.get("entities", {})
-    intent = preprocessing_output.get("intent", "")
-    ranking = preprocessing_output.get("ranking", "")
+    Returns:
+        Tuple of (results, description, cypher_query)
+    """
+    baseline_output = execute_baseline_query(preprocessing_output)
     
-    desc = f"Intent: {intent}"
-    if ranking:
-        desc += f", Ranking: {ranking}"
+    results = baseline_output.get("results", [])
+    cypher_query = baseline_output.get("cypher_query", "")
+    description = baseline_output.get("description", "")
     
-    return results, desc
+    return results, description, cypher_query
 
 
 def run_embedding_retrieval(query: str, config: Dict[str, str], top_k: int = 10, position: Optional[str] = None, model: str = "BGE-M3") -> List[Dict]:
@@ -872,65 +871,6 @@ def run_embedding_retrieval(query: str, config: Dict[str, str], top_k: int = 10,
     except Exception as e:
         st.error(f"Embedding search error ({model}): {e}")
         return []
-
-
-def generate_cypher_preview(preprocessing_output: Dict[str, Any]) -> str:
-    """Generate a preview of the Cypher query that would be executed"""
-    entities = preprocessing_output.get("entities", {})
-    intent = preprocessing_output.get("intent", "")
-    ranking = preprocessing_output.get("ranking", "")
-    
-    # Build example Cypher based on entities
-    stats = entities.get("Statistic", [])
-    players = entities.get("Player", [])
-    teams = entities.get("Team", [])
-    positions = entities.get("Position", [])
-    
-    if players and len(players) == 1:
-        cypher = f"""
-MATCH (p:Player)
-WHERE toLower(p.player_name) CONTAINS toLower('{players[0]}')
-MATCH (p)-[r:PLAYED_IN]->(f:Fixture)
-RETURN p.player_name AS player,
-       SUM(r.total_points) AS total_points,
-       SUM(r.goals_scored) AS goals,
-       SUM(r.assists) AS assists
-"""
-    elif stats and ranking == "best":
-        stat = stats[0] if stats else "total_points"
-        pos_filter = f"MATCH (p)-[:PLAYS_AS]->(pos:Position {{name: '{positions[0]}'}})" if positions else ""
-        cypher = f"""
-MATCH (s:Season {{season_name: '2022-23'}})-[:HAS_GW]->(gw:Gameweek)
-      -[:HAS_FIXTURE]->(f:Fixture)
-MATCH (p:Player)-[r:PLAYED_IN]->(f)
-{pos_filter}
-WITH p, SUM(r.{stat}) AS total_stat
-WHERE total_stat > 0
-RETURN p.player_name AS player, total_stat
-ORDER BY total_stat DESC
-LIMIT 10
-"""
-    elif teams:
-        team = teams[0]
-        cypher = f"""
-MATCH (t:Team {{name: '{team}'}})<-[:HAS_HOME_TEAM|HAS_AWAY_TEAM]-(f:Fixture)
-MATCH (f)<-[:HAS_FIXTURE]-(gw:Gameweek)
-RETURN gw.GW_number AS gameweek,
-       f.fixture_number AS fixture
-ORDER BY gw.GW_number
-LIMIT 10
-"""
-    else:
-        cypher = """
-// General fallback query
-MATCH (p:Player)-[r:PLAYED_IN]->(f:Fixture)
-RETURN p.player_name AS player,
-       SUM(r.total_points) AS total_points
-ORDER BY total_points DESC
-LIMIT 10
-"""
-    
-    return cypher.strip()
 
 
 def call_llm(prompt: str, model_config: Dict[str, str]) -> Tuple[str, ModelMetrics]:
@@ -1135,7 +1075,7 @@ def render_embedding_results(results: List[Dict], model_name: str = "BGE-M3"):
 
 def render_cypher_query(cypher: str):
     """Render Cypher query in a styled box"""
-    st.markdown("##### 📝 Cypher Query Preview")
+    st.markdown("##### 📝 Executed Cypher Query")
     st.code(cypher, language="cypher")
 
 
@@ -1257,14 +1197,13 @@ def main():
         
         baseline_results = []
         embedding_results = []
-        cypher_preview = ""
+        cypher_query = ""
         baseline_desc = ""
         
         retrieval_method = settings["retrieval_method"]
         
         if retrieval_method in ["Hybrid (Both)", "Baseline Only"]:
-            baseline_results, baseline_desc = run_baseline_retrieval(preprocessing_output)
-            cypher_preview = generate_cypher_preview(preprocessing_output)
+            baseline_results, baseline_desc, cypher_query = run_baseline_retrieval(preprocessing_output)
         
         progress_bar.progress(50)
         
@@ -1375,9 +1314,9 @@ def main():
                     st.markdown("**🏷️ Entities**")
                     render_entity_badges(preprocessing_output.get('entities', {}))
             
-            if settings["show_cypher"] and cypher_preview:
-                with st.expander("📝 Cypher Query Preview", expanded=False):
-                    render_cypher_query(cypher_preview)
+            if settings["show_cypher"] and cypher_query:
+                with st.expander("📝 Executed Cypher Query", expanded=False):
+                    render_cypher_query(cypher_query)
             
             # Combined context in ONE collapsible with tabs
             with st.expander("📚 Retrieved Context & Recommendations", expanded=False):
@@ -1391,7 +1330,7 @@ def main():
                 
                 with context_tabs[1]:
                     if retrieval_method != "Baseline Only":
-                        render_embedding_results(embedding_results)
+                        render_embedding_results(embedding_results, settings["embedding_model"])
                     else:
                         st.info("Embedding retrieval disabled. Switch to Hybrid or Embeddings Only to see these results.")
                 
@@ -1437,9 +1376,9 @@ def main():
                         st.markdown("**🏷️ Entities**")
                         render_entity_badges(preprocessing_output.get('entities', {}))
                 
-                if settings["show_cypher"] and cypher_preview:
-                    with st.expander("📝 Cypher Query Preview", expanded=False):
-                        render_cypher_query(cypher_preview)
+                if settings["show_cypher"] and cypher_query:
+                    with st.expander("📝 Executed Cypher Query", expanded=False):
+                        render_cypher_query(cypher_query)
                 
                 # Combined context in ONE collapsible with tabs
                 with st.expander("📚 Retrieved Context & Recommendations", expanded=False):
@@ -1453,7 +1392,7 @@ def main():
                     
                     with context_tabs[1]:
                         if retrieval_method != "Baseline Only":
-                            render_embedding_results(embedding_results)
+                            render_embedding_results(embedding_results, settings["embedding_model"])
                         else:
                             st.info("Embedding retrieval disabled. Switch to Hybrid or Embeddings Only to see these results.")
                     
