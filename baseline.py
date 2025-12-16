@@ -1660,7 +1660,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         # Get intent for disambiguation
         intent = preprocessing_output.get("intent", "")
         
-        # Query 16: Compare two players (exactly 2 players, nothing else, no threshold)
+        # Compare two players (exactly 2 players, nothing else, no threshold)
         if (
             len(players) == 2
             and len(teams) == 0
@@ -1673,7 +1673,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_compare_two_players(entities, ranking, threshold)
 
-        # Query 23: Head-to-head fixtures (exactly 2 teams, fixture intent, nothing else, no threshold)
+        # Head-to-head fixtures (exactly 2 teams, fixture intent, nothing else, no threshold)
         if (
             len(teams) == 2
             and len(players) == 0
@@ -1686,7 +1686,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_head_to_head_fixtures(entities, ranking, threshold)
 
-        # Query 17: Gameweek fixtures (exactly 1 gameweek, nothing else, no threshold)
+        # Gameweek fixtures (exactly 1 gameweek, nothing else, no threshold)
         if (
             len(gameweeks) == 1
             and len(teams) == 0
@@ -1699,7 +1699,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_gameweek_fixtures(entities, ranking, threshold)
 
-        # Query 8: Single player performance (exactly 1 player, nothing else, no threshold)
+        # Single player performance (exactly 1 player, nothing else, no threshold)
         if (
             len(players) == 1
             and len(statistics) == 0
@@ -1712,7 +1712,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_player_performance(entities, ranking, threshold)
 
-        # Query 9: Team fixtures (exactly 1 team, nothing else, no threshold)
+        # Team fixtures (exactly 1 team, nothing else, no threshold)
         if (
             len(teams) == 1
             and len(players) == 0
@@ -1725,7 +1725,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_team_fixtures(entities, ranking, threshold)
 
-        # Query 10: Gameweek top performers (1 gameweek, 1 statistic, nothing else, no threshold)
+        # Gameweek top performers (1 gameweek, 1 statistic, nothing else, no threshold)
         if (
             len(gameweeks) == 1
             and len(statistics) == 1
@@ -1739,7 +1739,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_gameweek_top_performers(entities, ranking, threshold, effective_limit)
 
-        # Query 3: Top players by stat + position (1 stat, 1 position, nothing else, no threshold)
+        # Top players by stat + position (1 stat, 1 position, nothing else, no threshold)
         if (
             len(statistics) == 1
             and len(positions) == 1
@@ -1753,7 +1753,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_top_players_by_stat_and_position(entities, ranking, threshold, effective_limit)
 
-        # Query 4: Worst players by stat + position (1 stat, 1 position, nothing else, no threshold)
+        #  Worst players by stat + position (1 stat, 1 position, nothing else, no threshold)
         if (
             len(statistics) == 1
             and len(positions) == 1
@@ -1767,7 +1767,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_worst_players_by_stat_and_position(entities, ranking, threshold, effective_limit)
 
-        # Query 1: Top players by statistic (1 stat only, no other entities, no threshold)
+        #  Top players by statistic (1 stat only, no other entities, no threshold)
         if (
             len(statistics) == 1
             and len(players) == 0
@@ -1781,7 +1781,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_top_players_by_statistic(entities, ranking, threshold, effective_limit)
 
-        # Query 2: Worst players by statistic (1 stat only, no other entities, no threshold)
+        # Worst players by statistic (1 stat only, no other entities, no threshold)
         if (
             len(statistics) == 1
             and len(players) == 0
@@ -1795,7 +1795,7 @@ def execute_baseline_query(preprocessing_output: Dict[str, Any]) -> List[Dict]:
         ):
             return builder.query_worst_players_by_statistic(entities, ranking, threshold, effective_limit)
         
-        # Query 11 (Fallback): Dynamic query for any combination not matching base queries
+        # (Fallback): Dynamic query for any combination not matching base queries
         print("⚠ No base query matched. Using dynamic fallback query (Query 11)...")
         return builder.query_dynamic_fallback(entities, ranking, threshold, effective_limit)
             

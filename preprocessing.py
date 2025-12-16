@@ -217,20 +217,16 @@ STAT_CANON: Dict[str, str] = {
 
 
 # Intent category mapping for easier lookup
-# Six canonical intents only. Downstream layers treat everything else as query variants.
+# Four canonical intents - aligned with baseline.py query routing
 PLAYER_INTENTS = {"PLAYER-RELATED"}
 TEAM_INTENTS = {"TEAM-RELATED"}
 FIXTURE_INTENTS = {"FIXTURE-RELATED"}
-TEAM_WINNING_INTENTS = {"TEAM WINNING"}
-RECOMMENDATION_INTENTS = {"RECOMMENDATION"}
 COMPARISON_INTENTS = {"COMPARISON"}
 
 INTENT_LABELS = (
     PLAYER_INTENTS
     | TEAM_INTENTS
     | FIXTURE_INTENTS
-    | TEAM_WINNING_INTENTS
-    | RECOMMENDATION_INTENTS
     | COMPARISON_INTENTS
 )
 
@@ -238,8 +234,6 @@ INTENT_CATEGORIES = {
     "player": PLAYER_INTENTS,
     "team": TEAM_INTENTS,
     "fixture": FIXTURE_INTENTS,
-    "winning": TEAM_WINNING_INTENTS,
-    "recommendation": RECOMMENDATION_INTENTS,
     "comparison": COMPARISON_INTENTS,
 }
 
@@ -759,36 +753,35 @@ def identify_threshold_stat(query_lower: str) -> str:
 
 
 def rule_based_intent(query: str, raw_entities: Dict[str, List[Any]]) -> str:
-    """Lightweight fallback intent classifier when the LLM is unavailable."""
+    """Lightweight fallback intent classifier when the LLM is unavailable.
+    
+    Returns one of 4 intents aligned with baseline.py:
+    - PLAYER-RELATED: Player stats, performance queries, rankings
+    - TEAM-RELATED: Team-based queries (players from a team, team stats)
+    - FIXTURE-RELATED: Fixture/match/gameweek queries, head-to-head between teams
+    - COMPARISON: Compare two players
+    """
     q = query.lower()
     players = raw_entities.get("Player", []) or []
     teams = raw_entities.get("Team", []) or []
-    seasons = raw_entities.get("Season", []) or []
     gameweeks = raw_entities.get("Gameweek", []) or []
 
     def has_any(keywords: List[str]) -> bool:
         return any(kw in q for kw in keywords)
 
-    if has_any(["compare", "comparison", "vs", "versus", " v ", " v.", " than "]):
+    # COMPARISON: Compare two players (Query 16 in baseline.py)
+    comparison_keywords = ["compare", "comparison", "vs", "versus", " v ", " v."]
+    if len(players) == 2 and has_any(comparison_keywords):
+        return "COMPARISON"
+    
+    # Also trigger comparison if 2 players detected with comparison-like phrasing
+    if len(players) == 2 and has_any(["than", "better", "worse", "difference", "against"]):
         return "COMPARISON"
 
-    if has_any([
-        "recommend",
-        "suggest",
-        "should i",
-        "who should i",
-        "pick",
-        "choose",
-        "consider",
-        "options",
-        "targets",
-    ]):
-        return "RECOMMENDATION"
-
+    # FIXTURE-RELATED: fixture/match/gameweek queries, head-to-head between teams
     fixture_keywords = [
         "fixture",
         "fixtures",
-        "gameweek",
         "match",
         "matches",
         "schedule",
@@ -796,18 +789,24 @@ def rule_based_intent(query: str, raw_entities: Dict[str, List[Any]]) -> str:
         "play against",
         "next game",
         "upcoming game",
-        "next gw",
-        "gw",
+        "head to head",
+        "head-to-head",
+        "h2h",
     ]
-    if gameweeks or seasons or has_any(fixture_keywords):
+    
+    # If 2 teams and fixture-related keywords -> FIXTURE-RELATED (for head-to-head)
+    if len(teams) == 2 and has_any(fixture_keywords + ["vs", "versus"]):
         return "FIXTURE-RELATED"
-
-    if teams and has_any(["win", "winning", "beat", "victory", "lose", "loss", "draw"]):
-        return "TEAM WINNING"
-
+    
+    # If gameweek mentioned with fixture keywords -> FIXTURE-RELATED
+    if gameweeks and has_any(["fixture", "fixtures", "match", "matches", "schedule"]):
+        return "FIXTURE-RELATED"
+    
+    # TEAM-RELATED: Team-focused queries without specific players
     if teams and not players:
         return "TEAM-RELATED"
-
+    
+    # Default: PLAYER-RELATED (player stats, rankings)
     return "PLAYER-RELATED"
 
 # ============================================================
@@ -903,7 +902,10 @@ You must do FOUR tasks in ONE response:
 
 1) INTENT CLASSIFICATION
    Choose exactly ONE intent from this list:
-   (PLAYER-RELATED, TEAM-RELATED, FIXTURE-RELATED, TEAM WINNING, RECOMMENDATION, COMPARISON)
+   - PLAYER-RELATED: Queries about player statistics, performance, rankings (single player or general)
+   - TEAM-RELATED: Queries focused on a specific team's players or team-level statistics
+   - FIXTURE-RELATED: Queries about fixtures, matches, schedules, head-to-head between teams, gameweek fixtures
+   - COMPARISON: Queries that compare two specific players (e.g., "Compare Salah and Haaland")
 
 2) ENTITY REFINEMENT
    Based on the query AND the provided raw_entities and teams list:
@@ -929,7 +931,7 @@ You must do FOUR tasks in ONE response:
      - Return null if no threshold detected
      
 Your output MUST be a single JSON object with exactly these keys:
-  intent: string (one of the intent labels above)
+  intent: string (PLAYER-RELATED, TEAM-RELATED, FIXTURE-RELATED, or COMPARISON)
   entities: object with Player, Team, Position, Statistic, Season, Gameweek arrays
   ranking: best or worst or null
   threshold: object with stat, operator, value or null
@@ -972,7 +974,7 @@ PLAYER RESOLUTION RULES:
 5. Remove duplicates from the final Player list.
 
 Your output MUST be a single JSON object with exactly these keys:
-  "intent": string (one of the intent labels above)
+  "intent": string (PLAYER-RELATED, TEAM-RELATED, FIXTURE-RELATED, or COMPARISON)
   "entities": {{
       "Player":   list of strings,
       "Team":     list of strings,
