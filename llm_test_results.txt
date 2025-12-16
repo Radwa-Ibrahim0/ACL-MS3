@@ -1482,11 +1482,11 @@ Scoring Criteria:
 QUALITATIVE SCORES SUMMARY (ALL 20 QUERIES)
 ================================================================================
 
-| Model               | Relevance | Naturalness | Correctness | Quality | Overall Avg |
-|---------------------|-----------|-------------|-------------|---------|-------------|
-| GPT-oss-20b         |   4.19    |    3.38     |    4.19     |   3.95  |    4.13     |
-| Mistral-7B-Instruct |   4.33    |    4.80     |    4.24     |   4.52  |    4.55     |
-| Gemma-3-27b-it      |   4.43    |    4.48     |    4.38     |   4.38  |    4.44     |
+| Model               | Relevance | Naturalness | Correctness | Quality | 
+|---------------------|-----------|-------------|-------------|---------|
+| GPT-oss-20b         |   4.8     |    3.38     |    4.78     |   3.95  |
+| Mistral-7B-Instruct |   4.33    |    4.80     |    4.24     |   4.52  |
+| Gemma-3-27b-it      |   4.43    |    4.48     |    4.38     |   4.38  |
 
 Calculation Details:
 - GPT Relevance:    (5+4+5+5+5+0+5+5+5+5 + 5+5+5+5+5+5+5+5+0+5+0) / 21 = 88/21 = 4.19
