@@ -210,3 +210,18 @@ Recommended actions:
 - Create `config.example.txt` with placeholder values.
 - Prefer environment variables for production deployments.
 
+## Contributors
+
+<a href="https://github.com/HazemMansour1">
+  <img src="https://github.com/HazemMansour1.png" width="60" height="60" style="border-radius: 50%;" alt="HazemMansour1"/>
+</a>
+<a href="https://github.com/Radwa-Ibrahim0">
+  <img src="https://github.com/Radwa-Ibrahim0.png" width="60" height="60" style="border-radius: 50%;" alt="Radwa-Ibrahim0"/>
+</a>
+<a href="https://github.com/amy847">
+  <img src="https://github.com/amy847.png" width="60" height="60" style="border-radius: 50%;" alt="amy847"/>
+</a>
+
+- [HazemMansour1](https://github.com/HazemMansour1) — Hazem Mansour
+- [Radwa-Ibrahim0](https://github.com/Radwa-Ibrahim0) — Radwa Ibrahim
+- [amy847](https://github.com/amy847) — manuella ehab
